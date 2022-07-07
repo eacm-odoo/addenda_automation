@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="addenda_nodes_view_form" model="ir.ui.view">
+        <field name="name">addenda.node.form</field>
+        <field name="model">addenda.node</field>
+        <field name="arch" type="xml">
+            <form string="Addenda Form">
+                <group>
+                    <field name="nodes" />
+                    <field name="position" />
+                    <field name="expression" />
+                    <field name="all_models" />
+                    <field name="all_fields" domain="[('model_id','=',all_models)]" />
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="addenda_nodes_view_list" model="ir.ui.view">
+        <field name="name">addenda.node.list</field>
+        <field name="model">addenda.node</field>
+        <field name="arch" type="xml">
+            <tree string="Addenda Form">
+                <field name="nodes" />
+                <field name="position" />
+                <field name="expression" />
+                <field name="all_models" />
+                <field name="all_fields" domain="[('model_id','=',all_models)]" />
+            </tree>
+        </field>
+    </record>
+
+</odoo>

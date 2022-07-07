@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="addenda_view_form" model="ir.ui.view">
+        <field name="name">addenda.addenda.form</field>
+        <field name="model">addenda.addenda</field>
+        <field name="arch" type="xml">
+            <form string="Addenda Form">
+                <sheet>
+                    <h1>
+                        <field name="name" />
+                    </h1>
+                    <notebook>
+                        <page string="Addenda Nodes">
+                            <field name="nodes_ids" />
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="addenda_view_tree" model="ir.ui.view">
+        <field name="name">addenda.addenda.tree</field>
+        <field name="model">addenda.addenda</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+            </tree>
+        </field>
+    </record>
+
+</odoo>
