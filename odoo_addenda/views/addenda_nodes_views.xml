@@ -24,6 +24,7 @@
                 <field name="nodes" />
                 <field name="position" />
                 <field name="expression" />
+                <field name="path" />
                 <field name="all_models" />
                 <field name="all_fields" domain="[('model_id','=',all_models)]" />
             </tree>

@@ -19,6 +19,7 @@ class AddendaNode(models.Model):
         string='Models', comodel_name='ir.model')
     all_fields = fields.Many2one(
         string='Fields', comodel_name='ir.model.fields', domain=[('model_id', '=', all_models)])
+    path = fields.Text(string='Path', compute='_compute_path')
 
     @api.onchange('expression')
     def evalue_expression(self):
@@ -63,3 +64,11 @@ class AddendaNode(models.Model):
                 pass
         selection_vals = list(set(selection_vals))
         return selection_vals
+
+    @api.depends('nodes')
+    def _compute_path(self):
+        for node in self:
+            if(node.nodes):
+                self.path = "*/*/{http://www.sat.gob.mx/cfd/}/" + node.nodes.replace('/', '/{http://www.sat.gob.mx/cfd/3}/')
+            else:
+                self.path= False
