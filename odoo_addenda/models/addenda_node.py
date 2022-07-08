@@ -1,7 +1,7 @@
 from lxml.objectify import fromstring
 import xml.etree.ElementTree as ET
-from odoo import models, fields, api
-
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 class AddendaNode(models.Model):
     _name = 'addenda.node'
@@ -20,6 +20,16 @@ class AddendaNode(models.Model):
     all_fields = fields.Many2one(
         string='Fields', comodel_name='ir.model.fields', domain=[('model_id', '=', all_models)])
 
+    @api.onchange('expression')
+    def evalue_expression(self):
+        for node in self:
+            if(node.expression):
+                try:
+                    print("AAAAAAAAAAAAA")
+                    ET.fromstring(node.expression)
+                except:
+                    raise UserError(_("invalid format for xml"))
+                    
     def _compute_nodes(self):
         # use self.env.ref to get the xml file
         instance_cfdi = self.env.ref('l10n_mx_edi.cfdiv33')

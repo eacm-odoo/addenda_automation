@@ -9,9 +9,19 @@
                     <h1>
                         <field name="name" />
                     </h1>
+                    <field name="is_customed_addenda" />
                     <notebook>
-                        <page string="Addenda Nodes">
-                            <field name="nodes_ids" />
+                        <page string="Addenda Nodes" attrs="{'invisible': [('is_customed_addenda', '=', False)]}">
+                            <field name="is_customed_addenda" invisible='True'></field>
+                            <group>
+                                <field name="nodes_ids" />
+                            </group>
+                        </page>
+                        <page string="Addenda xml" attrs="{'invisible': [('is_customed_addenda', '=', True)]}">
+                            <field name="is_customed_addenda" invisible='True'></field>
+                            <group>
+                                <field name="expression" />
+                            </group>
                         </page>
                     </notebook>
                 </sheet>
