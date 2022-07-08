@@ -16,7 +16,7 @@
         </field>
     </record>
 
-    <record id="addenda_nodes_view_list" model="ir.ui.view">
+    <record id="addenda_customed_nodes_view_list" model="ir.ui.view">
         <field name="name">addenda.node.list</field>
         <field name="model">addenda.node</field>
         <field name="arch" type="xml">

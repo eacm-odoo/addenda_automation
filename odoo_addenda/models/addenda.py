@@ -1,29 +1,52 @@
-from odoo import models, fields, api
+import xml.etree.ElementTree as ET
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 
-class AddendaAddenda(models.Model):
+class AddendaNode(models.Model):
     _name = 'addenda.addenda'
     _description = 'Automated addenda'
 
     name = fields.Char(string='Name')
-    nodes_ids = fields.One2many(
-        comodel_name='addenda.node', string='Nodes', inverse_name='addenda_id')
-    
+    nodes_ids = fields.One2many(comodel_name='addenda.node', string='Nodes', inverse_name='addenda_id')
+    is_customed_addenda = fields.Boolean(string='Customed Addenda')
+    expression = fields.Text(string='Expression')
+
+    @api.onchange('expression')
+    def evalue_expression(self):
+        for node in self:
+            if(node.expression):
+                try:
+                    print("AAAAAAAAAAAAA")
+                    ET.fromstring(node.expression)
+                except:
+                    raise UserError(_("invalid format for xml"))
+                    
     @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
-        ir_ui_view = self.env['ir.ui.view'].create({
-            'name': vals['name'],
-            'type': 'qweb',
-            'arch': '<Company>\n <Employee>\n <FirstName>Tanmay</FirstName>\n </Employee>\n </Company>\n <template id="addenda_test" inherit_id="l10n_mx_edi.cfdiv33">\n <xpath expr="/cfdi:Emisor" position="after">\n<test>Hola<test>\n</xpath>\n </template>',
-            'active': True,
-            'inherit_id': False,
-            'model': False,
-            'priority': 16,
-            'arch_base': '<?xml version="1.0"?>\n<Company>\n <Employee>\n <FirstName>Tanmay</FirstName>\n </Employee>\n </Company>\n <template id="addenda_test" inherit_id="l10n_mx_edi.cfdiv33">\n <xpath expr="/cfdi:Emisor" position="after">\n<test>Hola<test>\n</xpath>\n </template>',
-            'arch_db': '<Company>\n <Employee>\n <FirstName>Tanmay</FirstName>\n </Employee>\n </Company>\n <template id="addenda_test" inherit_id="l10n_mx_edi.cfdiv33">\n <xpath expr="/cfdi:Emisor" position="after">\n<test>Hola<test>\n</xpath>\n </template>',
-            'arch_fs': False,
-            'mode': 'primary',
-            'l10n_mx_edi_addenda_flag': True,
-        })
+        if not(vals_list['is_customed_addenda']):
+            new_addenda = ('''
+            <odoo>
+                    <template id="l10_mx_edi_''' + vals_list['name'].lower().replace(" ", "") + '" name="' +  vals_list['name'].lower().replace(" ", "") + '"><Addenda>\n ')
+            new_addenda += vals_list['expression'] + '\n'
+            new_addenda += '''
+                                </Addenda>
+                </template>
+            </odoo>
+                    '''
+            ir_ui_view = self.env['ir.ui.view'].create({
+                'name': vals_list['name'],
+                'type': 'qweb',
+                'arch': new_addenda,
+                'active': True,
+                'inherit_id': False,
+                'model': False,
+                'priority': 16,
+                'arch_base': new_addenda,
+                'arch_db': new_addenda,
+                'arch_fs': False,
+                'mode': 'primary',
+                'l10n_mx_edi_addenda_flag': True,
+            })
         return res
