@@ -11,6 +11,14 @@
                     <field name="is_customed_addenda" />
                     <field name="addenda_addenda" />
                 </field>
+                <field name="l10n_mx_edi_addenda" position="attributes">
+                <!--make it readonly if is_customed_addenda is true else editable-->
+                    <attribute name="attrs">{'readonly':[('is_customed_addenda','=',True)]}</attribute>
+                </field>
+                <field name="addenda_addenda" position="attributes">
+                    <!--make it readonly if is_customed_addenda is true else editable-->
+                    <attribute name="attrs">{'readonly':[('is_customed_addenda','=',False)]}</attribute>
+                </field>
             </field>
         </record>
     </data>
