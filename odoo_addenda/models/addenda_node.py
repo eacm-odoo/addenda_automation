@@ -20,6 +20,7 @@ class AddendaNode(models.Model):
     all_fields = fields.Many2one(
         string='Fields', comodel_name='ir.model.fields', domain=[('model_id', '=', all_models)])
 
+    
     def _compute_nodes(self):
         # use self.env.ref to get the xml file
         instance_cfdi = self.env.ref('l10n_mx_edi.cfdiv33')
