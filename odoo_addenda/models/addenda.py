@@ -17,7 +17,6 @@ class AddendaNode(models.Model):
         for node in self:
             if(node.expression):
                 try:
-                    print("AAAAAAAAAAAAA")
                     ET.fromstring(node.expression)
                 except:
                     raise UserError(_("invalid format for xml"))
