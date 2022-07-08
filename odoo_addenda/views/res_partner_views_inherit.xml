@@ -9,6 +9,7 @@
             <field name="arch" type="xml">
                 <field name="l10n_mx_edi_addenda" position="after">
                     <field name="is_customed_addenda" />
+                    <field name="addenda_addenda" />
                 </field>
             </field>
         </record>
