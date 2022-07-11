@@ -21,7 +21,9 @@
                         </page>
                         <page string="Addenda xml" attrs="{'invisible': [('is_customed_addenda', '=', True)]}">
                             <field name="is_customed_addenda" invisible='True'></field>
+                            <group>
                             <field name="expression" />
+                            </group>
                         </page>
                     </notebook>
                 </sheet>
