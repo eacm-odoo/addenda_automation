@@ -69,6 +69,6 @@ class AddendaNode(models.Model):
     def _compute_path(self):
         for node in self:
             if(node.nodes):
-                self.path = "*/*/{http://www.sat.gob.mx/cfd/}/" + node.nodes.replace('/', '/{http://www.sat.gob.mx/cfd/3}/')
+                self.path = "*/*/{http://www.sat.gob.mx/cfd/}" + node.nodes.replace('/', '/{http://www.sat.gob.mx/cfd/3}')
             else:
                 self.path= False
