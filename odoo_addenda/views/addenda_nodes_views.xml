@@ -5,13 +5,11 @@
         <field name="model">addenda.node</field>
         <field name="arch" type="xml">
             <form string="Addenda Form">
-                <group>
-                    <field name="nodes" />
-                    <field name="position" />
-                    <field name="expression" />
-                    <field name="all_models" />
-                    <field name="all_fields" domain="[('model_id','=',all_models)]" />
-                </group>
+                <field name="nodes" />
+                <field name="position" />
+                <field name="expression" />
+                <field name="all_models" />
+                <field name="all_fields" domain="[('model_id','=',all_models)]" />
             </form>
         </field>
     </record>
@@ -21,7 +19,7 @@
         <field name="model">addenda.node</field>
         <field name="arch" type="xml">
             <tree string="Addenda Form">
-                <field name="nodes" />
+                <field name="nodes"/>
                 <field name="position" />
                 <field name="expression" />
                 <field name="path" />

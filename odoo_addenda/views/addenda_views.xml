@@ -7,20 +7,22 @@
             <form string="Addenda Form">
                 <sheet>
                     <h1>
-                        <field name="name" />
+                        <group>
+                            <field name="name" />
+                        </group>
                     </h1>
-                    <field name="is_customed_addenda" />
+                    <group>
+                        <field name="is_customed_addenda" />
+                    </group>
                     <notebook>
                         <page string="Addenda Nodes" attrs="{'invisible': [('is_customed_addenda', '=', False)]}">
                             <field name="is_customed_addenda" invisible='True'></field>
-                            <group>
-                                <field name="nodes_ids" />
-                            </group>
+                            <field name="nodes_ids" />
                         </page>
                         <page string="Addenda xml" attrs="{'invisible': [('is_customed_addenda', '=', True)]}">
                             <field name="is_customed_addenda" invisible='True'></field>
                             <group>
-                                <field name="expression" />
+                            <field name="expression" />
                             </group>
                         </page>
                     </notebook>
