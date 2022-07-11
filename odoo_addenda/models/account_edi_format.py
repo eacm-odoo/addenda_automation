@@ -7,7 +7,8 @@ _logger = logging.getLogger(__name__)
 
 class AccountEdiFormat(models.Model):
     _inherit = 'account.edi.format'
-
+    
+    
     # override method _post_invoice_edi to add addenda
     def _post_invoice_edi(self, invoices):
         res = super()._post_invoice_edi(invoices)
