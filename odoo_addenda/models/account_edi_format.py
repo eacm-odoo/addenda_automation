@@ -14,15 +14,66 @@ class AccountEdiFormat(models.Model):
         res = super()._post_invoice_edi(invoices)
         if self.code != 'cfdi_3_3':
             return res
-        
-        #recover the res.partner from account.move
+
+        # recover the res.partner from account.move
         partner_id = list(res.keys())[0].partner_id
+        if not partner_id.addenda_addenda and not partner_id.l10n_mx_edi_addenda:
+            return res
         if partner_id.is_customed_addenda:
-            _logger.info('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-            nodes_ids = partner_id.addenda_addenda.nodes_ids#node that include, path, position and expression
+            _logger.info(
+                'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+            # node that include, path, position and expression
+            nodes_ids = partner_id.addenda_addenda.nodes_ids
             _logger.info(nodes_ids)
-            datas = res[next(iter(res))]['attachment'].datas #datas field from ir.attachment, contains the binary of the cfdi xml
-            xml = ET.fromstring(base64.decodebytes(datas))#transform from binary to string to xml
+            # datas field from ir.attachment, contains the binary of the cfdi xml
+            datas = res[next(iter(res))]['attachment'].datas
+            # transform from binary to string to xml
+            xml = ET.fromstring(base64.decodebytes(datas))
             _logger.info(xml)
-            _logger.info('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB')
+            xml = self.add_nodes(xml, nodes_ids)
+            #update the ir.attachment with the new xml
+            res[next(iter(res))]['attachment'].datas = base64.encodebytes(
+                ET.tostring(xml))
+            _logger.info(xml)
+            _logger.info(
+                'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB')
         return res
+
+
+    # inside the parent, create a new tag with text
+    def add_new_tag_inside(self,parent, element):
+        element = ET.fromstring(element)
+        parent.append(element)
+        return element
+
+    # add new tag after a given node
+    def add_new_tag_after(self,parent, element, parent_map):
+        element = ET.fromstring(element)
+        position = list(parent_map[parent]).index(parent)
+        parent_map[parent].insert(position+1, element)
+
+    # add new tag before a given node
+    def add_new_tag_before(self,parent, element, parent_map):
+        element = ET.fromstring(element)
+        position = list(parent_map[parent]).index(parent)
+        parent_map[parent].insert(position, element)
+
+
+    # create method to add node to the xml
+    def add_nodes(self, xml, nodes_ids):
+        _logger.info(type(xml))
+        _logger.info((xml,nodes_ids))
+        parent_map = {c: p for p in xml.iter()
+                      for c in p}
+        _logger.info(parent_map)
+        for node in nodes_ids:
+            _logger.info(xml.find('./{http://www.sat.gob.mx/cfd/4}Conceptos/').tag)
+            parent = xml.find(node.path)
+            if node.position == 'after':
+                self.add_new_tag_after(parent, node.expression, parent_map)
+            elif node.position == 'before':
+                self.add_new_tag_before(parent, node.expression, parent_map)
+            elif node.position == 'inside':
+                self.add_new_tag_inside(parent, node.expression)
+        return xml
+

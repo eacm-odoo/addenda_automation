@@ -63,12 +63,15 @@ class AddendaNode(models.Model):
             except:
                 pass
         selection_vals = list(set(selection_vals))
+        selection_vals.remove(('/Comprobante','/Comprobante'))
         return selection_vals
 
     @api.depends('nodes')
     def _compute_path(self):
         for node in self:
             if(node.nodes):
-                self.path = "*/*/{http://www.sat.gob.mx/cfd/}" + node.nodes.replace('/', '/{http://www.sat.gob.mx/cfd/3}')
+                node.path = ("{http://www.sat.gob.mx/cfd/}" + node.nodes.replace('/', '/{http://www.sat.gob.mx/cfd/3}')).replace('{http://www.sat.gob.mx/cfd/3}Comprobante', '.')
             else:
-                self.path= False
+                node.path= False
+    
+    
