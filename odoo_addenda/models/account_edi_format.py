@@ -13,14 +13,15 @@ class AccountEdiFormat(models.Model):
         res = super()._post_invoice_edi(invoices)
         if self.code != 'cfdi_3_3':
             return res
-        _logger.info('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-        _logger.info(res)
-        datas = res[next(iter(res))]['attachment'].datas
-        _logger.info(datas)
-        xml_in_str = base64.decodebytes(datas)
-        _logger.info(xml_in_str)
-        _logger.info('__________________________________________________________________________________')
-        xml = ET.fromstring(xml_in_str)
-        _logger.info(xml)
-        _logger.info('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB')
+        
+        #recover the res.partner from account.move
+        partner_id = list(res.keys())[0].partner_id
+        if partner_id.is_customed_addenda:
+            _logger.info('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+            nodes_ids = partner_id.addenda_addenda.nodes_ids#node that include, path, position and expression
+            _logger.info(nodes_ids)
+            datas = res[next(iter(res))]['attachment'].datas #datas field from ir.attachment, contains the binary of the cfdi xml
+            xml = ET.fromstring(base64.decodebytes(datas))#transform from binary to string to xml
+            _logger.info(xml)
+            _logger.info('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB')
         return res

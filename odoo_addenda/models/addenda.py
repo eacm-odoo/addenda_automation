@@ -3,7 +3,7 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 
-class AddendaNode(models.Model):
+class AddendaAddenda(models.Model):
     _name = 'addenda.addenda'
     _description = 'Automated addenda'
 
