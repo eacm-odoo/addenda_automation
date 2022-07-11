@@ -24,17 +24,24 @@ class AccountEdiFormat(models.Model):
                 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
             # node that include, path, position and expression
             nodes_ids = partner_id.addenda_addenda.nodes_ids
-            _logger.info(nodes_ids)
+            _logger.info(res)
             # datas field from ir.attachment, contains the binary of the cfdi xml
             datas = res[next(iter(res))]['attachment'].datas
             # transform from binary to string to xml
             xml = ET.fromstring(base64.decodebytes(datas))
-            _logger.info(xml)
+            _logger.info(ET.tostring(xml))
             xml = self.add_nodes(xml, nodes_ids)
             #update the ir.attachment with the new xml
+            res.update({})
             res[next(iter(res))]['attachment'].datas = base64.encodebytes(
                 ET.tostring(xml))
-            _logger.info(xml)
+            new_xml = base64.encodebytes(
+                ET.tostring(xml))
+            #self.env['ir.attachment'].search(
+            #    [('id', '=', res[next(iter(res))]['attachment'].id)]).write({'datas': new_xml})
+            self.env['ir.attachment'].search(
+                [('id', '=', res[next(iter(res))]['attachment'].id)]).update({'datas': new_xml})
+            #res[next(iter(res))]['attachment'].update({'datas': new_xml, 'raw': ET.tostring(xml)})
             _logger.info(
                 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB')
         return res
@@ -61,13 +68,10 @@ class AccountEdiFormat(models.Model):
 
     # create method to add node to the xml
     def add_nodes(self, xml, nodes_ids):
-        _logger.info(type(xml))
-        _logger.info((xml,nodes_ids))
+        ET.register_namespace('cfdi', 'http://www.sat.gob.mx/cfd/3')
         parent_map = {c: p for p in xml.iter()
                       for c in p}
-        _logger.info(parent_map)
         for node in nodes_ids:
-            _logger.info(xml.find('./{http://www.sat.gob.mx/cfd/4}Conceptos/').tag)
             parent = xml.find(node.path)
             if node.position == 'after':
                 self.add_new_tag_after(parent, node.expression, parent_map)
@@ -75,5 +79,6 @@ class AccountEdiFormat(models.Model):
                 self.add_new_tag_before(parent, node.expression, parent_map)
             elif node.position == 'inside':
                 self.add_new_tag_inside(parent, node.expression)
+        _logger.info(ET.tostring(xml))
         return xml
 

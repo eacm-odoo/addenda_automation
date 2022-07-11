@@ -63,6 +63,7 @@ class AddendaNode(models.Model):
             except:
                 pass
         selection_vals = list(set(selection_vals))
+        selection_vals.append(('Comprobante/Complemento','Comprobante/Complemento'))
         selection_vals.remove(('/Comprobante','/Comprobante'))
         return selection_vals
 
@@ -70,7 +71,7 @@ class AddendaNode(models.Model):
     def _compute_path(self):
         for node in self:
             if(node.nodes):
-                node.path = ("{http://www.sat.gob.mx/cfd/}" + node.nodes.replace('/', '/{http://www.sat.gob.mx/cfd/3}')).replace('{http://www.sat.gob.mx/cfd/3}Comprobante', '.')
+                node.path = ("{http://www.sat.gob.mx/cfd/3}" + node.nodes.replace('/', '/{http://www.sat.gob.mx/cfd/3}')).replace('{http://www.sat.gob.mx/cfd/3}Comprobante', '.')
             else:
                 node.path= False
     
