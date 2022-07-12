@@ -32,45 +32,44 @@ class AccountEdiFormat(models.Model):
             xml = etree.fromstring(base64.decodebytes(datas))
             _logger.info(etree.tostring(xml))
             xml = self.add_nodes(xml, nodes_ids)
-            #update the ir.attachment with the new xml
-            res.update({})
             res[next(iter(res))]['attachment'].datas = base64.encodebytes(
                 etree.tostring(xml))
             
             new_xml = base64.encodebytes(etree.tostring(xml, pretty_print=True, xml_declaration=True, encoding='UTF-8'))
-            #self.env['ir.attachment'].search(
-            #    [('id', '=', res[next(iter(res))]['attachment'].id)]).write({'datas': new_xml})
             self.env['ir.attachment'].search(
                 [('id', '=', res[next(iter(res))]['attachment'].id)]).write({'datas': new_xml, 'mimetype': 'application/xml'})
-            #res[next(iter(res))]['attachment'].update({'datas': new_xml, 'raw': ET.tostring(xml)})
             _logger.info(
                 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB')
         return res
 
 
     # inside the parent, create a new tag with text
-    def add_new_tag_inside(self,parent, element):
-        node = etree.Element(etree.QName('http://www.sat.gob.mx/cfd/3', 'Addenda'))
+    def add_new_tag_inside(self,parent, element, tag_name):
+        node = etree.Element(etree.QName('http://www.sat.gob.mx/cfd/3', tag_name))
         element = etree.fromstring(element)
         node.append(element)
         parent.append(node)
         return element
 
     # add new tag after a given node
-    def add_new_tag_after(self,parent, element, parent_map):
-        node = etree.Element(etree.QName('http://www.sat.gob.mx/cfd/3', 'Addenda'))
+    def add_new_tag_after(self,parent, element, parent_map, tag_name):
+        node = etree.Element(etree.QName('http://www.sat.gob.mx/cfd/3', tag_name))
         element = etree.fromstring(element)
         node.append(element)
         position = list(parent_map[parent]).index(parent)
         parent_map[parent].insert(position+1, node)
 
     # add new tag before a given node
-    def add_new_tag_before(self,parent, element, parent_map):
-        node = etree.Element(etree.QName('http://www.sat.gob.mx/cfd/3', 'Addenda'))
+    def add_new_tag_before(self,parent, element, parent_map, tag_name):
+        node = etree.Element(etree.QName('http://www.sat.gob.mx/cfd/3', tag_name))
         element = etree.fromstring(element)
         node.append(element)
         position = list(parent_map[parent]).index(parent)
         parent_map[parent].insert(position, node)
+        
+    #add attribute to an existing tag
+    def add_attribute_to_tag(self, parent, attribute, value):
+        parent.set(attribute,value)
 
 
     # create method to add node to the xml
@@ -80,11 +79,13 @@ class AccountEdiFormat(models.Model):
         for node in nodes_ids:
             parent = xml.find(node.path)
             if node.position == 'after':
-                self.add_new_tag_after(parent, node.expression, parent_map)
+                self.add_new_tag_after(parent, node.expression, parent_map, node.tag_name)
             elif node.position == 'before':
-                self.add_new_tag_before(parent, node.expression, parent_map)
+                self.add_new_tag_before(parent, node.expression, parent_map, node.tag_name)
             elif node.position == 'inside':
-                self.add_new_tag_inside(parent, node.expression)
+                self.add_new_tag_inside(parent, node.expression, node.tag_name)
+            elif node.position == 'attributes':
+                self.add_attribute_to_tag(parent, node.attribute, node.attribute_value)
         _logger.info(etree.tostring(xml))
         return xml
 

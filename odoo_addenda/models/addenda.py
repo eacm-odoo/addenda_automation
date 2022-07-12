@@ -7,7 +7,7 @@ class AddendaAddenda(models.Model):
     _name = 'addenda.addenda'
     _description = 'Automated addenda'
 
-    name = fields.Char(string='Name')
+    name = fields.Char(string='Name', required=True)
     nodes_ids = fields.One2many(comodel_name='addenda.node', string='Nodes', inverse_name='addenda_id')
     is_customed_addenda = fields.Boolean(string='Customed Addenda')
     expression = fields.Text(string='Expression')
@@ -25,25 +25,17 @@ class AddendaAddenda(models.Model):
     def create(self, vals_list):
         res = super().create(vals_list)
         if not(vals_list['is_customed_addenda']):
-            new_addenda = ('''
-            <odoo>
-                    <template id="l10_mx_edi_''' + vals_list['name'].lower().replace(" ", "_") + '" name="' +  vals_list['name'].lower().replace(" ", "_") + '"><Addenda>\n ')
-            new_addenda += vals_list['expression'] + '\n'
-            new_addenda += '''
-                                </Addenda>
-                </template>
-            </odoo>
-                    '''
+            
             ir_ui_view = self.env['ir.ui.view'].create({
                 'name': vals_list['name'],
                 'type': 'qweb',
-                'arch': new_addenda,
+                'arch': vals_list['expression'],
                 'active': True,
                 'inherit_id': False,
                 'model': False,
                 'priority': 16,
-                'arch_base': new_addenda,
-                'arch_db': new_addenda,
+                'arch_base': vals_list['expression'],
+                'arch_db': vals_list['expression'],
                 'arch_fs': False,
                 'mode': 'primary',
                 'l10n_mx_edi_addenda_flag': True,
