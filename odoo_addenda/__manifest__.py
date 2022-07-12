@@ -7,7 +7,7 @@
     'author': 'Odoo PS',
     'category': 'Sales',
     'version': '15.0.1.0.0',
-    'depends': ['sale'],
+    'depends': ['sale','l10n_mx_edi'],
     'license': 'OPL-1',
     'data': [
         'views/addenda_menu_view.xml',

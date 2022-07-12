@@ -27,7 +27,7 @@ class AddendaAddenda(models.Model):
         if not(vals_list['is_customed_addenda']):
             new_addenda = ('''
             <odoo>
-                    <template id="l10_mx_edi_''' + vals_list['name'].lower().replace(" ", "") + '" name="' +  vals_list['name'].lower().replace(" ", "") + '"><Addenda>\n ')
+                    <template id="l10_mx_edi_''' + vals_list['name'].lower().replace(" ", "_") + '" name="' +  vals_list['name'].lower().replace(" ", "_") + '"><Addenda>\n ')
             new_addenda += vals_list['expression'] + '\n'
             new_addenda += '''
                                 </Addenda>

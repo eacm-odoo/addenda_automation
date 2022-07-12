@@ -1,5 +1,5 @@
 from odoo import models, fields, api
-import xml.etree.ElementTree as ET
+from lxml import etree
 import base64
 import logging
 
@@ -25,22 +25,23 @@ class AccountEdiFormat(models.Model):
             # node that include, path, position and expression
             nodes_ids = partner_id.addenda_addenda.nodes_ids
             _logger.info(res)
+            _logger.info(res[next(iter(res))]['attachment'].checksum)
             # datas field from ir.attachment, contains the binary of the cfdi xml
             datas = res[next(iter(res))]['attachment'].datas
             # transform from binary to string to xml
-            xml = ET.fromstring(base64.decodebytes(datas))
-            _logger.info(ET.tostring(xml))
+            xml = etree.fromstring(base64.decodebytes(datas))
+            _logger.info(etree.tostring(xml))
             xml = self.add_nodes(xml, nodes_ids)
             #update the ir.attachment with the new xml
             res.update({})
             res[next(iter(res))]['attachment'].datas = base64.encodebytes(
-                ET.tostring(xml))
-            new_xml = base64.encodebytes(
-                ET.tostring(xml))
+                etree.tostring(xml))
+            
+            new_xml = base64.encodebytes(etree.tostring(xml, pretty_print=True, xml_declaration=True, encoding='UTF-8'))
             #self.env['ir.attachment'].search(
             #    [('id', '=', res[next(iter(res))]['attachment'].id)]).write({'datas': new_xml})
             self.env['ir.attachment'].search(
-                [('id', '=', res[next(iter(res))]['attachment'].id)]).update({'datas': new_xml})
+                [('id', '=', res[next(iter(res))]['attachment'].id)]).write({'datas': new_xml, 'mimetype': 'application/xml'})
             #res[next(iter(res))]['attachment'].update({'datas': new_xml, 'raw': ET.tostring(xml)})
             _logger.info(
                 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB')
@@ -49,26 +50,31 @@ class AccountEdiFormat(models.Model):
 
     # inside the parent, create a new tag with text
     def add_new_tag_inside(self,parent, element):
-        element = ET.fromstring(element)
-        parent.append(element)
+        node = etree.Element(etree.QName('http://www.sat.gob.mx/cfd/3', 'Addenda'))
+        element = etree.fromstring(element)
+        node.append(element)
+        parent.append(node)
         return element
 
     # add new tag after a given node
     def add_new_tag_after(self,parent, element, parent_map):
-        element = ET.fromstring(element)
+        node = etree.Element(etree.QName('http://www.sat.gob.mx/cfd/3', 'Addenda'))
+        element = etree.fromstring(element)
+        node.append(element)
         position = list(parent_map[parent]).index(parent)
-        parent_map[parent].insert(position+1, element)
+        parent_map[parent].insert(position+1, node)
 
     # add new tag before a given node
     def add_new_tag_before(self,parent, element, parent_map):
-        element = ET.fromstring(element)
+        node = etree.Element(etree.QName('http://www.sat.gob.mx/cfd/3', 'Addenda'))
+        element = etree.fromstring(element)
+        node.append(element)
         position = list(parent_map[parent]).index(parent)
-        parent_map[parent].insert(position, element)
+        parent_map[parent].insert(position, node)
 
 
     # create method to add node to the xml
     def add_nodes(self, xml, nodes_ids):
-        ET.register_namespace('cfdi', 'http://www.sat.gob.mx/cfd/3')
         parent_map = {c: p for p in xml.iter()
                       for c in p}
         for node in nodes_ids:
@@ -79,6 +85,6 @@ class AccountEdiFormat(models.Model):
                 self.add_new_tag_before(parent, node.expression, parent_map)
             elif node.position == 'inside':
                 self.add_new_tag_inside(parent, node.expression)
-        _logger.info(ET.tostring(xml))
+        _logger.info(etree.tostring(xml))
         return xml
 
