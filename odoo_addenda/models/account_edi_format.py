@@ -70,12 +70,12 @@ class AccountEdiFormat(models.Model):
                       for c in p}
         for node in nodes_ids:
             parent = xml.find(node.path)
-            root_node = etree.Element(etree.QName(
-                'http://www.sat.gob.mx/cfd/3', node.tag_name))
             if node.position == 'attributes':
                 self.add_attribute_to_tag(
                     parent, node.attribute, node.attribute_value)
             else:
+                root_node = etree.Element(etree.QName(
+                'http://www.sat.gob.mx/cfd/3', node.tag_name))
                 # call generate_node ->tag tree
                 for tag in node.addenda_tag_id:
                     child_node = self.generate_node(tag)
