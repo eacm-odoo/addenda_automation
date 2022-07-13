@@ -9,16 +9,14 @@ class AddendaNode(models.Model):
 
     # computed field name nodes
     nodes = fields.Selection(
-        string='Nodes', selection=lambda self: self._compute_nodes(), required=True)
-    position = fields.Selection(string='Position', selection=[
+        string='Refernece Node',help=_('Xml element that will serve as a reference for the new element'), selection=lambda self: self._compute_nodes(), required=True)
+    position = fields.Selection(string='Position',help=_('Where the new element is placed, relative to the reference element'), selection=[
         ('before', 'Before'), ('after', 'After'), ('inside', 'Inside'), ('attributes', 'Attributes')], required=True)
     addenda_id = fields.Many2one(
         string="Addenda", comodel_name="addenda.addenda")
     expression = fields.Text(string='Expression')
-    all_models = fields.Many2one(
-        string='Models', comodel_name='ir.model')
     all_fields = fields.Many2one(
-        string='Fields', comodel_name='ir.model.fields', domain=[('model_id', '=', all_models)])
+        string='Value', help=_('The value that will appear on the invoice once generated'),comodel_name='ir.model.fields', domain=[('model', '=', 'account.move')])
     path = fields.Text(string='Path', compute='_compute_path')
     
     tag_name = fields.Char(string='Root Tag name')
