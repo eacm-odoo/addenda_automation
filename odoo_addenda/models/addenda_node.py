@@ -11,14 +11,14 @@ class AddendaNode(models.Model):
 
     # computed field name nodes
     nodes = fields.Selection(
-        string='Refernece Node',help=_('Xml element that will serve as a reference for the new element'), selection=lambda self: self._compute_nodes(), required=True)
-    position = fields.Selection(string='Position',help=_('Where the new element is placed, relative to the reference element'), selection=[
+        string='Refernece Node', help=_('Xml element that will serve as a reference for the new element'), selection=lambda self: self._compute_nodes(), required=True)
+    position = fields.Selection(string='Position', help=_('Where the new element is placed, relative to the reference element'), selection=[
         ('before', 'Before'), ('after', 'After'), ('inside', 'Inside'), ('attributes', 'Attributes')], required=True)
     addenda_id = fields.Many2one(
         string="Addenda", comodel_name="addenda.addenda")
     expression = fields.Text(string='Expression')
     all_fields = fields.Many2one(
-        string='Value', help=_('The value that will appear on the invoice once generated'),comodel_name='ir.model.fields', domain=[('model', '=', 'account.move')])
+        string='Value', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields', domain=[('model', '=', 'account.move')])
     path = fields.Text(string='Path', compute='_compute_path')
 
     tag_name = fields.Char(string='Root Tag name')
@@ -37,6 +37,13 @@ class AddendaNode(models.Model):
                     ET.fromstring(node.expression)
                 except:
                     raise UserError(_("invalid format for xml"))
+
+    # validate if position = "attributes" set addenda_tag_id to False
+    @api.onchange('position')
+    def validate_position(self):
+        for node in self:
+            if(node.position == 'attributes'):
+                node.addenda_tag_id = False
 
     # recover all the nodes of the cfdiv33 so the user can choose one
     def _compute_nodes(self):
