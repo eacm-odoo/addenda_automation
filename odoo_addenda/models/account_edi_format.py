@@ -51,6 +51,7 @@ class AccountEdiFormat(models.Model):
         parent.append(node)
         return element
 
+    
     # add new tag after a given node
     def add_new_tag_after(self,parent, element, parent_map, tag_name):
         node = etree.Element(etree.QName('http://www.sat.gob.mx/cfd/3', tag_name))
