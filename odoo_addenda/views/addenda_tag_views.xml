@@ -10,6 +10,7 @@
                     <field name="addenda_tag_childs_ids" />
                     <field name="attribute" />
                     <field name="value" />
+                    <field name="field"/>
                 </group>
             </form>
         </field>
@@ -24,6 +25,7 @@
                 <field name="addenda_tag_childs_ids" />
                 <field name="attribute" />
                 <field name="value" />
+                <field name="field"/>
             </tree>
         </field>
     </record>
