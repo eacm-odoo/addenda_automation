@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="addenda_tag_view_form" model="ir.ui.view">
+        <field name="name">addenda.tag.form</field>
+        <field name="model">addenda.tag</field>
+        <field name="arch" type="xml">
+            <form string="Addenda Form">
+                <group>
+                    <field name="tag_name" />
+                    <field name="addenda_tag_childs_ids" />
+                    <field name="attribute" />
+                    <field name="value" />
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="addenda_customed_tag_view_list" model="ir.ui.view">
+        <field name="name">addenda.tag.list</field>
+        <field name="model">addenda.tag</field>
+        <field name="arch" type="xml">
+            <tree string="Addenda Form">
+                <field name="tag_name" />
+                <field name="addenda_tag_childs_ids" />
+                <field name="attribute" />
+                <field name="value" />
+            </tree>
+        </field>
+    </record>
+
+</odoo>

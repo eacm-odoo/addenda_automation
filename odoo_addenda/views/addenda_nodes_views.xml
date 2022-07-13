@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="addenda_nodes_view_form" model="ir.ui.view">
+    <record id="addenda_node_view_form" model="ir.ui.view">
         <field name="name">addenda.node.form</field>
         <field name="model">addenda.node</field>
         <field name="arch" type="xml">
@@ -8,12 +8,13 @@
                 <group>
                     <field name="nodes" />
                     <field name="position" />
-                     <field name="tag_name" attrs="{'invisible': [('position', '=', 'attributes')]}"/>
-                    <field name="expression" attrs="{'invisible': [('position', '=', 'attributes')]}"/>
-                    <field name="attribute" attrs="{'invisible': [('position', '!=', 'attributes')]}"/>
-                    <field name="attribute_value" attrs="{'invisible': [('position', '!=', 'attributes')]}"/>
+                    <field name="tag_name" attrs="{'invisible': [('position', '=', 'attributes')]}" />
+                    <field name="expression" attrs="{'invisible': [('position', '=', 'attributes')]}" />
+                    <field name="attribute" attrs="{'invisible': [('position', '!=', 'attributes')]}" />
+                    <field name="attribute_value" attrs="{'invisible': [('position', '!=', 'attributes')]}" />
                     <field name="all_models" />
                     <field name="all_fields" domain="[('model_id','=',all_models)]" />
+                    <field name="addenda_tag_id" />
                 </group>
             </form>
         </field>
@@ -24,7 +25,7 @@
         <field name="model">addenda.node</field>
         <field name="arch" type="xml">
             <tree string="Addenda Form">
-                <field name="nodes" string="Nodes"/>
+                <field name="nodes" string="Nodes" />
                 <field name="position" />
                 <field name="expression" />
                 <field name="path" />

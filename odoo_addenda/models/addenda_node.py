@@ -1,7 +1,9 @@
+import string
 from lxml.objectify import fromstring
 import xml.etree.ElementTree as ET
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+
 
 class AddendaNode(models.Model):
     _name = 'addenda.node'
@@ -20,12 +22,15 @@ class AddendaNode(models.Model):
     all_fields = fields.Many2one(
         string='Fields', comodel_name='ir.model.fields', domain=[('model_id', '=', all_models)])
     path = fields.Text(string='Path', compute='_compute_path')
-    
+
     tag_name = fields.Char(string='Root Tag name')
     attribute = fields.Char(string='Attribute')
     attribute_value = fields.Char(string='Value of attribute')
 
-    #validates is expression is in xml format
+    addenda_tag_id = fields.One2many(
+        string='Addenda Tag', comodel_name='addenda.tag', inverse_name='addenda_node_id')
+
+    # validates is expression is in xml format
     @api.onchange('expression')
     def evalue_expression(self):
         for node in self:
@@ -34,8 +39,8 @@ class AddendaNode(models.Model):
                     ET.fromstring(node.expression)
                 except:
                     raise UserError(_("invalid format for xml"))
-    
-    #recover all the nodes of the cfdiv33 so the user can choose one
+
+    # recover all the nodes of the cfdiv33 so the user can choose one
     def _compute_nodes(self):
         # use self.env.ref to get the xml file
         instance_cfdi = self.env.ref('l10n_mx_edi.cfdiv33')
@@ -69,17 +74,17 @@ class AddendaNode(models.Model):
             except:
                 pass
         selection_vals = list(set(selection_vals))
-        selection_vals.append(('Comprobante/Complemento','Comprobante/Complemento'))
-        selection_vals.remove(('/Comprobante','/Comprobante'))
+        selection_vals.append(
+            ('Comprobante/Complemento', 'Comprobante/Complemento'))
+        selection_vals.remove(('/Comprobante', '/Comprobante'))
         return selection_vals
-    
-    #compute the whole path of the node
+
+    # compute the whole path of the node
     @api.depends('nodes')
     def _compute_path(self):
         for node in self:
             if(node.nodes):
-                node.path = ("{http://www.sat.gob.mx/cfd/3}" + node.nodes.replace('/', '/{http://www.sat.gob.mx/cfd/3}')).replace('{http://www.sat.gob.mx/cfd/3}Comprobante', '.')
+                node.path = ("{http://www.sat.gob.mx/cfd/3}" + node.nodes.replace(
+                    '/', '/{http://www.sat.gob.mx/cfd/3}')).replace('{http://www.sat.gob.mx/cfd/3}Comprobante', '.')
             else:
-                node.path= False
-    
-    
+                node.path = False
