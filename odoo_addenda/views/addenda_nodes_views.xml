@@ -26,7 +26,6 @@
                 <field name="nodes" string="Nodes"/>
                 <field name="position" />
                 <field name="expression" />
-                <field name="path" />
                 <field name="all_fields"/>
             </tree>
         </field>

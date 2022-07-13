@@ -32,6 +32,12 @@ class AddendaNode(models.Model):
                     ET.fromstring(node.expression)
                 except:
                     raise UserError(_("invalid format for xml"))
+                    
+    @api.onchange('position')
+    def validate_position(self):
+        for node in self:
+            if(node.position == 'attributes'):
+                node.expression = False
     
     #recover all the nodes of the cfdiv33 so the user can choose one
     def _compute_nodes(self):
