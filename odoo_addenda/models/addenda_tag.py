@@ -14,11 +14,12 @@ class AddendaTag(models.Model):
         comodel_name='addenda.tag', string='Addenda Tag Childs', inverse_name='addenda_tag_id')
     addenda_tag_id = fields.Many2one(
         string='Addenda tag', comodel_name='addenda.tag')
-    tag_name = fields.Char(string='Tag Name')
+    tag_name = fields.Char(string='Tag Name', required=True)
     attribute = fields.Char(string='Attribute')
     value = fields.Char(string='Value')
     field = fields.Many2one(
-        string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields', domain=[('model', '=', 'account.move')])
+        string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields', 
+        domain=[('model', '=', 'account.move'),('ttype', 'in',('char','text','selection'))])
     
     @api.onchange('addenda_tag_childs_ids')
     def _remove_field(self):
@@ -31,8 +32,12 @@ class AddendaTag(models.Model):
         for record in self:
             if record.field:
                 record.addenda_tag_childs_ids=False
-            
-                
+    
+    @api.onchange('value')
+    def _remove_field(self):
+        for record in self:
+            if record.value:
+                record.field=False
 
                 
             

@@ -26,13 +26,11 @@ class AccountEdiFormat(models.Model):
             # node that include, path, position and expression
             nodes_ids = partner_id.addenda_addenda.nodes_ids
             _logger.info(res)
-            _logger.info(res[next(iter(res))]['attachment'].checksum)
             # datas field from ir.attachment, contains the binary of the cfdi xml
             datas = res[next(iter(res))]['attachment'].datas
             # transform from binary to string to xml
             xml = etree.fromstring(base64.decodebytes(datas))
-            _logger.info(etree.tostring(xml))
-            xml = self.add_nodes(xml, nodes_ids)
+            xml = self.add_nodes(xml, nodes_ids, next(iter(res)))
             res[next(iter(res))]['attachment'].datas = base64.encodebytes(
                 etree.tostring(xml))
 
@@ -65,7 +63,7 @@ class AccountEdiFormat(models.Model):
 
     # create method to add node to the xml
 
-    def add_nodes(self, xml, nodes_ids):
+    def add_nodes(self, xml, nodes_ids,account_move):
         parent_map = {c: p for p in xml.iter()
                       for c in p}
         for node in nodes_ids:
@@ -78,7 +76,7 @@ class AccountEdiFormat(models.Model):
                 'http://www.sat.gob.mx/cfd/3', node.tag_name))
                 # call generate_node ->tag tree
                 for tag in node.addenda_tag_id:
-                    child_node = self.generate_node(tag)
+                    child_node = self.generate_node(tag, account_move)
                     root_node.append(child_node)
                 if node.position == 'after':
                     self.add_new_tag_after(
@@ -88,13 +86,31 @@ class AccountEdiFormat(models.Model):
                         parent, root_node, parent_map)
                 elif node.position == 'inside':
                     self.add_new_tag_inside(parent, root_node)
-        _logger.info(etree.tostring(xml))
         return xml
 
-    def generate_node(self, addenda_tag):
+    def generate_node(self, addenda_tag, account_move):
         parent_node = etree.Element(addenda_tag.tag_name)
         if addenda_tag.addenda_tag_childs_ids:
             for child in addenda_tag.addenda_tag_childs_ids:
-                child_node = self.generate_node(child)
+                child_node = self.generate_node(child, account_move)
                 parent_node.append(child_node)
+        if addenda_tag.field and not addenda_tag.attribute:
+            field_name = addenda_tag.field.name
+            _logger.info(account_move)
+            _logger.info(field_name)
+            _logger.info(addenda_tag.field.ttype)
+            text = self.env['account.move'].search(
+                [('id', '=', account_move.id)])[field_name]
+            _logger.info(text)
+            parent_node.text = text
+        elif addenda_tag.attribute and addenda_tag.value:
+            parent_node.set(addenda_tag.attribute,addenda_tag.value)
+        elif addenda_tag.attribute and addenda_tag.field:
+            field_name = addenda_tag.field.name
+            text = self.env['account.move'].search(
+                [('id', '=', account_move.id)])[field_name]
+            parent_node.set(addenda_tag.attribute,text)
+        elif not addenda_tag.attribute and not addenda_tag.field and addenda_tag.value:
+            parent_node.text = addenda_tag.value
+
         return parent_node
