@@ -56,6 +56,7 @@ class AccountEdiFormat(models.Model):
         parent.append(node)
         return element
 
+    
     # add new tag after a given node
     def add_new_tag_after(self,parent, element, parent_map):
         node = etree.Element(etree.QName('http://www.sat.gob.mx/cfd/3', 'Addenda'))
@@ -71,6 +72,9 @@ class AccountEdiFormat(models.Model):
         node.append(element)
         position = list(parent_map[parent]).index(parent)
         parent_map[parent].insert(position, node)
+    
+    def add_attribute(parent, attribute, value):
+        parent.set(attribute, value)
 
 
     # create method to add node to the xml
@@ -85,6 +89,8 @@ class AccountEdiFormat(models.Model):
                 self.add_new_tag_before(parent, node.expression, parent_map)
             elif node.position == 'inside':
                 self.add_new_tag_inside(parent, node.expression)
+            elif node.position == 'attributes':
+                self.add_
         _logger.info(etree.tostring(xml))
         return xml
 

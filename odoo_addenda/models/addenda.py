@@ -7,9 +7,9 @@ class AddendaAddenda(models.Model):
     _name = 'addenda.addenda'
     _description = 'Automated addenda'
 
-    name = fields.Char(string='Name')
+    name = fields.Char(string='Name',help=_('The name of the new customed addenda'))
     nodes_ids = fields.One2many(comodel_name='addenda.node', string='Nodes', inverse_name='addenda_id')
-    is_customed_addenda = fields.Boolean(string='Customed Addenda')
+    is_customed_addenda = fields.Boolean(string='Customed Addenda', )
     expression = fields.Text(string='Expression')
 
     @api.onchange('expression')
