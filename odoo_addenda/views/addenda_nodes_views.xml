@@ -12,8 +12,7 @@
                     <field name="expression" attrs="{'invisible': [('position', '=', 'attributes')]}" />
                     <field name="attribute" attrs="{'invisible': [('position', '!=', 'attributes')]}" />
                     <field name="attribute_value" attrs="{'invisible': [('position', '!=', 'attributes')]}" />
-                    <field name="all_models" />
-                    <field name="all_fields" domain="[('model_id','=',all_models)]" />
+                    <field name="all_fields"/>
                     <field name="addenda_tag_id" />
                 </group>
             </form>
