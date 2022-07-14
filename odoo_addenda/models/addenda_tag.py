@@ -46,11 +46,16 @@ class AddendaTag(models.Model):
     @api.depends('tag_name','attribute','value','field','addenda_tag_childs_ids')
     def _compute_preview(self):
         tag=self.tag_name or 'Tag name'
-        attr=self.attribute or 'Attribute'
+        attr=self.attribute or ''
         value= (self.field.name or self.value) or 'Value'
-        childs= '\n\t<child> </child>...\n' if len(self.addenda_tag_childs_ids) >0 else ''
+        childs = ""
+        if self.addenda_tag_childs_ids:
+            for child_tag in self.addenda_tag_childs_ids:
+                childs =childs + '\n\t<' + child_tag.tag_name + '>'
+            childs = childs + '\n'
+        #childs= '\n\t<child> </child>\n\t.\n\t.\n\t.\n' if len(self.addenda_tag_childs_ids) >0 else ''
         
-        self.preview=("<cfdi:%s %s='%s'> %s </cfdi:%s>"% (tag,attr,value,childs,tag))
+        self.preview=("<cfdi:%s %s> %s </cfdi:%s>"% (tag,('%s=%s'%(attr,value)) if attr !='' else '',childs,tag))
     
         
             
