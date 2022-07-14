@@ -19,7 +19,7 @@ class AddendaTag(models.Model):
     value = fields.Char(string='Attribute Value', help=_('Value of the attribute of the new element'))
     field = fields.Many2one(
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields', 
-        domain=[('model', '=', 'account.move'),('ttype', 'in',('char','text','selection'))])
+        domain=[('model', '=', 'account.move'),('ttype', 'in',('char','text','selection', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
     
     @api.onchange('addenda_tag_childs_ids')
     def _remove_field(self):

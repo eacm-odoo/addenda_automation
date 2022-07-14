@@ -18,7 +18,7 @@ class AddendaNode(models.Model):
         string="Addenda", comodel_name="addenda.addenda")
     all_fields = fields.Many2one(
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
-        domain=[('model', '=', 'account.move'),('ttype', 'in',('char','text','selection'))])
+        domain=[('model', '=', 'account.move'),('ttype', 'in',('char','text','selection','monetary', 'integer', 'boolean', 'date', 'datetime'))])
     path = fields.Text(string='Path', compute='_compute_path')
 
     tag_name = fields.Char(string='Root Tag name', help=_('Name of the new node/element created to be added in the invoice XML'))
@@ -79,6 +79,8 @@ class AddendaNode(models.Model):
         selection_vals.append(
             ('Comprobante/Complemento', 'Comprobante/Complemento'))
         selection_vals.remove(('/Comprobante', '/Comprobante'))
+        selection_vals.remove(('Comprobante/CfdiRelacionados', 'Comprobante/CfdiRelacionados'))
+        selection_vals.remove(('Comprobante/CfdiRelacionados/CfdiRelacionado', 'Comprobante/CfdiRelacionados/CfdiRelacionado'))
         return selection_vals
 
     # compute the whole path of the node

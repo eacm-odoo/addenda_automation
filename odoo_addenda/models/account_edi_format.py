@@ -67,30 +67,29 @@ class AccountEdiFormat(models.Model):
         parent_map = {c: p for p in xml.iter()
                       for c in p}
         for node in nodes_ids:
-            parent = xml.find(node.path)
-            if node.position == 'attributes' and node.attribute_value and node.attribute: 
-                self.add_attribute_to_tag(
-                    parent, node.attribute, node.attribute_value)
-            elif node.position == 'attributes' and node.all_fields and node.attribute:
-                field_name = node.all_fields.name
-                text = self.env['account.move'].search(
-                [('id', '=', account_move.id)])[field_name]
-                self.add_attribute_to_tag(parent, node.attribute, text)
-            else:
-                root_node = etree.Element(etree.QName(
-                'http://www.sat.gob.mx/cfd/3', node.tag_name))
-                # call generate_node ->tag tree
-                for tag in node.addenda_tag_id:
-                    child_node = self.generate_node(tag, account_move)
-                    root_node.append(child_node)
-                if node.position == 'after':
-                    self.add_new_tag_after(
-                        parent, root_node, parent_map)
-                elif node.position == 'before':
-                    self.add_new_tag_before(
-                        parent, root_node, parent_map)
-                elif node.position == 'inside':
-                    self.add_new_tag_inside(parent, root_node)
+            parents = xml.findall(node.path)
+            for parent in parents:
+                if node.position == 'attributes' and node.attribute_value and node.attribute: 
+                    self.add_attribute_to_tag(
+                        parent, node.attribute, node.attribute_value)
+                elif node.position == 'attributes' and node.all_fields and node.attribute:
+                    text = self.get_info_from_field(node.all_fields, account_move)
+                    self.add_attribute_to_tag(parent, node.attribute, text)
+                else:
+                    root_node = etree.Element(etree.QName(
+                    'http://www.sat.gob.mx/cfd/3', node.tag_name))
+                    # call generate_node ->tag tree
+                    for tag in node.addenda_tag_id:
+                        child_node = self.generate_node(tag, account_move)
+                        root_node.append(child_node)
+                    if node.position == 'after':
+                        self.add_new_tag_after(
+                            parent, root_node, parent_map)
+                    elif node.position == 'before':
+                        self.add_new_tag_before(
+                            parent, root_node, parent_map)
+                    elif node.position == 'inside':
+                        self.add_new_tag_inside(parent, root_node)
         return xml
 
     def generate_node(self, addenda_tag, account_move):
@@ -100,22 +99,23 @@ class AccountEdiFormat(models.Model):
                 child_node = self.generate_node(child, account_move)
                 parent_node.append(child_node)
         if addenda_tag.field and not addenda_tag.attribute:
-            field_name = addenda_tag.field.name
-            _logger.info(account_move)
-            _logger.info(field_name)
-            _logger.info(addenda_tag.field.ttype)
-            text = self.env['account.move'].search(
-                [('id', '=', account_move.id)])[field_name]
-            _logger.info(text)
+            text = self.get_info_from_field(addenda_tag.field, account_move)
             parent_node.text = text
         elif addenda_tag.attribute and addenda_tag.value:
             parent_node.set(addenda_tag.attribute,addenda_tag.value)
         elif addenda_tag.attribute and addenda_tag.field:
-            field_name = addenda_tag.field.name
-            text = self.env['account.move'].search(
-                [('id', '=', account_move.id)])[field_name]
+            text = self.get_info_from_field(addenda_tag.field, account_move)
             parent_node.set(addenda_tag.attribute,text)
         elif not addenda_tag.attribute and not addenda_tag.field and addenda_tag.value:
             parent_node.text = addenda_tag.value
 
         return parent_node
+    
+    def get_info_from_field(self, field, account_move):
+        field_name = field.name
+        info = self.env['account.move'].search(
+                [('id', '=', account_move.id)])[field_name]
+        if(field.ttype in ['monetary', 'integer', 'boolean', 'date', 'datetime']):
+            info = str(info)
+        return info
+            
