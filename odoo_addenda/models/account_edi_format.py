@@ -68,9 +68,14 @@ class AccountEdiFormat(models.Model):
                       for c in p}
         for node in nodes_ids:
             parent = xml.find(node.path)
-            if node.position == 'attributes':
+            if node.position == 'attributes' and node.attribute_value and node.attribute: 
                 self.add_attribute_to_tag(
                     parent, node.attribute, node.attribute_value)
+            elif node.position == 'attributes' and node.all_fields and node.attribute:
+                field_name = node.all_fields.name
+                text = self.env['account.move'].search(
+                [('id', '=', account_move.id)])[field_name]
+                self.add_attribute_to_tag(parent, node.attribute, text)
             else:
                 root_node = etree.Element(etree.QName(
                 'http://www.sat.gob.mx/cfd/3', node.tag_name))

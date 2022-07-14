@@ -11,21 +11,22 @@ class AddendaNode(models.Model):
 
     # computed field name nodes
     nodes = fields.Selection(
-        string='Refernece Node', help=_('Xml element that will serve as a reference for the new element'), selection=lambda self: self._compute_nodes(), required=True)
+        string='Reference Node', help=_('Xml element that will serve as a reference for the new element'), selection=lambda self: self._compute_nodes(), required=True)
     position = fields.Selection(string='Position', help=_('Where the new element is placed, relative to the reference element'), selection=[
         ('before', 'Before'), ('after', 'After'), ('inside', 'Inside'), ('attributes', 'Attributes')], required=True)
     addenda_id = fields.Many2one(
         string="Addenda", comodel_name="addenda.addenda")
     all_fields = fields.Many2one(
-        string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields', domain=[('model', '=', 'account.move')])
+        string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
+        domain=[('model', '=', 'account.move'),('ttype', 'in',('char','text','selection'))])
     path = fields.Text(string='Path', compute='_compute_path')
 
-    tag_name = fields.Char(string='Root Tag name')
-    attribute = fields.Char(string='Attribute')
-    attribute_value = fields.Char(string='Value of attribute')
+    tag_name = fields.Char(string='Root Tag name', help=_('Name of the new node/element created to be added in the invoice XML'))
+    attribute = fields.Char(string='Attribute', help=_('Name of the attribute of the new element'))
+    attribute_value = fields.Char(string='Value of attribute', help=_('Value of the attribute of the new element'))
 
     addenda_tag_id = fields.One2many(
-        string='Addenda Tag', comodel_name='addenda.tag', inverse_name='addenda_node_id')
+        string='Addenda Tag', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=_('New elements added inside this node/element'))
 
    
     # validate if position = "attributes" set addenda_tag_id to False
@@ -34,6 +35,12 @@ class AddendaNode(models.Model):
         for node in self:
             if(node.position == 'attributes'):
                 node.addenda_tag_id = False
+
+    @api.onchange('attribute_value')
+    def delete_field(self):
+        for node in self:
+            if(node.attribute_value): 
+                node.all_fields = False
 
     # recover all the nodes of the cfdiv33 so the user can choose one
     def _compute_nodes(self):

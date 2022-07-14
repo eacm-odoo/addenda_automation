@@ -11,12 +11,12 @@ class AddendaTag(models.Model):
     addenda_node_id = fields.Many2one(
         string='Addenda Node', comodel_name='addenda.node')
     addenda_tag_childs_ids = fields.One2many(
-        comodel_name='addenda.tag', string='Addenda Tag Childs', inverse_name='addenda_tag_id')
+        comodel_name='addenda.tag', string='Addenda Tag Childs', inverse_name='addenda_tag_id', help=_('New elements added inside this tag/element'))
     addenda_tag_id = fields.Many2one(
         string='Addenda tag', comodel_name='addenda.tag')
-    tag_name = fields.Char(string='Tag Name', required=True)
-    attribute = fields.Char(string='Attribute')
-    value = fields.Char(string='Value')
+    tag_name = fields.Char(string='Tag Name', required=True, help=_('Name of the new tag/element'))
+    attribute = fields.Char(string='Attribute', help=_('Name of the attribute of the new element'))
+    value = fields.Char(string='Attribute Value', help=_('Value of the attribute of the new element'))
     field = fields.Many2one(
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields', 
         domain=[('model', '=', 'account.move'),('ttype', 'in',('char','text','selection'))])
