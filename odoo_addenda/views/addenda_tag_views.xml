@@ -12,6 +12,7 @@
                     <field name="value" />
                     <field name="field" attrs="{'invisible': [('value', 'not in', ('',False))]}"/>
                     <field name="preview"/>
+                    <field name='inner_field'/>
                 </group>
             </form>
         </field>
@@ -27,6 +28,8 @@
                 <field name="attribute" />
                 <field name="value" />
                 <field name="field"/>
+                <field name='inner_field'/>
+                
             </tree>
         </field>
     </record>

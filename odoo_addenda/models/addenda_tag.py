@@ -2,7 +2,6 @@ from lxml.objectify import fromstring
 import xml.etree.ElementTree as ET
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
-
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -23,8 +22,20 @@ class AddendaTag(models.Model):
     value = fields.Char(string='Value')
     field = fields.Many2one(
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields', 
-        domain=[('model', '=', 'account.move'),('ttype', 'in',('char','text','selection'))])
+        domain=[('model', '=', 'account.move'),('ttype', 'in',('char','text','selection','many2one'))])
+    inner_field = fields.Many2one(
+        string='Inner field', help=_(''), comodel_name='ir.model.fields')
     preview= fields.Text(store=False, string='Preview',readonly=True,compute='_compute_preview')
+    
+    @api.onchange('field')
+    def _compute_inner_fields(self):
+        domain = {'inner_field': []}
+        for record in self:
+            if record.field.ttype == 'many2one':
+                domain = {'inner_field': [('model', '=', record.field.relation)]}
+        return {'domain': domain}
+    
+    
     @api.onchange('addenda_tag_childs_ids')
     def _remove_field(self):
         for record in self:
