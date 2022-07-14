@@ -16,9 +16,8 @@ class AddendaNode(models.Model):
         ('before', 'Before'), ('after', 'After'), ('inside', 'Inside'), ('attributes', 'Attributes')], required=True)
     addenda_id = fields.Many2one(
         string="Addenda", comodel_name="addenda.addenda")
-    expression = fields.Text(string='Expression')
     all_fields = fields.Many2one(
-        string='Value', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields', domain=[('model', '=', 'account.move')])
+        string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields', domain=[('model', '=', 'account.move')])
     path = fields.Text(string='Path', compute='_compute_path')
 
     tag_name = fields.Char(string='Root Tag name')
@@ -28,16 +27,7 @@ class AddendaNode(models.Model):
     addenda_tag_id = fields.One2many(
         string='Addenda Tag', comodel_name='addenda.tag', inverse_name='addenda_node_id')
 
-    # validates is expression is in xml format
-    @api.onchange('expression')
-    def evalue_expression(self):
-        for node in self:
-            if(node.expression):
-                try:
-                    ET.fromstring(node.expression)
-                except:
-                    raise UserError(_("invalid format for xml"))
-
+   
     # validate if position = "attributes" set addenda_tag_id to False
     @api.onchange('position')
     def validate_position(self):

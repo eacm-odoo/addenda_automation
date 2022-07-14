@@ -9,7 +9,6 @@
                     <field name="nodes" />
                     <field name="position" />
                     <field name="tag_name" attrs="{'invisible': [('position', '=', 'attributes')]}" />
-                    <field name="expression" attrs="{'invisible': [('position', '=', 'attributes')]}" />
                     <field name="attribute" attrs="{'invisible': [('position', '!=', 'attributes')]}" />
                     <field name="attribute_value" attrs="{'invisible': [('position', '!=', 'attributes')]}" />
                     <field name="all_fields" />
@@ -26,7 +25,6 @@
             <tree string="Addenda Form">
                 <field name="nodes" string="Nodes" />
                 <field name="position" />
-                <field name="expression" />
                 <field name="path" />
                 <field name="all_fields" />
             </tree>
