@@ -11,6 +11,7 @@
                     <field name="attribute" />
                     <field name="value" />
                     <field name="field" attrs="{'invisible': [('value', 'not in', ('',False))]}"/>
+                    <field name="preview"/>
                 </group>
             </form>
         </field>

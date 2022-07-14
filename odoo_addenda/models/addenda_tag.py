@@ -3,6 +3,10 @@ import xml.etree.ElementTree as ET
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
+import logging
+
+_logger = logging.getLogger(__name__)
+
 
 class AddendaTag(models.Model):
     _name = 'addenda.tag'
@@ -20,7 +24,7 @@ class AddendaTag(models.Model):
     field = fields.Many2one(
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields', 
         domain=[('model', '=', 'account.move'),('ttype', 'in',('char','text','selection'))])
-    
+    preview= fields.Text(store=False, string='Preview',readonly=True,compute='_compute_preview')
     @api.onchange('addenda_tag_childs_ids')
     def _remove_field(self):
         for record in self:
@@ -39,5 +43,14 @@ class AddendaTag(models.Model):
             if record.value:
                 record.field=False
 
-                
+    @api.depends('tag_name','attribute','value','field','addenda_tag_childs_ids')
+    def _compute_preview(self):
+        tag=self.tag_name or 'Tag name'
+        attr=self.attribute or 'Attribute'
+        value= (self.field.name or self.value) or 'Value'
+        childs= '\n\t<child> </child>...\n' if len(self.addenda_tag_childs_ids) >0 else ''
+        
+        self.preview=("<cfdi:%s %s='%s'> %s </cfdi:%s>"% (tag,attr,value,childs,tag))
+    
+        
             
