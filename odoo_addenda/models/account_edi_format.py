@@ -2,6 +2,7 @@ from odoo import models, fields, api
 from lxml import etree
 import base64
 import logging
+import itertools
 
 _logger = logging.getLogger(__name__)
 
@@ -64,12 +65,12 @@ class AccountEdiFormat(models.Model):
                       for c in p}
         for node in nodes_ids:
             parents = xml.findall(node.path)
-            for parent in parents:
+            for i,parent in enumerate(parents):
                 if node.position == 'attributes' and node.attribute_value and node.attribute: 
                     self.add_attribute_to_tag(
                         parent, node.attribute, node.attribute_value)
                 elif node.position == 'attributes' and node.all_fields and node.attribute:
-                    text = self.get_info_from_field(node.all_fields, account_move)
+                    text = self.get_info_from_field(node.all_fields, account_move,i)
                     self.add_attribute_to_tag(parent, node.attribute, text)
                 else:
                     root_node = etree.Element(etree.QName(
@@ -107,10 +108,15 @@ class AccountEdiFormat(models.Model):
 
         return parent_node
     
-    def get_info_from_field(self, field, account_move):
+    def get_info_from_field(self, field, account_move, counter):
         field_name = field.name
-        info = self.env['account.move'].search(
+        try: 
+            info = self.env['account.move'].search(
                 [('id', '=', account_move.id)])[field_name]
+        except:
+            info = self.env['account.move'].search(
+                [('id', '=', account_move.id)])['invoice_line_ids'][counter][field_name]
+            _logger.info(info)
         if(field.ttype in ['monetary', 'integer', 'boolean', 'date', 'datetime']):
             info = str(info)
         if not info:
