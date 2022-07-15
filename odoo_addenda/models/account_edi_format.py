@@ -21,8 +21,6 @@ class AccountEdiFormat(models.Model):
         if not partner_id.addenda_addenda and not partner_id.l10n_mx_edi_addenda:
             return res
         if partner_id.is_customed_addenda:
-            _logger.info(
-                'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
             # node that include, path, position and expression
             nodes_ids = partner_id.addenda_addenda.nodes_ids
             _logger.info(res)
@@ -38,8 +36,6 @@ class AccountEdiFormat(models.Model):
                 xml, pretty_print=True, xml_declaration=True, encoding='UTF-8'))
             self.env['ir.attachment'].search(
                 [('id', '=', res[next(iter(res))]['attachment'].id)]).write({'datas': new_xml, 'mimetype': 'application/xml'})
-            _logger.info(
-                'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB')
         return res
 
     # inside the parent, create a new tag with text
@@ -117,5 +113,7 @@ class AccountEdiFormat(models.Model):
                 [('id', '=', account_move.id)])[field_name]
         if(field.ttype in ['monetary', 'integer', 'boolean', 'date', 'datetime']):
             info = str(info)
+        if not info:
+            info = "N/A"
         return info
             
