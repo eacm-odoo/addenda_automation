@@ -27,14 +27,17 @@ class AddendaTag(models.Model):
         string='Inner field', help=_(''), comodel_name='ir.model.fields')
     preview= fields.Text(store=False, string='Preview',readonly=True,compute='_compute_preview')
     
+
+    
     @api.onchange('field')
     def _compute_inner_fields(self):
         domain = {'inner_field': []}
         for record in self:
             if record.field.ttype == 'many2one':
-                domain = {'inner_field': [('model', '=', record.field.relation)]}
+                domain = {'inner_field': [('model', '=', record.field.relation),('ttype','not in',('many2one'))]}
         return {'domain': domain}
     
+
     
     @api.onchange('addenda_tag_childs_ids')
     def _remove_field(self):
