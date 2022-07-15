@@ -29,6 +29,17 @@ class AddendaNode(models.Model):
         string='Addenda Tag', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=_('New elements added inside this node/element'))
 
    
+    @api.onchange('nodes')
+    def _compute_all_fields_domain(self):
+        domain = {'all_fields': []}
+        for record in self:
+            if record.nodes == 'Comprobante/Conceptos/Concepto':
+                domain = {'all_fields': [('model', 'in', ('account.move','account.move.line'))]}
+            else:
+                domain = {'all_fields': [('model', '=', ('account.move'))]}
+
+        return {'domain': domain}
+    
     # validate if position = "attributes" set addenda_tag_id to False
     @api.onchange('position')
     def validate_position(self):
