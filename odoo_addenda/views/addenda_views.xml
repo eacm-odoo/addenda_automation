@@ -25,6 +25,11 @@
                             <field name="expression" />
                             </group>
                         </page>
+                        <page string="Create Fields" >
+                            <group>
+                            <field name="fields" />
+                            </group>
+                        </page>
                     </notebook>
                 </sheet>
             </form>
