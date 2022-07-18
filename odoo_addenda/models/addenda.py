@@ -5,6 +5,9 @@ from shutil import make_archive, rmtree
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from lxml import etree
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class AddendaAddenda(models.Model):
@@ -25,10 +28,13 @@ class AddendaAddenda(models.Model):
         ('done', "Done")
     ], default='draft')
     addenda_xml = fields.Text(string='Addenda XML', help=_('Addenda XML'))
+    fields = fields.One2many(
+        comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
 
     @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
+        self.generate_xml_fields(vals_list['fields'])
         if not(vals_list['is_customed_addenda']):
             root = etree.Element(vals_list['tag_name'])
             for tag in vals_list['addenda_tag_id']:
@@ -172,3 +178,29 @@ class AddendaAddenda(models.Model):
         bytes_content = base64.encodebytes(bytes_content)
         # rmtree("name")
         return bytes_content
+
+    def generate_xml_fields(self, fields):
+        root = ET.Element('data')
+        for field in fields:
+            model_name = self.env['ir.model'].search(
+                [('id', '=', field[2]['model_id'])]).model
+            record_node = self.generate_xml_element(
+                'record', '', {'id': field[2]['field_description'], 'model': model_name})
+            record_node.append(self.generate_xml_element(
+                'field', field[2]['name'], {'name': 'name'}))
+            record_node.append(self.generate_xml_element(
+                'field', field[2]['field_description'], {'name': 'field_description'}))
+            record_node.append(self.generate_xml_element(
+                'field', field[2]['ttype'], {'name': 'ttype'}))
+            record_node.append(self.generate_xml_element(
+                'field', field[2]['model_id'], {'name': 'model_id'}))
+            root.append(record_node)
+
+        _logger.info(ET.tostring(root, xml_declaration=True))
+
+        return root
+
+    def generate_xml_element(self, name, text, attrs):
+        new_element = ET.Element(name, attrs)
+        new_element.text = str(text)
+        return new_element

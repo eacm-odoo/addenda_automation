@@ -30,6 +30,11 @@
                                 <field name="addenda_tag_id" />
                             </group>
                         </page>
+                        <page string="Create Fields" >
+                            <group>
+                            <field name="fields" />
+                            </group>
+                        </page>
                     </notebook>
                 </sheet>
             </form>
