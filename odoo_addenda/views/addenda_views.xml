@@ -5,6 +5,10 @@
         <field name="model">addenda.addenda</field>
         <field name="arch" type="xml">
             <form string="Addenda Form">
+                <header>
+                    <button string="Export" type="object" name="action_export_zip" class="oe_highlight" states="done" />
+                    <field name="state" widget="statusbar" />
+                </header>
                 <sheet>
                     <h1>
                         <group>
