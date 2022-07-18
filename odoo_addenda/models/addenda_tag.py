@@ -39,7 +39,7 @@ class AddendaTag(models.Model):
         for record in self:
             if record.field.ttype == 'many2one':
                 domain = {'inner_field': [
-                    ('model', '=', record.field.relation), ('ttype', 'not in', ('many2one'))]}
+                    ('model', '=', record.field.relation), ('ttype', '!=', 'many2one')]}
         return {'domain': domain}
 
     @api.onchange('addenda_tag_childs_ids')
