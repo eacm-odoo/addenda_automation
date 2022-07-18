@@ -60,17 +60,22 @@ class AddendaTag(models.Model):
             if record.value:
                 record.field = False
 
-    @api.depends('tag_name', 'attribute', 'value', 'field', 'addenda_tag_childs_ids')
+    @api.depends('tag_name', 'attribute', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
         tag = self.tag_name or 'Tag name'
         attr = self.attribute or ''
-        value = (self.field.name or self.value) or 'Value'
+        value = (self.field.name or self.value) or ''
         childs = ""
         if self.addenda_tag_childs_ids:
             for child_tag in self.addenda_tag_childs_ids:
-                childs = childs + '\n\t<' + child_tag.tag_name + '>'
+                childs = childs + '\n\t<t t-esc=record.' + \
+                    (child_tag.field.name or child_tag.tag_name) + '/>'
             childs = childs + '\n'
         #childs= '\n\t<child> </child>\n\t.\n\t.\n\t.\n' if len(self.addenda_tag_childs_ids) >0 else ''
 
-        self.preview = ("<cfdi:%s %s> %s </cfdi:%s>" % (tag, ('%s=%s' %
-                        (attr, value)) if attr != '' else '', childs, tag))
+        self.preview = ("<%s %s%s</%s>" %
+                        (tag,
+                         ('%s=record.%s%s>' % (attr, value, ('.%s' % self.inner_field.name if self.inner_field else ''))
+                          ) if attr != '' and value != '' else ('>%s' % (value)) if value != '' else '',
+                            childs,
+                            tag))
