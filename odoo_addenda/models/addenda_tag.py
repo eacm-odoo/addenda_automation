@@ -73,7 +73,7 @@ class AddendaTag(models.Model):
             childs = childs + '\n'
         #childs= '\n\t<child> </child>\n\t.\n\t.\n\t.\n' if len(self.addenda_tag_childs_ids) >0 else ''
 
-        self.preview = ("<%s %s%s</%s>" %
+        self.preview = ("<%s %s%s></%s>" %
                         (tag,
                          ('%s=record.%s%s>' % (attr, value, ('.%s' % self.inner_field.name if self.inner_field else ''))
                           ) if attr != '' and value != '' else ('>%s' % (value)) if value != '' else '',

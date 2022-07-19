@@ -1,4 +1,3 @@
-import xml.etree.ElementTree as ET
 import os
 import base64
 from shutil import make_archive, rmtree
@@ -28,13 +27,14 @@ class AddendaAddenda(models.Model):
         ('done', "Done")
     ], default='draft')
     addenda_xml = fields.Text(string='Addenda XML', help=_('Addenda XML'))
+    addenda_fields_xml = fields.Text(
+        string='Addenda Fields XML', help=_('Addenda Fields XML'))
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
 
     @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
-        self.generate_xml_fields(vals_list['fields'])
         if not(vals_list['is_customed_addenda']):
             root = etree.Element(vals_list['tag_name'])
             for tag in vals_list['addenda_tag_id']:
@@ -56,8 +56,10 @@ class AddendaAddenda(models.Model):
                 'mode': 'primary',
                 'l10n_mx_edi_addenda_flag': True,
             })
-            res.write({'state': 'done', 'addenda_xml': etree.tostring(
-                full_xml, pretty_print=True)})
+            new_fields_xml = self.generate_xml_fields(vals_list['fields'])
+            res.write({'state': 'done',
+                       'addenda_xml': etree.tostring(full_xml, pretty_print=True),
+                       'addenda_fields_xml': etree.tostring(new_fields_xml, pretty_print=True)})
         return res
 
     # Function to create the xml tree, given  tag_name and addenda_tag_id
@@ -119,7 +121,7 @@ class AddendaAddenda(models.Model):
 
     def action_export_zip(self):
         zip_file = self.create_directory(
-            self.name, etree.fromstring(self.addenda_xml))
+            self.name, etree.fromstring(self.addenda_xml), etree.fromstring(self.addenda_fields_xml))
         attachment = self.env['ir.attachment'].create({
             'name': 'export_zip_module',
             'type': 'binary',
@@ -135,7 +137,7 @@ class AddendaAddenda(models.Model):
             'url': '/web/content/%s?download=1' % attachment['id']
         }
 
-    def create_directory(sefl, name, xml):
+    def create_directory(self, name, xml, fields):
         template = {
             'name': name,
             'sumary': 'Addenda created using addenda.addenda',
@@ -166,7 +168,11 @@ class AddendaAddenda(models.Model):
         # save xml in the folder views
         tree.write(name+"/"+name+"/views/addendas.xml",
                    pretty_print=True, xml_declaration=True, encoding='utf-8')
-        f.close()
+        if(len(fields) > 0):
+            os.mkdir(name+"/"+name+"/data")
+            tree = etree.ElementTree(fields)
+            tree.write(name+"/"+name+"/data/addenda_fields.xml",
+                       pretty_print=True, xml_declaration=True, encoding='utf-8')
         make_archive(
             'addenda',
             'zip',           # the archive format - or tar, bztar, gztar
@@ -180,7 +186,7 @@ class AddendaAddenda(models.Model):
         return bytes_content
 
     def generate_xml_fields(self, fields):
-        root = ET.Element('data')
+        root = etree.Element('odoo')
         for field in fields:
             model_name = self.env['ir.model'].search(
                 [('id', '=', field[2]['model_id'])]).model
@@ -196,11 +202,9 @@ class AddendaAddenda(models.Model):
                 'field', field[2]['model_id'], {'name': 'model_id'}))
             root.append(record_node)
 
-        _logger.info(ET.tostring(root, xml_declaration=True))
-
         return root
 
     def generate_xml_element(self, name, text, attrs):
-        new_element = ET.Element(name, attrs)
+        new_element = etree.Element(name, attrs)
         new_element.text = str(text)
         return new_element
