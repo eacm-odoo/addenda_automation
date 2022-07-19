@@ -63,19 +63,54 @@ class AddendaTag(models.Model):
     @api.depends('tag_name', 'attribute', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
         tag = self.tag_name or 'Tag name'
-        attr = self.attribute or ''
-        value = (self.field.name or self.value) or ''
-        childs = ""
-        if self.addenda_tag_childs_ids:
-            for child_tag in self.addenda_tag_childs_ids:
-                childs = childs + '\n\t<t t-esc=record.' + \
-                    (child_tag.field.name or child_tag.tag_name) + '/>'
-            childs = childs + '\n'
-        #childs= '\n\t<child> </child>\n\t.\n\t.\n\t.\n' if len(self.addenda_tag_childs_ids) >0 else ''
+        attr = ('t-att-' + self.attribute + '=') if self.attribute else ''
+        value = ''
+        body = ''
+        self.preview = ''
 
-        self.preview = ("<%s %s%s></%s>" %
-                        (tag,
-                         ('%s=record.%s%s>' % (attr, value, ('.%s' % self.inner_field.name if self.inner_field else ''))
-                          ) if attr != '' and value != '' else ('>%s' % (value)) if value != '' else '',
-                            childs,
-                            tag))
+        if self.value and self.attribute:
+            value = '"' + self.value + '"'
+        elif self.attribute and self.field and not self.inner_field:
+            value = '"record.' + self.field.name + '"'
+        elif self.attribute and self.inner_field and self.field:
+            value = '"record.' + self.field.name + '.' + self.inner_field.name + '"'
+        elif not self.attribute and self.value:
+            body = '\n\t' + self.value
+        elif not self.attribute and self.field and not self.inner_field:
+            body = '\n\t' + '<t t-esc="record.' + self.field.name + '"/>'
+        elif not self.attribute and self.field and self.inner_field:
+            body = '\n\t' + '<t t-esc="record.' + self.field.name + \
+                '.' + self.inner_field.name + '"/>'
+
+        for tag_child in self.addenda_tag_childs_ids:
+            tag_child = self.generate_preview_node(
+                tag_child.tag_name, tag_child.attribute, tag_child.value, tag_child.field, tag_child.inner_field)
+            body = body + '\n\t' + tag_child
+
+        if attr and value == '':
+            value = 'value'
+
+        node = '<%s %s%s>%s\n</%s>' % (tag, attr, value, body, tag)
+        self.preview = node
+
+    def generate_preview_node(self, tag_name, attribute, value, field, inner_field):
+        tag = tag_name or 'Tag name'
+        attr = ('t-att-' + attribute + '=') if attribute else ''
+        values = ''
+        body = ''
+
+        if value and attribute:
+            values = '"' + value + '"'
+        elif attribute and field and not inner_field:
+            values = '"record.' + field.name + '"'
+        elif attribute and inner_field and field:
+            values = '"record.' + field.name + '.' + inner_field.name + '"'
+        elif not attribute and value:
+            body = '\n\t' + value
+        elif not attribute and field and not inner_field:
+            body = '\n\t' + '<t t-esc="record.' + field.name + '"/>'
+        elif not attribute and field and inner_field:
+            body = '\n\t' + '<t t-esc="record.' + field.name + '.' + inner_field.name + '"/>'
+
+        node = '<%s %s%s>%s\n\t</%s>' % (tag, attr, values, body, tag)
+        return node
