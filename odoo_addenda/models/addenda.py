@@ -191,9 +191,11 @@ class AddendaAddenda(models.Model):
         for field in fields:
             model_name = self.env['ir.model'].search(
                 [('id', '=', field[2]['model_id'])]).model
+            model_data = self.env['ir.model.data'].search([('model', '=', model_name)], limit=1)
+            external_id = model_data.module + '.model_' + (model_data.model.replace('.', '_'))
             record = etree.Element("record")
-            record.set("id", field[2]['field_description'])
-            record.set("model", model_name)
+            record.set("id", field[2]['field_description'].replace(' ', '_'))
+            record.set("model", "ir.model.fields")
             xml_field = etree.Element("field")
             xml_field.set("name", 'name')
             xml_field.text = field[2]['name']
@@ -203,12 +205,12 @@ class AddendaAddenda(models.Model):
             xml_field.text = field[2]['field_description']
             record.append(xml_field)
             xml_field = etree.Element("field")
-            xml_field.set("name", 'ttype')
-            xml_field.text = field[2]['ttype']
+            xml_field.set("name", 'model_id')
+            xml_field.set("ref", external_id)
             record.append(xml_field)
             xml_field = etree.Element("field")
-            xml_field.set("name", 'model_id')
-            xml_field.text = str(field[2]['model_id'])
+            xml_field.set("name", 'ttype')
+            xml_field.text = field[2]['ttype']
             record.append(xml_field)
             root.append(record)
         print(etree.tostring(root, pretty_print=True))
