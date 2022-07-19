@@ -32,7 +32,10 @@ class AddendaTag(models.Model):
         string='Inner field', help=_(''), comodel_name='ir.model.fields')
     preview = fields.Text(store=False, string='Preview',
                           readonly=True, compute='_compute_preview')
-
+    
+    field_type=fields.Char(compute='_compute_field_type',default='')
+    len_tag_childs= fields.Integer(compute='_compute_len_child_tags')
+    
     @api.onchange('field')
     def _compute_inner_fields(self):
         domain = {'inner_field': []}
@@ -41,24 +44,28 @@ class AddendaTag(models.Model):
                 domain = {'inner_field': [
                     ('model', '=', record.field.relation), ('ttype', '!=', 'many2one')]}
         return {'domain': domain}
-
-    @api.onchange('addenda_tag_childs_ids')
-    def _remove_field(self):
-        for record in self:
-            if len(record.addenda_tag_childs_ids) > 0:
-                record.field = False
-
+    
     @api.onchange('field')
-    def _remove_child_tags(self):
+    def _compute_field_type(self):
+        self.field_type=self.field.ttype
+        
+    @api.onchange('addenda_tag_childs_ids')
+    def _child_ids_attribute_onchange(self):
         for record in self:
-            if record.field:
-                record.addenda_tag_childs_ids = False
-
+            if (len(record.addenda_tag_childs_ids) > 0 and not record.attribute):
+                record.field=False
+                record.inner_field=False
+                record.value=False
+    
+    
     @api.onchange('value')
-    def _remove_field(self):
+    def _value_onchange(self):
         for record in self:
             if record.value:
-                record.field = False
+                record.field=False
+                record.inner_field=False
+                
+                    
 
     @api.depends('tag_name', 'attribute', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
