@@ -149,6 +149,7 @@ class AddendaAddenda(models.Model):
             'license': 'OPL-1',
             'data': [
                 'views/addendas.xml',
+                'data/addenda_fields.xml',
             ],
         }
 
@@ -190,18 +191,27 @@ class AddendaAddenda(models.Model):
         for field in fields:
             model_name = self.env['ir.model'].search(
                 [('id', '=', field[2]['model_id'])]).model
-            record_node = self.generate_xml_element(
-                'record', '', {'id': field[2]['field_description'], 'model': model_name})
-            record_node.append(self.generate_xml_element(
-                'field', field[2]['name'], {'name': 'name'}))
-            record_node.append(self.generate_xml_element(
-                'field', field[2]['field_description'], {'name': 'field_description'}))
-            record_node.append(self.generate_xml_element(
-                'field', field[2]['ttype'], {'name': 'ttype'}))
-            record_node.append(self.generate_xml_element(
-                'field', field[2]['model_id'], {'name': 'model_id'}))
-            root.append(record_node)
-
+            record = etree.Element("record")
+            record.set("id", field[2]['field_description'])
+            record.set("model", model_name)
+            xml_field = etree.Element("field")
+            xml_field.set("name", 'name')
+            xml_field.text = field[2]['name']
+            record.append(xml_field)
+            xml_field = etree.Element("field")
+            xml_field.set("name", 'field_description')
+            xml_field.text = field[2]['field_description']
+            record.append(xml_field)
+            xml_field = etree.Element("field")
+            xml_field.set("name", 'ttype')
+            xml_field.text = field[2]['ttype']
+            record.append(xml_field)
+            xml_field = etree.Element("field")
+            xml_field.set("name", 'model_id')
+            xml_field.text = str(field[2]['model_id'])
+            record.append(xml_field)
+            root.append(record)
+        print(etree.tostring(root, pretty_print=True))
         return root
 
     def generate_xml_element(self, name, text, attrs):
