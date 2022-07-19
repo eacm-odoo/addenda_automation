@@ -36,18 +36,21 @@ class AddendaTag(models.Model):
     field_type=fields.Char(compute='_compute_field_type',default='')
     len_tag_childs= fields.Integer(compute='_compute_len_child_tags')
     
+    @api.depends('addenda_tag_childs_ids')
+    def _compute_len_child_tags(self):
+        self.len_tag_childs=len(self.addenda_tag_childs_ids)
+        
     @api.onchange('field')
     def _compute_inner_fields(self):
         domain = {'inner_field': []}
         for record in self:
-            if record.field.ttype == 'many2one':
-                domain = {'inner_field': [
-                    ('model', '=', record.field.relation), ('ttype', '!=', 'many2one')]}
+            if record.field:
+                record.addenda_tag_childs_ids = False
+                if record.field.ttype == 'many2one':
+                    domain = {'inner_field': [
+                        ('model', '=', record.field.relation), ('ttype', '!=', 'many2one')]}
         return {'domain': domain}
     
-    @api.onchange('field')
-    def _compute_field_type(self):
-        self.field_type=self.field.ttype
         
     @api.onchange('addenda_tag_childs_ids')
     def _child_ids_attribute_onchange(self):
