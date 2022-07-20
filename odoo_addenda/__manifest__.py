@@ -14,6 +14,7 @@
         'views/addenda_views.xml',
         'views/addenda_nodes_views.xml',
         'views/addenda_tag_views.xml',
+        'views/ir_model_fields_form_views_inherit.xml',
         'views/res_partner_views_inherit.xml',
         'security/ir.model.access.csv',
     ],

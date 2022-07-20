@@ -26,13 +26,15 @@
                         <page string="Addenda xml" attrs="{'invisible': [('is_customed_addenda', '=', True)]}">
                             <field name="is_customed_addenda" invisible='True'></field>
                             <group>
-                                <field name="tag_name" attrs="{'required':[('is_customed_addenda' ,'=', False)]}"/>
-                                <field name="addenda_tag_id" />
+                                <field name="is_expression" />
+                                <field name="tag_name" attrs="{'invisible': [('is_expression', '=', True)]}" />
+                                <field name="addenda_tag_id" attrs="{'invisible': [('is_expression', '=', True)]}" />
+                                <field name="addenda_expression" attrs="{'invisible': [('is_expression', '=', False)]}" />
                             </group>
                         </page>
-                        <page string="Create Fields" >
+                        <page string="Create Fields">
                             <group>
-                            <field name="fields" />
+                                <field name="fields" />
                             </group>
                         </page>
                     </notebook>

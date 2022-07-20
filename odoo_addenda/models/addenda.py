@@ -1,3 +1,4 @@
+from email.policy import default
 import os
 import base64
 from shutil import make_archive, rmtree
@@ -18,28 +19,54 @@ class AddendaAddenda(models.Model):
     nodes_ids = fields.One2many(
         comodel_name='addenda.node', string='Nodes', inverse_name='addenda_id')
     is_customed_addenda = fields.Boolean(string='Customed Addenda', )
+    is_expression = fields.Boolean(string='Is an expression', default=True)
     addenda_tag_id = fields.One2many(
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_addenda_id', help=_('New addenda tags added'))
-    tag_name = fields.Char(string='Root Tag Name', help=_('Name of the root tag tree'))
+    tag_name = fields.Char(string='Root Tag Name', required=True,
+                           help=_('Name of the root tag tree'), default='Addenda')
     state = fields.Selection(string="State", selection=[
         ('draft', "Draft"),
         ('done', "Done")
     ], default='draft')
     addenda_xml = fields.Text(string='Addenda XML', help=_('Addenda XML'))
+    addenda_expression = fields.Text(
+        string='Addenda Expression', help=_('Addenda Expression'))
     addenda_fields_xml = fields.Text(
         string='Addenda Fields XML', help=_('Addenda Fields XML'))
+    ir_ui_view_id = fields.Many2one(
+        string='ir.ui.view view of the addenda', comodel_name='ir.ui.view')
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
     
+
+    @api.onchange('is_expression')
+    def _is_expression_onchange(self):
+        if self.is_expression:
+            self.tag_name = 'Addenda'
+            self.addenda_tag_id = False
+        else:
+            self.addenda_expression = False
+
+    @api.onchange('addenda_expression')
+    def evalue_expression(self):
+        if(self.addenda_expression):
+            try:
+                etree.fromstring(self.addenda_expression)
+            except:
+                raise UserError(_("invalid format for xml"))
 
     @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
         if not(vals_list['is_customed_addenda']):
-            root = etree.Element(vals_list['tag_name'])
-            for tag in vals_list['addenda_tag_id']:
-                xml_tree_tag = self.generate_tree_view(tag[2])
-                root.append(xml_tree_tag)
+            if vals_list['is_expression']:
+                root = etree.fromstring(vals_list['addenda_expression'])
+                print(etree.tostring(root, pretty_print=True))
+            else:
+                root = etree.Element(vals_list['tag_name'])
+                for tag in vals_list['addenda_tag_id']:
+                    xml_tree_tag = self.generate_tree_view(tag[2])
+                    root.append(xml_tree_tag)
             full_xml = self.get_xml(vals_list['name'], root)
             root_string = etree.tostring(root, pretty_print=True)
             ir_ui_view = self.env['ir.ui.view'].create({
@@ -59,7 +86,46 @@ class AddendaAddenda(models.Model):
             new_fields_xml = self.generate_xml_fields(vals_list['fields'])
             res.write({'state': 'done',
                        'addenda_xml': etree.tostring(full_xml, pretty_print=True),
-                       'addenda_fields_xml': etree.tostring(new_fields_xml, pretty_print=True)})
+                       'addenda_fields_xml': etree.tostring(new_fields_xml, pretty_print=True),
+                       'ir_ui_view_id': ir_ui_view.id})
+        return res
+
+    # override write function
+
+    def write(self, vals):
+        res = super().write(vals)
+        instance = self.env['addenda.addenda'].browse(self.id)
+        is_customed_addenda = (vals['is_customed_addenda'] if 'is_customed_addenda' in vals.keys(
+        ) else False) or instance.is_customed_addenda
+        is_expression = (vals['is_expression'] if 'is_expression' in vals.keys(
+        ) else False) or instance.is_expression
+        addenda_expression = (vals['addenda_expression'] if 'addenda_expression' in vals.keys(
+        ) else False) or instance.addenda_expression
+        if not(is_customed_addenda):
+            if is_expression:
+                root = etree.fromstring(addenda_expression)
+            else:
+                root = etree.Element(instance.tag_name)
+                for tag in instance.addenda_tag_id:
+                    xml_tree_tag = self.generate_tree_view(tag)
+                    root.append(xml_tree_tag)
+            full_xml = self.get_xml(instance.name, root)
+            root_string = etree.tostring(root, pretty_print=True)
+            instance.ir_ui_view_id.write({
+                'arch': root_string,
+                'arch_db': root_string,
+                'arch_base': root_string,
+            })
+            if instance.fields:
+                new_fields_xml = self.generate_xml_fields(instance.fields)
+                vals['addenda_fields_xml'] = etree.tostring(
+                    new_fields_xml, pretty_print=True)
+
+            vals['addenda_xml'] = etree.tostring(full_xml, pretty_print=True)
+            # remove fields from vals
+            vals.pop('fields', None)
+            vals.pop('addenda_tag_id', None)
+            res = super().write(vals)
         return res
 
     # Function to create the xml tree, given  tag_name and addenda_tag_id
@@ -97,7 +163,10 @@ class AddendaAddenda(models.Model):
         return parent_node
 
     def get_field_name(self, field_id):
-        return self.env['ir.model.fields'].browse(field_id).name
+        if type(field_id) is int:
+            return self.env['ir.model.fields'].browse(field_id).name
+        else:
+            return field_id.name
 
     def get_xml(self, name, root):
         xml = etree.Element("odoo")
@@ -145,15 +214,20 @@ class AddendaAddenda(models.Model):
             'author': 'Odoo PS',
             'category': 'Sales',
             'version': '15.0.1.0.0',
-            'depends': ['sale', 'l10n_mx_edi'],
+            'depends': ['l10n_mx_edi'],
             'license': 'OPL-1',
             'data': [
                 'views/addendas.xml',
-                'data/addenda_fields.xml',
             ],
         }
 
         os.makedirs(name+"/"+name+"/views")
+        if(len(fields) > 0):
+            os.mkdir(name+"/"+name+"/data")
+            tree = etree.ElementTree(fields)
+            tree.write(name+"/"+name+"/data/addenda_fields.xml",
+                       pretty_print=True, xml_declaration=True, encoding='utf-8')
+            template['data'].append('data/addenda_fields.xml')
         f = open(name+"/"+name+"/__manifest__.py", "w")
         f.write('{\n')
         for key, value in template.items():
@@ -169,11 +243,6 @@ class AddendaAddenda(models.Model):
         # save xml in the folder views
         tree.write(name+"/"+name+"/views/addendas.xml",
                    pretty_print=True, xml_declaration=True, encoding='utf-8')
-        if(len(fields) > 0):
-            os.mkdir(name+"/"+name+"/data")
-            tree = etree.ElementTree(fields)
-            tree.write(name+"/"+name+"/data/addenda_fields.xml",
-                       pretty_print=True, xml_declaration=True, encoding='utf-8')
         make_archive(
             'addenda',
             'zip',           # the archive format - or tar, bztar, gztar
@@ -189,10 +258,16 @@ class AddendaAddenda(models.Model):
     def generate_xml_fields(self, fields):
         root = etree.Element('odoo')
         for field in fields:
-            model_name = self.env['ir.model'].search(
-                [('id', '=', field[2]['model_id'])]).model
-            model_data = self.env['ir.model.data'].search([('model', '=', model_name)], limit=1)
-            external_id = model_data.module + '.model_' + (model_data.model.replace('.', '_'))
+            if type(field) != list:
+                field = [0, 2, field]
+                model_name = field[2].model
+            else:
+                model_name = self.env['ir.model'].search(
+                    [('id', '=', field[2]['model_id'])]).model
+            model_data = self.env['ir.model.data'].search(
+                [('model', '=', model_name)], limit=1)
+            external_id = model_data.module + '.model_' + \
+                (model_data.model.replace('.', '_'))
             record = etree.Element("record")
             record.set("id", field[2]['field_description'].replace(' ', '_'))
             record.set("model", "ir.model.fields")
@@ -213,7 +288,6 @@ class AddendaAddenda(models.Model):
             xml_field.text = field[2]['ttype']
             record.append(xml_field)
             root.append(record)
-        print(etree.tostring(root, pretty_print=True))
         return root
 
     def generate_xml_element(self, name, text, attrs):

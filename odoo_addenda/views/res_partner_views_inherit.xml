@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <odoo>
-    <data>
-        <record model="ir.ui.view" id="view_partner_form">
-            <field name="name">view.partner.form.inherit.addenda</field>
-            <field name="model">res.partner</field>
-            <field name="inherit_id" ref="base.view_partner_form" />
-            <field name="arch" type="xml">
-                <field name="l10n_mx_edi_addenda" position="after">
-                    <field name="is_customed_addenda" />
-                    <field name="addenda_addenda" />
-                </field>
-                <field name="l10n_mx_edi_addenda" position="attributes">
-                <!--make it readonly if is_customed_addenda is true else editable-->
-                    <attribute name="attrs">{'readonly':[('is_customed_addenda','=',True)]}</attribute>
-                    <attribute name="attrs">{'invisible': [('is_customed_addenda', '=', True)]}</attribute>
-                </field>
-                <field name="addenda_addenda" position="attributes">
-                    <!--make it readonly if is_customed_addenda is true else editable-->
-                    <attribute name="attrs">{'readonly':[('is_customed_addenda','=',False)]}</attribute>
-                    <attribute name="attrs">{'invisible': [('is_customed_addenda', '=', False)]}</attribute>
-                </field>
+    <record model="ir.ui.view" id="view_partner_form">
+        <field name="name">view.partner.form.inherit.addenda</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form" />
+        <field name="arch" type="xml">
+            <field name="l10n_mx_edi_addenda" position="after">
+                <field name="is_customed_addenda" />
+                <field name="addenda_addenda" />
             </field>
-        </record>
-    </data>
+            <field name="l10n_mx_edi_addenda" position="attributes">
+                <!--make it readonly if is_customed_addenda is true else editable-->
+                <attribute name="attrs">{'readonly':[('is_customed_addenda','=',True)]}</attribute>
+                <attribute name="attrs">{'invisible': [('is_customed_addenda', '=', True)]}</attribute>
+            </field>
+            <field name="addenda_addenda" position="attributes">
+                <!--make it readonly if is_customed_addenda is true else editable-->
+                <attribute name="attrs">{'readonly':[('is_customed_addenda','=',False)]}</attribute>
+                <attribute name="attrs">{'invisible': [('is_customed_addenda', '=', False)]}</attribute>
+            </field>
+        </field>
+    </record>
 </odoo>

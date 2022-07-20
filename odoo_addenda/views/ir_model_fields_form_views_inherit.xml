@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="ir_model_fields_form">
+        <field name="name">	ir.model.fields.form.inherit.addenda</field>
+        <field name="model">ir.model.fields</field>
+        <field name="inherit_id" ref="base.view_model_fields_form" />
+        <field name="arch" type="xml">
+            <field name="readonly" position="after">
+                <field name="store" />
+                <field name="index" />
+                <field name="copied" />
+            </field>
+        </field>
+    </record>
+</odoo>
