@@ -1,5 +1,5 @@
 from lxml.objectify import fromstring
-import xml.etree.ElementTree as ET
+from lxml import etree as ET
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 import logging
@@ -73,55 +73,38 @@ class AddendaTag(models.Model):
 
     @api.depends('tag_name', 'attribute', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
-        tag = self.tag_name or 'Tag name'
-        attr = ('t-att-' + self.attribute + '=') if self.attribute else ''
-        value = ''
-        body = ''
-        self.preview = ''
+        for record in self:
+            tag = record.tag_name or 'TagName'
+            attr = ('t-att-' + record.attribute ) if record.attribute else ''
+            value = ''
+            body = ''
+            record.preview = ''
+            attrs={}
+            if record.value and record.attribute:
+                attrs[attr]=record.value
+            elif record.attribute and record.field and not record.inner_field:
+                attrs[attr]='record.' + record.field.name
+            elif record.attribute and record.inner_field and record.field:
+                attrs[attr]='record.' + record.field.name+ '.' + record.inner_field.name
+            elif not record.attribute and record.value:
+                body = record.value
+            elif not record.attribute and record.field and not record.inner_field:
+                body = 'record.' + record.field.name
+            elif not record.attribute and record.field and record.inner_field:
+                body = 'record.' + record.field.name + '.' + record.inner_field.name
 
-        if self.value and self.attribute:
-            value = '"' + self.value + '"'
-        elif self.attribute and self.field and not self.inner_field:
-            value = '"record.' + self.field.name + '"'
-        elif self.attribute and self.inner_field and self.field:
-            value = '"record.' + self.field.name + '.' + self.inner_field.name + '"'
-        elif not self.attribute and self.value:
-            body = '\n\t' + self.value
-        elif not self.attribute and self.field and not self.inner_field:
-            body = '\n\t' + '<t t-esc="record.' + self.field.name + '"/>'
-        elif not self.attribute and self.field and self.inner_field:
-            body = '\n\t' + '<t t-esc="record.' + self.field.name + \
-                '.' + self.inner_field.name + '"/>'
+            root_node = ET.Element(tag,attrs)
+                        # call generate_node ->tag tree
+            if body != '':
+                root_node.append(ET.Element('t',{'t-esc': body}))
 
-        for tag_child in self.addenda_tag_childs_ids:
-            tag_child = self.generate_preview_node(
-                tag_child.tag_name, tag_child.attribute, tag_child.value, tag_child.field, tag_child.inner_field)
-            body = body + '\n\t' + tag_child
+            for tag_child in record.addenda_tag_childs_ids:
+                root_node.append(ET.fromstring(tag_child.preview))
+            ET.indent(root_node, '    ')
+            if attr and value == '':
+                value = 'value'
 
-        if attr and value == '':
-            value = 'value'
+            record.preview = ET.tostring(root_node,pretty_print=True)
 
-        node = '<%s %s%s>%s\n</%s>' % (tag, attr, value, body, tag)
-        self.preview = node
 
-    def generate_preview_node(self, tag_name, attribute, value, field, inner_field):
-        tag = tag_name or 'Tag name'
-        attr = ('t-att-' + attribute + '=') if attribute else ''
-        values = ''
-        body = ''
-
-        if value and attribute:
-            values = '"' + value + '"'
-        elif attribute and field and not inner_field:
-            values = '"record.' + field.name + '"'
-        elif attribute and inner_field and field:
-            values = '"record.' + field.name + '.' + inner_field.name + '"'
-        elif not attribute and value:
-            body = '\n\t' + value
-        elif not attribute and field and not inner_field:
-            body = '\n\t' + '<t t-esc="record.' + field.name + '"/>'
-        elif not attribute and field and inner_field:
-            body = '\n\t' + '<t t-esc="record.' + field.name + '.' + inner_field.name + '"/>'
-
-        node = '<%s %s%s>%s\n\t</%s>' % (tag, attr, values, body, tag)
-        return node
+    

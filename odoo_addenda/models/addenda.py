@@ -16,6 +16,8 @@ class AddendaAddenda(models.Model):
 
     name = fields.Char(string='Name', required=True, help=_(
         'The name of the new customed addenda'))
+    main_preview = fields.Text(string='Main Preview', help=_('Main Preview'),compute='_compute_main_preview')
+
     nodes_ids = fields.One2many(
         comodel_name='addenda.node', string='Nodes', inverse_name='addenda_id')
     is_customed_addenda = fields.Boolean(string='Customed Addenda', )
@@ -54,6 +56,20 @@ class AddendaAddenda(models.Model):
                 etree.fromstring(self.addenda_expression)
             except:
                 raise UserError(_("invalid format for xml"))
+    
+    
+    @api.onchange('tag_name','addenda_tag_id')
+    def _compute_main_preview(self):
+        for record in self:
+            root_tag= record.tag_name or 'root'
+            root = etree.Element(root_tag)
+            
+            for tag in record.addenda_tag_id:
+                root.append(etree.fromstring(tag.preview))
+            etree.indent(root, '    ')
+
+            record.main_preview=  etree.tostring(root,pretty_print=True)
+        
 
     @api.model
     def create(self, vals_list):
