@@ -29,8 +29,6 @@ class AddendaAddenda(models.Model):
     addenda_xml = fields.Text(string='Addenda XML', help=_('Addenda XML'))
     addenda_fields_xml = fields.Text(
         string='Addenda Fields XML', help=_('Addenda Fields XML'))
-    ir_ui_view_id = fields.Many2one(
-        string='ir.ui.view view of the addenda', comodel_name='ir.ui.view')
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
 
@@ -179,7 +177,7 @@ class AddendaAddenda(models.Model):
             'author': 'Odoo PS',
             'category': 'Sales',
             'version': '15.0.1.0.0',
-            'depends': ['sale', 'l10n_mx_edi'],
+            'depends': ['l10n_mx_edi'],
             'license': 'OPL-1',
             'data': [
                 'views/addendas.xml',

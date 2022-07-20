@@ -29,9 +29,9 @@ class AddendaTag(models.Model):
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
         domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'many2one', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
     inner_field = fields.Many2one(
-        string='Inner field', help=_(''), comodel_name='ir.model.fields')
+        string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     preview = fields.Text(store=False, string='Preview',
-                          readonly=True, compute='_compute_preview')
+                          readonly=True, compute='_compute_preview', help=_('A preview to hel the user to create the xml'))
     
     field_type=fields.Char(compute='_compute_field_type',default='')
     len_tag_childs= fields.Integer(compute='_compute_len_child_tags')
