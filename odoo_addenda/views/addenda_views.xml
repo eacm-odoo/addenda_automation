@@ -26,7 +26,7 @@
                         <page string="Addenda xml" attrs="{'invisible': [('is_customed_addenda', '=', True)]}">
                             <field name="is_customed_addenda" invisible='True'></field>
                             <group>
-                                <field name="tag_name" />
+                                <field name="tag_name" attrs="{'required':[('is_customed_addenda' ,'=', False)]}"/>
                                 <field name="addenda_tag_id" />
                             </group>
                         </page>

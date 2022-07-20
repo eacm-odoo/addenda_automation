@@ -20,8 +20,7 @@ class AddendaAddenda(models.Model):
     is_customed_addenda = fields.Boolean(string='Customed Addenda', )
     addenda_tag_id = fields.One2many(
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_addenda_id', help=_('New addenda tags added'))
-    tag_name = fields.Char(string='Root Tag Name', required=True,
-                           help=_('Name of the root tag tree'))
+    tag_name = fields.Char(string='Root Tag Name', help=_('Name of the root tag tree'))
     state = fields.Selection(string="State", selection=[
         ('draft', "Draft"),
         ('done', "Done")
@@ -31,6 +30,7 @@ class AddendaAddenda(models.Model):
         string='Addenda Fields XML', help=_('Addenda Fields XML'))
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
+    
 
     @api.model
     def create(self, vals_list):
