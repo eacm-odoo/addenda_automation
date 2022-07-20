@@ -29,6 +29,8 @@ class AddendaAddenda(models.Model):
     addenda_xml = fields.Text(string='Addenda XML', help=_('Addenda XML'))
     addenda_fields_xml = fields.Text(
         string='Addenda Fields XML', help=_('Addenda Fields XML'))
+    ir_ui_view_id = fields.Many2one(
+        string='ir.ui.view view of the addenda', comodel_name='ir.ui.view')
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
 
@@ -88,6 +90,7 @@ class AddendaAddenda(models.Model):
             vals['addenda_xml'] = etree.tostring(full_xml, pretty_print=True)
             # remove fields from vals
             vals.pop('fields', None)
+            vals.pop('addenda_tag_id', None)
             res = super().write(vals)
         return res
 

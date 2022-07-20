@@ -32,14 +32,14 @@ class AddendaTag(models.Model):
         string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     preview = fields.Text(store=False, string='Preview',
                           readonly=True, compute='_compute_preview', help=_('A preview to hel the user to create the xml'))
-    
-    field_type=fields.Char(compute='_compute_field_type',default='')
-    len_tag_childs= fields.Integer(compute='_compute_len_child_tags')
-    
+
+    field_type = fields.Char(compute='_compute_field_type', default='')
+    len_tag_childs = fields.Integer(compute='_compute_len_child_tags')
+
     @api.depends('addenda_tag_childs_ids')
     def _compute_len_child_tags(self):
-        self.len_tag_childs=len(self.addenda_tag_childs_ids)
-        
+        self.len_tag_childs = len(self.addenda_tag_childs_ids)
+
     @api.onchange('field')
     def _compute_inner_fields(self):
         domain = {'inner_field': []}
@@ -50,25 +50,26 @@ class AddendaTag(models.Model):
                     domain = {'inner_field': [
                         ('model', '=', record.field.relation), ('ttype', '!=', 'many2one')]}
         return {'domain': domain}
-    
-        
+
     @api.onchange('addenda_tag_childs_ids')
     def _child_ids_attribute_onchange(self):
         for record in self:
             if (len(record.addenda_tag_childs_ids) > 0 and not record.attribute):
-                record.field=False
-                record.inner_field=False
-                record.value=False
-    
-    
+                record.field = False
+                record.inner_field = False
+                record.value = False
+
     @api.onchange('value')
     def _value_onchange(self):
         for record in self:
             if record.value:
-                record.field=False
-                record.inner_field=False
-                
-                    
+                record.field = False
+                record.inner_field = False
+
+    @api.depends('field')
+    def _compute_field_type(self):
+        for record in self:
+            record.field_type = record.field.ttype
 
     @api.depends('tag_name', 'attribute', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
