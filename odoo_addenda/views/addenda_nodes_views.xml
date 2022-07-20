@@ -11,7 +11,7 @@
                     <field name="tag_name" attrs="{'invisible': [('position', '=', 'attributes')]}" />
                     <field name="attribute" attrs="{'invisible': [('position', '!=', 'attributes')]}" />
                     <field name="attribute_value" attrs="{'invisible': [('position', '!=', 'attributes')]}" />
-                    <field name="all_fields" attrs="{'invisible': [('attribute_value', 'not in', ('',False))]}"/>
+                    <field name="all_fields" attrs="{'invisible': [('attribute_value', 'not in', ('',False))]}" />
                     <field name="addenda_tag_id" attrs="{'invisible': [('position', '=', 'attributes')]}" />
                 </group>
             </form>

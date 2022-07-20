@@ -18,28 +18,31 @@ class AddendaNode(models.Model):
         string="Addenda", comodel_name="addenda.addenda")
     all_fields = fields.Many2one(
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
-        domain=[('model', '=', 'account.move'),('ttype', 'in',('char','text','selection','monetary', 'integer', 'boolean', 'date', 'datetime'))])
+        domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
     path = fields.Text(string='Path', compute='_compute_path')
 
-    tag_name = fields.Char(string='Root Tag name', help=_('Name of the new node/element created to be added in the invoice XML'))
-    attribute = fields.Char(string='Attribute', help=_('Name of the attribute of the new element'))
-    attribute_value = fields.Char(string='Value of attribute', help=_('Value of the attribute of the new element'))
+    tag_name = fields.Char(string='Root Tag name', help=_(
+        'Name of the new node/element created to be added in the invoice XML'))
+    attribute = fields.Char(string='Attribute', help=_(
+        'Name of the attribute of the new element'))
+    attribute_value = fields.Char(string='Value of attribute', help=_(
+        'Value of the attribute of the new element'))
 
     addenda_tag_id = fields.One2many(
         string='Addenda Tag', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=_('New elements added inside this node/element'))
 
-   
     @api.onchange('nodes')
     def _compute_all_fields_domain(self):
         domain = {'all_fields': []}
         for record in self:
             if record.nodes == 'Comprobante/Conceptos/Concepto':
-                domain = {'all_fields': [('model', 'in', ('account.move','account.move.line'))]}
+                domain = {'all_fields': [
+                    ('model', 'in', ('account.move', 'account.move.line'))]}
             else:
                 domain = {'all_fields': [('model', '=', ('account.move'))]}
 
         return {'domain': domain}
-    
+
     # validate if position = "attributes" set addenda_tag_id to False
     @api.onchange('position')
     def validate_position(self):
@@ -50,7 +53,7 @@ class AddendaNode(models.Model):
     @api.onchange('attribute_value')
     def delete_field(self):
         for node in self:
-            if(node.attribute_value): 
+            if(node.attribute_value):
                 node.all_fields = False
 
     # recover all the nodes of the cfdiv33 so the user can choose one
@@ -90,8 +93,10 @@ class AddendaNode(models.Model):
         selection_vals.append(
             ('Comprobante/Complemento', 'Comprobante/Complemento'))
         selection_vals.remove(('/Comprobante', '/Comprobante'))
-        selection_vals.remove(('Comprobante/CfdiRelacionados', 'Comprobante/CfdiRelacionados'))
-        selection_vals.remove(('Comprobante/CfdiRelacionados/CfdiRelacionado', 'Comprobante/CfdiRelacionados/CfdiRelacionado'))
+        selection_vals.remove(
+            ('Comprobante/CfdiRelacionados', 'Comprobante/CfdiRelacionados'))
+        selection_vals.remove(('Comprobante/CfdiRelacionados/CfdiRelacionado',
+                              'Comprobante/CfdiRelacionados/CfdiRelacionado'))
         return selection_vals
 
     # compute the whole path of the node

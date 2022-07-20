@@ -1,3 +1,4 @@
+from email.policy import default
 import os
 import base64
 from shutil import make_archive, rmtree
@@ -18,15 +19,18 @@ class AddendaAddenda(models.Model):
     nodes_ids = fields.One2many(
         comodel_name='addenda.node', string='Nodes', inverse_name='addenda_id')
     is_customed_addenda = fields.Boolean(string='Customed Addenda', )
+    is_expression = fields.Boolean(string='Is an expression', default=True)
     addenda_tag_id = fields.One2many(
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_addenda_id', help=_('New addenda tags added'))
     tag_name = fields.Char(string='Root Tag Name', required=True,
-                           help=_('Name of the root tag tree'))
+                           help=_('Name of the root tag tree'), default='Addenda')
     state = fields.Selection(string="State", selection=[
         ('draft', "Draft"),
         ('done', "Done")
     ], default='draft')
     addenda_xml = fields.Text(string='Addenda XML', help=_('Addenda XML'))
+    addenda_expression = fields.Text(
+        string='Addenda Expression', help=_('Addenda Expression'))
     addenda_fields_xml = fields.Text(
         string='Addenda Fields XML', help=_('Addenda Fields XML'))
     ir_ui_view_id = fields.Many2one(
@@ -34,14 +38,34 @@ class AddendaAddenda(models.Model):
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
 
+    @api.onchange('is_expression')
+    def _is_expression_onchange(self):
+        if self.is_expression:
+            self.tag_name = 'Addenda'
+            self.addenda_tag_id = False
+        else:
+            self.addenda_expression = False
+
+    @api.onchange('addenda_expression')
+    def evalue_expression(self):
+        if(self.addenda_expression):
+            try:
+                etree.fromstring(self.addenda_expression)
+            except:
+                raise UserError(_("invalid format for xml"))
+
     @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
         if not(vals_list['is_customed_addenda']):
-            root = etree.Element(vals_list['tag_name'])
-            for tag in vals_list['addenda_tag_id']:
-                xml_tree_tag = self.generate_tree_view(tag[2])
-                root.append(xml_tree_tag)
+            if vals_list['is_expression']:
+                root = etree.fromstring(vals_list['addenda_expression'])
+                print(etree.tostring(root, pretty_print=True))
+            else:
+                root = etree.Element(vals_list['tag_name'])
+                for tag in vals_list['addenda_tag_id']:
+                    xml_tree_tag = self.generate_tree_view(tag[2])
+                    root.append(xml_tree_tag)
             full_xml = self.get_xml(vals_list['name'], root)
             root_string = etree.tostring(root, pretty_print=True)
             ir_ui_view = self.env['ir.ui.view'].create({
@@ -70,11 +94,20 @@ class AddendaAddenda(models.Model):
     def write(self, vals):
         res = super().write(vals)
         instance = self.env['addenda.addenda'].browse(self.id)
-        if not(instance.is_customed_addenda):
-            root = etree.Element(instance.tag_name)
-            for tag in instance.addenda_tag_id:
-                xml_tree_tag = self.generate_tree_view(tag)
-                root.append(xml_tree_tag)
+        is_customed_addenda = (vals['is_customed_addenda'] if 'is_customed_addenda' in vals.keys(
+        ) else False) or instance.is_customed_addenda
+        is_expression = (vals['is_expression'] if 'is_expression' in vals.keys(
+        ) else False) or instance.is_expression
+        addenda_expression = (vals['addenda_expression'] if 'addenda_expression' in vals.keys(
+        ) else False) or instance.addenda_expression
+        if not(is_customed_addenda):
+            if is_expression:
+                root = etree.fromstring(addenda_expression)
+            else:
+                root = etree.Element(instance.tag_name)
+                for tag in instance.addenda_tag_id:
+                    xml_tree_tag = self.generate_tree_view(tag)
+                    root.append(xml_tree_tag)
             full_xml = self.get_xml(instance.name, root)
             root_string = etree.tostring(root, pretty_print=True)
             instance.ir_ui_view_id.write({
