@@ -74,18 +74,22 @@ class AddendaTag(models.Model):
     @api.depends('tag_name', 'attribute', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
         for record in self:
-            tag = record.tag_name or 'TagName'
-            attr = ('t-att-' + record.attribute ) if record.attribute else ''
+            if(record.tag_name):
+                tag = record.tag_name.replace(' ', '_')
+            else:
+                tag = 'TagName'
+            attr = ('t-att-' + record.attribute) if record.attribute else ''
             value = ''
             body = ''
             record.preview = ''
-            attrs={}
+            attrs = {}
             if record.value and record.attribute:
-                attrs[attr]=record.value
+                attrs[attr] = record.value
             elif record.attribute and record.field and not record.inner_field:
-                attrs[attr]='record.' + record.field.name
+                attrs[attr] = 'record.' + record.field.name
             elif record.attribute and record.inner_field and record.field:
-                attrs[attr]='record.' + record.field.name+ '.' + record.inner_field.name
+                attrs[attr] = 'record.' + record.field.name + \
+                    '.' + record.inner_field.name
             elif not record.attribute and record.value:
                 body = record.value
             elif not record.attribute and record.field and not record.inner_field:
@@ -93,10 +97,10 @@ class AddendaTag(models.Model):
             elif not record.attribute and record.field and record.inner_field:
                 body = 'record.' + record.field.name + '.' + record.inner_field.name
 
-            root_node = ET.Element(tag,attrs)
-                        # call generate_node ->tag tree
+            root_node = ET.Element(tag, attrs)
+            # call generate_node ->tag tree
             if body != '':
-                root_node.append(ET.Element('t',{'t-esc': body}))
+                root_node.append(ET.Element('t', {'t-esc': body}))
 
             for tag_child in record.addenda_tag_childs_ids:
                 root_node.append(ET.fromstring(tag_child.preview))
@@ -104,7 +108,4 @@ class AddendaTag(models.Model):
             if attr and value == '':
                 value = 'value'
 
-            record.preview = ET.tostring(root_node,pretty_print=True)
-
-
-    
+            record.preview = ET.tostring(root_node, pretty_print=True)

@@ -60,7 +60,7 @@ class AddendaAddenda(models.Model):
     @api.onchange('tag_name', 'addenda_tag_id')
     def _compute_main_preview(self):
         for record in self:
-            root_tag = record.tag_name or 'root'
+            root_tag = record.tag_name.replace(' ', '_') or 'root'
             root = etree.Element(root_tag)
 
             for tag in record.addenda_tag_id:
@@ -78,7 +78,7 @@ class AddendaAddenda(models.Model):
             elif vals_list['is_expression'] and vals_list['addenda_expression'] in [False, '']:
                 return res
             elif not(vals_list['is_expression']):
-                root = etree.Element(vals_list['tag_name'])
+                root = etree.Element(vals_list['tag_name'].replace(' ', '_'))
                 for tag in vals_list['addenda_tag_id']:
                     xml_tree_tag = self.generate_tree_view(tag[2])
                     root.append(xml_tree_tag)
@@ -124,7 +124,7 @@ class AddendaAddenda(models.Model):
                 res = super().write(vals)
                 return res
             elif not(is_expression):
-                root = etree.Element(instance.tag_name)
+                root = etree.Element(instance.tag_name.replace(' ', '_'))
                 for tag in instance.addenda_tag_id:
                     xml_tree_tag = self.generate_tree_view(tag)
                     root.append(xml_tree_tag)
@@ -153,9 +153,11 @@ class AddendaAddenda(models.Model):
     def generate_tree_view(self, addenda_tag):
         if type(addenda_tag) is list:
             addenda_tag = addenda_tag[2]
-            parent_node = etree.Element(addenda_tag['tag_name'])
+            parent_node = etree.Element(
+                addenda_tag['tag_name'].replace(' ', '_'))
         else:
-            parent_node = etree.Element(addenda_tag['tag_name'])
+            parent_node = etree.Element(
+                addenda_tag['tag_name'].replace(' ', '_'))
         if addenda_tag['addenda_tag_childs_ids']:
             for child in addenda_tag['addenda_tag_childs_ids']:
                 child_node = self.generate_tree_view(child)
