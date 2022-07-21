@@ -7,12 +7,9 @@
             <form string="Addenda Form">
                 <group>
                     <field name="nodes" />
-                    <field name="position" />
-                    <field name="tag_name" attrs="{'invisible': [('position', '=', 'attributes')]}" />
-                    <field name="attribute" attrs="{'invisible': [('position', '!=', 'attributes')]}" />
-                    <field name="attribute_value" attrs="{'invisible': [('position', '!=', 'attributes')]}" />
+                    <field name="attributes" />
+                    <field name="attribute_value" />
                     <field name="all_fields" attrs="{'invisible': [('attribute_value', 'not in', ('',False))]}" />
-                    <field name="addenda_tag_id" attrs="{'invisible': [('position', '=', 'attributes')]}" />
                 </group>
             </form>
         </field>
@@ -24,7 +21,6 @@
         <field name="arch" type="xml">
             <tree string="Addenda Form">
                 <field name="nodes" string="Nodes" />
-                <field name="position" />
                 <field name="path" />
                 <field name="all_fields" />
             </tree>
