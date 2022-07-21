@@ -1,4 +1,3 @@
-from email.policy import default
 import os
 import base64
 from shutil import make_archive, rmtree

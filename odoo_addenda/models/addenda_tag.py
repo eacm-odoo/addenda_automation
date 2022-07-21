@@ -1,4 +1,3 @@
-from lxml.objectify import fromstring
 from lxml import etree as ET
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError

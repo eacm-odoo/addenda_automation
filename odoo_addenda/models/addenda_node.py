@@ -1,4 +1,3 @@
-import string
 from lxml.objectify import fromstring
 import xml.etree.ElementTree as ET
 from odoo import models, fields, api, _
@@ -18,16 +17,57 @@ class AddendaNode(models.Model):
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
         domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
     path = fields.Text(string='Path', compute='_compute_path')
-    attributes = fields.Selection(
-        string='Attributes of the node', help=_('Attributes to override'), selection=lambda self: self._compute_attributes(), required=True)
+    attributes = fields.Text(
+        string='Attribute of reference node to edit', help=_('Copy only one option from "Attributes options of reference node" and paste it here'), required=True)
+    attribute_options = fields.Text(
+        string='Attributes options of reference node', help=_('Attributes of the node of the invoice xml', computed='_compute_attributes'), readonly=True)
+
     attribute_value = fields.Char(string='Value of attribute', help=_(
         'Value of the attribute of the new element'))
 
-    @api.depends('nodes')
-    def _compute_attributes(self):
-        return []
+    @api.onchange('attributes')
+    def _validate_attributes(self):
+        if self.attributes and self.attribute_options:
+            list_of_attributes_options = self.attribute_options.split('\n')
+            if self.attributes not in list_of_attributes_options:
+                raise UserError(
+                    _('The attribute you entered is not in the list of attributes options of the reference node'))
 
-    @api.onchange('nodes')
+    @ api.onchange('nodes')
+    def _compute_attributes(self):
+        if self.nodes:
+            instance_cfdi = self.env.ref('l10n_mx_edi.cfdiv33')
+            root = ET.fromstring(instance_cfdi.arch)
+            parent_map = {c: p for p in root.iter()
+                          for c in p}
+            selection_vals = []
+            path_list = []  # list of element's parents
+            previous_child = None
+            for child in root.iter():
+                try:
+                    if child.tag == 't':
+                        child.tag = parent_map[child].tag
+                    if(child.tag != parent_map[child].tag):
+                        if parent_map[child].tag != previous_child:
+                            if path_list:
+                                while(path_list[-1] != parent_map[child].tag.replace(
+                                        "{http://www.sat.gob.mx/cfd/3}", "")):
+                                    path_list.pop()
+                        option = "/".join(
+                            path_list) + "/" + (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))
+                        if(self.nodes == option):
+                            for attr in child.attrib:
+                                selection_vals.append(
+                                    (attr.replace('t-att-', '')))
+                            self.attribute_options = '\n'.join(selection_vals)
+                            break
+                        path_list.append(child.tag.replace(
+                            "{http://www.sat.gob.mx/cfd/3}", ""))
+                        previous_child = child.tag
+                except:
+                    pass
+
+    @ api.onchange('nodes')
     def _compute_all_fields_domain(self):
         domain = {'all_fields': []}
         for record in self:
@@ -39,7 +79,7 @@ class AddendaNode(models.Model):
 
         return {'domain': domain}
 
-    @api.onchange('attribute_value')
+    @ api.onchange('attribute_value')
     def delete_field(self):
         for node in self:
             if(node.attribute_value):
@@ -89,7 +129,7 @@ class AddendaNode(models.Model):
         return selection_vals
 
     # compute the whole path of the node
-    @api.depends('nodes')
+    @ api.depends('nodes')
     def _compute_path(self):
         for node in self:
             if(node.nodes):
