@@ -30,7 +30,7 @@
                                 <field name="tag_name" attrs="{'invisible': [('is_expression', '=', True)]}" />
                                 <field name="addenda_tag_id" attrs="{'invisible': [('is_expression', '=', True)]}" />
                                 <field name="addenda_expression" attrs="{'invisible': [('is_expression', '=', False)]}" />
-                                <field name="main_preview"/>
+                                <field name="main_preview" attrs="{'invisible': [('is_expression', '=', True)]}" />
 
                             </group>
                         </page>

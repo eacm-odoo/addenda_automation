@@ -16,7 +16,8 @@ class AddendaAddenda(models.Model):
 
     name = fields.Char(string='Name', required=True, help=_(
         'The name of the new customed addenda'))
-    main_preview = fields.Text(string='Main Preview', help=_('Main Preview'),compute='_compute_main_preview')
+    main_preview = fields.Text(string='Main Preview', help=_(
+        'Main Preview'), compute='_compute_main_preview')
 
     nodes_ids = fields.One2many(
         comodel_name='addenda.node', string='Nodes', inverse_name='addenda_id')
@@ -39,7 +40,6 @@ class AddendaAddenda(models.Model):
         string='ir.ui.view view of the addenda', comodel_name='ir.ui.view')
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
-    
 
     @api.onchange('is_expression')
     def _is_expression_onchange(self):
@@ -56,29 +56,28 @@ class AddendaAddenda(models.Model):
                 etree.fromstring(self.addenda_expression)
             except:
                 raise UserError(_("invalid format for xml"))
-    
-    
-    @api.onchange('tag_name','addenda_tag_id')
+
+    @api.onchange('tag_name', 'addenda_tag_id')
     def _compute_main_preview(self):
         for record in self:
-            root_tag= record.tag_name or 'root'
+            root_tag = record.tag_name or 'root'
             root = etree.Element(root_tag)
-            
+
             for tag in record.addenda_tag_id:
                 root.append(etree.fromstring(tag.preview))
             etree.indent(root, '    ')
 
-            record.main_preview=  etree.tostring(root,pretty_print=True)
-        
+            record.main_preview = etree.tostring(root, pretty_print=True)
 
     @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
         if not(vals_list['is_customed_addenda']):
-            if vals_list['is_expression']:
+            if vals_list['is_expression'] and vals_list['addenda_expression'] not in [False, '']:
                 root = etree.fromstring(vals_list['addenda_expression'])
-                print(etree.tostring(root, pretty_print=True))
-            else:
+            elif vals_list['is_expression'] and vals_list['addenda_expression'] in [False, '']:
+                return res
+            elif not(vals_list['is_expression']):
                 root = etree.Element(vals_list['tag_name'])
                 for tag in vals_list['addenda_tag_id']:
                     xml_tree_tag = self.generate_tree_view(tag[2])
@@ -118,9 +117,13 @@ class AddendaAddenda(models.Model):
         addenda_expression = (vals['addenda_expression'] if 'addenda_expression' in vals.keys(
         ) else False) or instance.addenda_expression
         if not(is_customed_addenda):
-            if is_expression:
+            if is_expression and addenda_expression not in [False, '']:
                 root = etree.fromstring(addenda_expression)
-            else:
+            elif is_expression and addenda_expression in [False, '']:
+                vals['state'] = 'draft'
+                res = super().write(vals)
+                return res
+            elif not(is_expression):
                 root = etree.Element(instance.tag_name)
                 for tag in instance.addenda_tag_id:
                     xml_tree_tag = self.generate_tree_view(tag)
@@ -141,6 +144,7 @@ class AddendaAddenda(models.Model):
             # remove fields from vals
             vals.pop('fields', None)
             vals.pop('addenda_tag_id', None)
+            vals['state'] = 'done'
             res = super().write(vals)
         return res
 
