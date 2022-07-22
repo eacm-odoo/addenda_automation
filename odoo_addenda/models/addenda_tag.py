@@ -72,7 +72,7 @@ class AddendaTag(models.Model):
         for record in self:
             record.field_type = record.field.ttype
 
-    @api.depends('tag_name', 'attribute', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
+    @api.depends('tag_name', 'attribute','attribute_ids', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
         for record in self:
             if(record.tag_name):
@@ -84,19 +84,19 @@ class AddendaTag(models.Model):
             body = ''
             record.preview = ''
             attrs = {}
-            if record.value and record.attribute:
-                attrs[attr] = record.value
-            elif record.attribute and record.field and not record.inner_field:
-                attrs[attr] = 'record.' + record.field.name
-            elif record.attribute and record.inner_field and record.field:
-                attrs[attr] = 'record.' + record.field.name + \
-                    '.' + record.inner_field.name
-            elif not record.attribute and record.value:
-                body = record.value
-            elif not record.attribute and record.field and not record.inner_field:
-                body = 'record.' + record.field.name
-            elif not record.attribute and record.field and record.inner_field:
-                body = 'record.' + record.field.name + '.' + record.inner_field.name
+            for attr_record in record.attribute_ids:
+                if attr_record.value and attr_record.attribute:
+                    attrs['t-att-'+attr_record.attribute] = attr_record.value
+                elif attr_record.attribute and attr_record.field and not attr_record.inner_field:
+                    attrs['t-att-'+attr_record.attribute] = 'record.' + attr_record.field.name
+                elif attr_record.attribute and attr_record.inner_field and attr_record.field:
+                    attrs['t-att-'+attr_record.attribute] = 'record.' + attr_record.field.name+ '.' + attr_record.inner_field.name
+                elif not attr_record.attribute and attr_record.value:
+                    body = record.value
+                elif not attr_record.attribute and attr_record.field and not attr_record.inner_field:
+                    body = 'record.' + attr_record.field.name
+                elif not attr_record.attribute and attr_record.field and attr_record.inner_field:
+                    body = 'record.' + attr_record.field.name + '.' + attr_record.inner_field.name
 
             root_node = ET.Element(tag, attrs)
             # call generate_node ->tag tree
@@ -108,5 +108,6 @@ class AddendaTag(models.Model):
             ET.indent(root_node, '    ')
             if attr and value == '':
                 value = 'value'
-
-            record.preview = ET.tostring(root_node, pretty_print=True)
+                            
+            record.preview = ET.tostring(root_node, encoding='unicode',pretty_print=True).replace('t-att', '\n\tt-att')
+    
