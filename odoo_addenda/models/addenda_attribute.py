@@ -11,7 +11,7 @@ class AddendaAttribute(models.Model):
     addenda_node_id = fields.Many2one(
         comodel_name='addenda.node', string='Addenda node')
     attribute = fields.Char(string='Attribute', help=_(
-        'Name of the attribute of the new tag'))
+        'Name of the attribute of the new tag'), required=True)
     value = fields.Char(string='Attribute Value', help=_(
         'Value of the attribute of the new tag'))
     field = fields.Many2one(
