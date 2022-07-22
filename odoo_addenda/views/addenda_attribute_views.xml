@@ -1,38 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="addenda_tag_view_form" model="ir.ui.view">
-        <field name="name">addenda.tag.form</field>
-        <field name="model">addenda.tag</field>
+    <record id="addenda_attribute_view_form" model="ir.ui.view">
+        <field name="name">addenda.attribute.form</field>
+        <field name="model">addenda.attribute</field>
         <field name="arch" type="xml">
-            <form string="Addenda Form">
+            <form string="Addenda attribute Form">
                 <group>
                     <field name="field_type" invisible='True' />
-                    <field name="len_tag_childs" invisible='True' />
-                    <field name="tag_name" />
-                    <field name="addenda_tag_childs_ids" />
-                    <field name="attribute_ids" />
                     <field name="attribute" />
                     <field name="value" />
                     <field name="field" attrs="{'invisible': [('value','not in',('',False))]}" />
-                    <field name="preview" />
                     <field name='inner_field' attrs="{'invisible': [('field_type','!=','many2one'),'|',('field','in',('',False))]}" />
                 </group>
             </form>
         </field>
     </record>
 
-    <record id="addenda_customed_tag_view_list" model="ir.ui.view">
-        <field name="name">addenda.tag.list</field>
-        <field name="model">addenda.tag</field>
+    <record id="addenda_attribute_view_list" model="ir.ui.view">
+        <field name="name">addenda.attribute.list</field>
+        <field name="model">addenda.attribute</field>
         <field name="arch" type="xml">
-            <tree string="Addenda Form">
-                <field name="tag_name" />
-                <field name="addenda_tag_childs_ids" />
+            <tree string="Addenda attribute Form">
                 <field name="attribute" />
                 <field name="value" />
                 <field name="field" />
                 <field name='inner_field' />
-
             </tree>
         </field>
     </record>

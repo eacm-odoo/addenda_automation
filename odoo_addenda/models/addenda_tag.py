@@ -20,6 +20,8 @@ class AddendaTag(models.Model):
         string='Addenda tag', comodel_name='addenda.tag')
     tag_name = fields.Char(string='Tag Name', required=True,
                            help=_('Name of the new tag/element'))
+    attribute_ids = fields.One2many(
+        comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_tag_id', help=_('Attributes of the new tag/element'))
     attribute = fields.Char(string='Attribute', help=_(
         'Name of the attribute of the new element'))
     value = fields.Char(string='Attribute Value', help=_(
