@@ -24,6 +24,8 @@ class AddendaNode(models.Model):
 
     attribute_value = fields.Char(string='Value of attribute', help=_(
         'Value of the attribute of the new element'))
+    attribute_ids = fields.One2many(
+        comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_node_id', help=_('Attributes of the new tag/element'))
 
     @api.onchange('attributes')
     def _validate_attributes(self):
