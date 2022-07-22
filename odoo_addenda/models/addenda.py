@@ -161,26 +161,31 @@ class AddendaAddenda(models.Model):
             for child in addenda_tag['addenda_tag_childs_ids']:
                 child_node = self.generate_tree_view(child)
                 parent_node.append(child_node)
-        if(addenda_tag['value'] and not addenda_tag['attribute']):
+        if(addenda_tag['value']):
             parent_node.text = addenda_tag['value']
-        elif(addenda_tag['value'] and addenda_tag['attribute']):
-            parent_node.set(addenda_tag['attribute'], addenda_tag['value'])
-        elif(not addenda_tag['attribute'] and not addenda_tag['value'] and addenda_tag['field'] and not addenda_tag['inner_field']):
+        elif(addenda_tag['attribute_ids']):
+            for attribute in addenda_tag['attribute_ids']:
+                if(type(attribute) is list):
+                    attribute = attribute[2]
+                if(attribute['value']):
+                    parent_node.set(attribute['attribute'], attribute['value'])
+                elif(attribute['field'] and not attribute['value'] and not attribute['inner_field']):
+                    parent_node.set("t-att-{}".format(attribute['attribute']),
+                            "record.{}".format(self.get_field_name(attribute['field'])))
+                elif(attribute['field'] and attribute['inner_field']):
+                    parent_node.set("t-att-{}".format(attribute['attribute']),
+                            "record.{}.{}".format(self.get_field_name(attribute['field']), self.get_field_name(attribute['inner_field'])))
+                print("sali cdel for")
+        elif(not addenda_tag['value'] and addenda_tag['field'] and not addenda_tag['inner_field']):
             t = etree.Element('t')
             t.set(
                 "t-esc", "record.{}".format(self.get_field_name(addenda_tag['field'])))
             parent_node.append(t)
-        elif(not addenda_tag['attribute'] and not addenda_tag['value'] and addenda_tag['field'] and addenda_tag['inner_field']):
+        elif(not addenda_tag['value'] and addenda_tag['field'] and addenda_tag['inner_field']):
             t = etree.Element('t')
             t.set(
                 "t-esc", "record.{}.{}".format(self.get_field_name(addenda_tag['field']), self.get_field_name(addenda_tag['inner_field'])))
             parent_node.append(t)
-        elif(addenda_tag['attribute'] and not addenda_tag['value'] and addenda_tag['field'] and not addenda_tag['inner_field']):
-            parent_node.set("t-att-{}".format(addenda_tag['attribute']),
-                            "record.{}".format(self.get_field_name(addenda_tag['field'])))
-        elif(addenda_tag['attribute'] and not addenda_tag['value'] and addenda_tag['field'] and addenda_tag['inner_field']):
-            parent_node.set("t-att-{}".format(addenda_tag['attribute']),
-                            "record.{}.{}".format(self.get_field_name(addenda_tag['field']), self.get_field_name(addenda_tag['inner_field'])))
         return parent_node
 
     def get_field_name(self, field_id):
@@ -310,8 +315,3 @@ class AddendaAddenda(models.Model):
             record.append(xml_field)
             root.append(record)
         return root
-
-    def generate_xml_element(self, name, text, attrs):
-        new_element = etree.Element(name, attrs)
-        new_element.text = str(text)
-        return new_element
