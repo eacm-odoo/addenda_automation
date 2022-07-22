@@ -7,7 +7,6 @@
             <form string="Addenda attribute Form">
                 <group>
                     <field name="field_type" invisible='True' />
-                    <field name="attribute_options" />
                     <field name="attribute" />
                     <field name="value" />
                     <field name="field" attrs="{'invisible': [('value','not in',('',False))]}" />

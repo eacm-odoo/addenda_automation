@@ -21,9 +21,6 @@ class AddendaAttribute(models.Model):
         string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     field_type = fields.Char(compute='_compute_field_type', default='')
 
-    attribute_options = fields.Selection(
-        string='Attribute options', help=_('Attributes of "reference node"'), selection=lambda self: self._compute_attribute_options())
-
     @api.onchange('field')
     def _compute_inner_fields(self):
         domain = {'inner_field': []}
@@ -39,42 +36,3 @@ class AddendaAttribute(models.Model):
     def _compute_field_type(self):
         for record in self:
             record.field_type = record.field.ttype
-
-    def _compute_attribute_options(self):
-        for record in self:
-            print(record.addenda_node_id.nodes)
-        print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
-        print(self.addenda_node_id.nodes)
-        if self.addenda_node_id.nodes:
-            instance_cfdi = self.env.ref('l10n_mx_edi.cfdiv33')
-            root = etree.fromstring(instance_cfdi.arch)
-            parent_map = {c: p for p in root.iter()
-                          for c in p}
-            selection_vals = []
-            path_list = []  # list of element's parents
-            previous_child = None
-            for child in root.iter():
-                try:
-                    if child.tag == 't':
-                        child.tag = parent_map[child].tag
-                    if(child.tag != parent_map[child].tag):
-                        if parent_map[child].tag != previous_child:
-                            if path_list:
-                                while(path_list[-1] != parent_map[child].tag.replace(
-                                        "{http://www.sat.gob.mx/cfd/3}", "")):
-                                    path_list.pop()
-                        option = "/".join(
-                            path_list) + "/" + (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))
-                        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-                        if(self.addenda_node_id.nodes == option):
-                            for attr in child.attrib:
-                                selection_vals.append(
-                                    (attr.replace('t-att-', '')), attr.replace('t-att-', ''))
-                            print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
-                            print(selection_vals)
-                            return selection_vals
-                        path_list.append(child.tag.replace(
-                            "{http://www.sat.gob.mx/cfd/3}", ""))
-                        previous_child = child.tag
-                except:
-                    pass
