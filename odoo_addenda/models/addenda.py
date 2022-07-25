@@ -40,6 +40,15 @@ class AddendaAddenda(models.Model):
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
 
+    @api.onchange('nodes_ids')
+    def _check_value(self):
+        if self.nodes_ids:
+            for node in self.nodes_ids:
+                if not (node.attribute_value or node.all_fields):
+                    raise UserError(_("You can't add a node withhout a value or a field value"))
+
+                
+                
     @api.onchange('is_expression')
     def _is_expression_onchange(self):
         if self.is_expression:

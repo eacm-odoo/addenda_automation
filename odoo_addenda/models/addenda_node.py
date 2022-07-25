@@ -1,5 +1,7 @@
 from lxml.objectify import fromstring
 import xml.etree.ElementTree as ET
+
+from pkg_resources import require
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
@@ -23,8 +25,10 @@ class AddendaNode(models.Model):
     attribute_value = fields.Char(string='Value of attribute', help=_(
         'Value of the attribute of the new element'))
     attribute_ids = fields.One2many(
-        comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_node_id', help=_('Attributes of the new tag/element'))
-    cfdi_attributes = fields.Many2one(comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', )
+        comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_node_id', help=_('Attributes of the new tag/element'),required=True)
+    cfdi_attributes = fields.Many2one(comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', required=True)
+
+   
 
     @api.onchange('nodes')
     def _compute_cfdi_attributes(self):
@@ -105,9 +109,7 @@ class AddendaNode(models.Model):
         path_list = []  # list of element's parents
         previous_child = None
         for child in root.iter():
-
             try:
-
                 if child.tag == 't':
                     child.tag = parent_map[child].tag
                 if(child.tag != parent_map[child].tag):
@@ -116,11 +118,14 @@ class AddendaNode(models.Model):
                         if path_list:
                             # remove the last element of the list
                             while(path_list[-1] != parent_map[child].tag.replace(
-                                    "{http://www.sat.gob.mx/cfd/3}", "")):
+                                "{http://www.sat.gob.mx/cfd/3}", "")):
                                 path_list.pop()
-                    option = "/".join(
-                        path_list) + "/" + (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))
-                    selection_vals.append((option, option))
+                    print('----------------------------------------')
+                    print(len(child.attrib))
+                    if(len(child.attrib) > 0):
+                        option = "/".join(
+                            path_list) + "/" + (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))
+                        selection_vals.append((option, option))
                     path_list.append(child.tag.replace(
                         "{http://www.sat.gob.mx/cfd/3}", ""))
                     previous_child = child.tag
@@ -128,8 +133,7 @@ class AddendaNode(models.Model):
             except:
                 pass
         selection_vals = list(set(selection_vals))
-        selection_vals.append(
-            ('Comprobante/Complemento', 'Comprobante/Complemento'))
+        
         selection_vals.remove(('/Comprobante', '/Comprobante'))
         selection_vals.remove(
             ('Comprobante/CfdiRelacionados', 'Comprobante/CfdiRelacionados'))
