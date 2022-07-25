@@ -18,5 +18,6 @@
         'views/ir_model_fields_form_views_inherit.xml',
         'views/res_partner_views_inherit.xml',
         'security/ir.model.access.csv',
+        'demo/data.xml',
     ],
 }

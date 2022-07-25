@@ -17,8 +17,6 @@ class AddendaNode(models.Model):
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
         domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
     path = fields.Text(string='Path', compute='_compute_path')
-    attributes = fields.Text(
-        string='Attribute of reference node to edit', help=_('Copy only one option from "Attributes options of reference node" and paste it here'), required=True)
     attribute_options = fields.Text(
         string='Attributes options of reference node', help=_('Attributes of the node of the invoice xml', computed='_compute_attributes'), readonly=True)
 
@@ -26,6 +24,15 @@ class AddendaNode(models.Model):
         'Value of the attribute of the new element'))
     attribute_ids = fields.One2many(
         comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_node_id', help=_('Attributes of the new tag/element'))
+    cfdi_attributes = fields.Many2one(comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', )
+
+    @api.onchange('nodes')
+    def _compute_cfdi_attributes(self):
+        domain = {'cfdi_attributes': []}
+        for record in self:
+            domain = {'cfdi_attributes': [
+                    ('node', '=', record.nodes)]}
+        return {'domain': domain}
 
     @api.onchange('attributes')
     def _validate_attributes(self):
