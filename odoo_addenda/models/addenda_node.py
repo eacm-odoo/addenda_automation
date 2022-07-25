@@ -18,7 +18,7 @@ class AddendaNode(models.Model):
         domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
     path = fields.Text(string='Path', compute='_compute_path')
     attribute_options = fields.Text(
-        string='Attributes options of reference node', help=_('Attributes of the node of the invoice xml', computed='_compute_attributes'), readonly=True)
+        string='Attributes options of reference node', help=_('Attributes of the node of the invoice xml'), compute='_compute_attributes', readonly=True)
 
     attribute_value = fields.Char(string='Value of attribute', help=_(
         'Value of the attribute of the new element'))
