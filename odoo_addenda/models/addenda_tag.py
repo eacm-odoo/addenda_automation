@@ -22,8 +22,7 @@ class AddendaTag(models.Model):
                            help=_('Name of the new tag/element'))
     attribute_ids = fields.One2many(
         comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_tag_id', help=_('Attributes of the new tag/element'))
-    attribute = fields.Char(string='Attribute', help=_(
-        'Name of the attribute of the new element'))
+    
     value = fields.Char(string='Attribute Value', help=_(
         'Value of the attribute of the new element'))
     field = fields.Many2one(
@@ -55,7 +54,7 @@ class AddendaTag(models.Model):
     @api.onchange('addenda_tag_childs_ids')
     def _child_ids_attribute_onchange(self):
         for record in self:
-            if (len(record.addenda_tag_childs_ids) > 0 and not record.attribute):
+            if (len(record.addenda_tag_childs_ids) > 0 ):
                 record.field = False
                 record.inner_field = False
                 record.value = False
@@ -72,14 +71,13 @@ class AddendaTag(models.Model):
         for record in self:
             record.field_type = record.field.ttype
 
-    @api.depends('tag_name', 'attribute','attribute_ids', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
+    @api.depends('tag_name','attribute_ids', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
         for record in self:
             if(record.tag_name):
                 tag = record.tag_name.replace(' ', '_')
             else:
                 tag = 'TagName'
-            attr = ('t-att-' + record.attribute) if record.attribute else ''
             value = ''
             body = ''
             record.preview = ''
@@ -93,7 +91,7 @@ class AddendaTag(models.Model):
                     elif attr_record.inner_field and attr_record.field:
                         attrs['t-att-'+attr_record.attribute] = 'record.' + attr_record.field.name+ '.' + attr_record.inner_field.name
     
-            elif record.value:
+            if record.value:
                 body = record.value
             elif record.field and not record.inner_field:
                 body = 'record.' + record.field.name
@@ -108,8 +106,6 @@ class AddendaTag(models.Model):
             for tag_child in record.addenda_tag_childs_ids:
                 root_node.append(ET.fromstring(tag_child.preview))
             ET.indent(root_node, '    ')
-            if attr and value == '':
-                value = 'value'
-                            
+          
             record.preview = ET.tostring(root_node, encoding='unicode',pretty_print=True)
     
