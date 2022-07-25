@@ -163,7 +163,7 @@ class AddendaAddenda(models.Model):
                 parent_node.append(child_node)
         if(addenda_tag['value']):
             parent_node.text = addenda_tag['value']
-        elif(addenda_tag['attribute_ids']):
+        if(addenda_tag['attribute_ids']):
             for attribute in addenda_tag['attribute_ids']:
                 if(type(attribute) is list):
                     attribute = attribute[2]
@@ -171,17 +171,16 @@ class AddendaAddenda(models.Model):
                     parent_node.set(attribute['attribute'], attribute['value'])
                 elif(attribute['field'] and not attribute['value'] and not attribute['inner_field']):
                     parent_node.set("t-att-{}".format(attribute['attribute']),
-                            "record.{}".format(self.get_field_name(attribute['field'])))
+                                    "record.{}".format(self.get_field_name(attribute['field'])))
                 elif(attribute['field'] and attribute['inner_field']):
                     parent_node.set("t-att-{}".format(attribute['attribute']),
-                            "record.{}.{}".format(self.get_field_name(attribute['field']), self.get_field_name(attribute['inner_field'])))
-                print("sali cdel for")
-        elif(not addenda_tag['value'] and addenda_tag['field'] and not addenda_tag['inner_field']):
+                                    "record.{}.{}".format(self.get_field_name(attribute['field']), self.get_field_name(attribute['inner_field'])))
+        if(not addenda_tag['value'] and addenda_tag['field'] and not addenda_tag['inner_field']):
             t = etree.Element('t')
             t.set(
                 "t-esc", "record.{}".format(self.get_field_name(addenda_tag['field'])))
             parent_node.append(t)
-        elif(not addenda_tag['value'] and addenda_tag['field'] and addenda_tag['inner_field']):
+        if(not addenda_tag['value'] and addenda_tag['field'] and addenda_tag['inner_field']):
             t = etree.Element('t')
             t.set(
                 "t-esc", "record.{}.{}".format(self.get_field_name(addenda_tag['field']), self.get_field_name(addenda_tag['inner_field'])))
