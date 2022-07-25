@@ -14,7 +14,7 @@
                     <field name="attribute" />
                     <field name="value" />
                     <field name="field" attrs="{'invisible': [('value','not in',('',False))]}" />
-                    <field name="preview" />
+                    <field name="preview"  widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }"/>
                     <field name='inner_field' attrs="{'invisible': [('field_type','!=','many2one'),'|',('field','in',('',False))]}" />
                 </group>
             </form>
@@ -32,7 +32,6 @@
                 <field name="value" />
                 <field name="field" />
                 <field name='inner_field' />
-
             </tree>
         </field>
     </record>
