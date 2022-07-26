@@ -16,22 +16,24 @@ class AddendaNode(models.Model):
     all_fields = fields.Many2one(
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
         domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
+    inner_field = fields.Many2one(
+        string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
+    field_type = fields.Char(compute='_compute_field_type', default='')
     path = fields.Text(string='Path', compute='_compute_path')
     attribute_options = fields.Text(
         string='Attributes options of reference node', help=_('Attributes of the node of the invoice xml'), compute='_compute_attributes', readonly=True)
 
     attribute_value = fields.Char(string='Value of attribute', help=_(
         'Value of the attribute of the new element'))
-    attribute_ids = fields.One2many(
-        comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_node_id', help=_('Attributes of the new tag/element'))
-    cfdi_attributes = fields.Many2one(comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', )
+    cfdi_attributes = fields.Many2one(
+        comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', )
 
     @api.onchange('nodes')
     def _compute_cfdi_attributes(self):
         domain = {'cfdi_attributes': []}
         for record in self:
             domain = {'cfdi_attributes': [
-                    ('node', '=', record.nodes)]}
+                ('node', '=', record.nodes)]}
         return {'domain': domain}
 
     @api.onchange('attributes')
@@ -88,6 +90,16 @@ class AddendaNode(models.Model):
 
         return {'domain': domain}
 
+    @api.onchange('all_fields')
+    def _compute_inner_fields(self):
+        domain = {'inner_field': []}
+        for record in self:
+            if record.all_fields:
+                if record.all_fields.ttype == 'many2one':
+                    domain = {'inner_field': [
+                        ('model', '=', record.all_fields.relation), ('ttype', '!=', 'many2one')]}
+        return {'domain': domain}
+
     @ api.onchange('attribute_value')
     def delete_field(self):
         for node in self:
@@ -136,6 +148,11 @@ class AddendaNode(models.Model):
         selection_vals.remove(('Comprobante/CfdiRelacionados/CfdiRelacionado',
                               'Comprobante/CfdiRelacionados/CfdiRelacionado'))
         return selection_vals
+
+    @api.depends('all_fields')
+    def _compute_field_type(self):
+        for record in self:
+            record.field_type = record.all_fields.ttype
 
     # compute the whole path of the node
     @ api.depends('nodes')

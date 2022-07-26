@@ -102,6 +102,50 @@ class AddendaAddenda(models.Model):
                        'addenda_xml': etree.tostring(full_xml, pretty_print=True),
                        'addenda_fields_xml': etree.tostring(new_fields_xml, pretty_print=True),
                        'ir_ui_view_id': ir_ui_view.id})
+
+        else:
+            new_fields_xml = self.generate_xml_fields(vals_list['fields'])
+            cfdi_xml = self._generate_and_extend_cfdi(
+                vals_list['nodes_ids'], vals_list['name'])
+            print(
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaaaa")
+            print(cfdi_xml)
+            string_cfdi_xml = cfdi_xml
+            # string_cfdi_xml = """
+            # <xpath expr="//*[name()='cfdi:Comprobante']" position="inside">
+            #         <xpath expr="//*[name()='cfdi:Concepto']" position="inside">
+            #         <t t-if="not record.l10n_mx_edi_external_trade">
+            #             <t t-foreach="line_vals['custom_numbers']" t-as="custom_number">
+            #                 <cfdi:InformacionAduanera
+            #                     xmlns:cfdi="http://www.sat.gob.mx/cfd/3"
+            #                     t-att-NumeroPedimento="custom_number"/>
+            #             </t>
+            #         </t>
+            #         </xpath>
+            #         <xpath expr="//*[name()='cfdi:Receptor']" position="attributes">
+            #             <attribute name="t-att-NumRegIdTrib">ext_trade_customer_reg_trib</attribute>
+            #         </xpath>
+            #     </xpath>
+            # """
+            # search for l10n_mx_edi.cfdiv33 in ir.ui.view
+            cfdiv33 = self.env.ref(
+                'l10n_mx_edi.cfdiv33')
+            print(cfdiv33)
+            print(type(cfdiv33))
+            ir_ui_view = self.env['ir.ui.view'].create({
+                'name': vals_list['name'],
+                'type': 'qweb',
+                'arch': string_cfdi_xml,
+                'active': True,
+                'inherit_id': cfdiv33.id,
+                'model': False,
+                'priority': 16,
+                'arch_base': string_cfdi_xml,
+                'arch_db': string_cfdi_xml,
+                'arch_fs': False,
+                'mode': 'extension',
+            })
+
         return res
 
     # override write function
@@ -111,11 +155,11 @@ class AddendaAddenda(models.Model):
         instance = self.env['addenda.addenda'].browse(self.id)
         is_customed_addenda = (vals['is_customed_addenda'] if 'is_customed_addenda' in vals.keys(
         ) else False) or instance.is_customed_addenda
-        is_expression = (vals['is_expression'] if 'is_expression' in vals.keys(
-        ) else False) or instance.is_expression
-        addenda_expression = (vals['addenda_expression'] if 'addenda_expression' in vals.keys(
-        ) else False) or instance.addenda_expression
         if not(is_customed_addenda):
+            is_expression = (vals['is_expression'] if 'is_expression' in vals.keys(
+            ) else False) or instance.is_expression
+            addenda_expression = (vals['addenda_expression'] if 'addenda_expression' in vals.keys(
+            ) else False) or instance.addenda_expression
             if is_expression and addenda_expression not in [False, '']:
                 root = etree.fromstring(addenda_expression)
             elif is_expression and addenda_expression in [False, '']:
@@ -314,3 +358,35 @@ class AddendaAddenda(models.Model):
             record.append(xml_field)
             root.append(record)
         return root
+
+    def _generate_and_extend_cfdi(self, nodes, name):
+        res = b''
+        path_extend = etree.Element("xpath")
+        path_extend.set("expr", "//*[name()='cfdi:Comprobante']")
+        path_extend.set("position", "inside")
+        for node in nodes:
+            node = node[2]
+            instance = self.env['addenda.cfdi.attributes'].browse(
+                node['cfdi_attributes'])
+            path = "//*[name()='cfdi:" + \
+                node['nodes'].split('/')[-1] + "']"
+            xpath = etree.Element("xpath")
+            xpath.set("expr", path)
+            xpath.set("position", "attributes")
+            attr = etree.Element("attribute")
+            attr.set("name", "t-att-" + instance.name)
+            if(node['attribute_value']):
+                attr.text = node['attribute_value'] + \
+                    " or (" + instance.value + ")"
+            elif(node['all_fields'] and not node['inner_field']):
+                attr.text = "record." + \
+                    self.get_field_name(node.all_fields) + \
+                    " or (" + instance.value + ")"
+            elif(node['inner_field'] and not node['all_fields']):
+                attr.text = "record." + self.get_field_name(node['all_fields']) + "." + self.get_field_name(
+                    node['inner_field']) + " or (" + instance.value + ")"
+            xpath.append(attr)
+            path_extend.append(xpath)
+        path_extend = etree.tostring(
+            path_extend, pretty_print=True, encoding='utf-8')
+        return path_extend

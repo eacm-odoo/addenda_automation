@@ -12,7 +12,7 @@
         <field name="node">Comprobante/Emisor</field>
     </record>
     <record model="addenda.cfdi.attributes" id="emisor_regimen_fiscal">
-        <field name="name">Regimen Fiscal</field>
+        <field name="name">RegimenFiscal</field>
         <field name="value">record.company_id.l10n_mx_edi_fiscal_regime</field>
         <field name="node">Comprobante/Emisor</field>
     </record>
@@ -29,7 +29,7 @@
         <field name="node">Comprobante/Receptor</field>
     </record>
     <record model="addenda.cfdi.attributes" id="receptor_residencia">
-        <field name="name">Residencia Fiscal</field>
+        <field name="name">ResidenciaFiscal</field>
         <field name="value">customer_fiscal_residence</field>
         <field name="node">Comprobante/Receptor</field>
     </record>
