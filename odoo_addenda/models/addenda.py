@@ -110,24 +110,24 @@ class AddendaAddenda(models.Model):
             print(
                 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaaaa")
             print(string_cfdi_xml)
-            # full_xml = self.get_inherit_xml(
-            #     vals_list['name'], etree.fromstring(string_cfdi_xml))
+            full_xml = self.get_inherit_xml(
+                vals_list['name'], etree.fromstring(string_cfdi_xml))
             # search for l10n_mx_edi.cfdiv33 in ir.ui.view
             cfdiv33 = self.env.ref(
                 'l10n_mx_edi.cfdiv33')
-            test_string = """
-            <data inherit_id="l10n_mx_edi.cfdiv33">
-                    <xpath expr="//*[name()='cfdi:Receptor']" position="attributes">
-                        <attribute name="t-att-Rfc">format_string("XEXX010101222") or (customer_rfc)</attribute>
-                    </xpath>
-                    <xpath expr="//*[name()='cfdi:Emisor']" position="attributes">
-                        <attribute name="t-att-Rfc">format_string("XEXX010101222") or (customer_rfc)</attribute>
-                    </xpath>
-            </data>
-            """
-            string_cfdi_xml = test_string
-            full_xml = self.get_inherit_xml(
-                vals_list['name'], etree.fromstring(test_string))
+            # test_string = """
+            # <data inherit_id="l10n_mx_edi.cfdiv33">
+            #         <xpath expr="//*[name()='cfdi:Receptor']" position="attributes">
+            #             <attribute name="t-att-Rfc">format_string("XEXX010101222") or (customer_rfc)</attribute>
+            #         </xpath>
+            #         <xpath expr="//*[name()='cfdi:Emisor']" position="attributes">
+            #             <attribute name="t-att-Rfc">format_string("XEXX010101222") or (customer_rfc)</attribute>
+            #         </xpath>
+            # </data>
+            # """
+            # string_cfdi_xml = test_string
+            # full_xml = self.get_inherit_xml(
+            #     vals_list['name'], etree.fromstring(test_string))
             ir_ui_view = self.env['ir.ui.view'].create({
                 'name': vals_list['name'],
                 'type': 'qweb',
@@ -295,7 +295,8 @@ class AddendaAddenda(models.Model):
         template.set("id", "cfdiv33_inherit_{}".format(
             name.lower().replace(' ', '_')))
         template.set('inherit_id', "l10n_mx_edi.cfdiv33")
-        template.append(root)
+        for element in list(root):
+            template.append(element)
         xml.append(template)
         return xml
 
@@ -318,6 +319,7 @@ class AddendaAddenda(models.Model):
         }
 
     def create_directory(self, name, xml, fields, is_customed_addenda):
+        name_view_file = "addenda" if not is_customed_addenda else "cfdiv33_inherit"
         template = {
             'name': name,
             'sumary': 'Addenda created using addenda.addenda',
@@ -328,7 +330,7 @@ class AddendaAddenda(models.Model):
             'depends': ['l10n_mx_edi'],
             'license': 'OPL-1',
             'data': [
-                'views/addendas.xml',
+                'views/' + name_view_file + '.xml',
             ],
         }
 
@@ -356,7 +358,7 @@ class AddendaAddenda(models.Model):
         #     tree.write(name+"/"+name+"/views/cfdiv33_inherith_" + name + "xml",
         #                pretty_print=True, xml_declaration=True, encoding='utf-8')
         # else:
-        tree.write(name+"/"+name+"/views/addendas.xml",
+        tree.write(name+"/"+name+"/views/" + name_view_file + ".xml",
                    pretty_print=True, xml_declaration=True, encoding='utf-8')
         make_archive(
             'addenda',
@@ -406,9 +408,8 @@ class AddendaAddenda(models.Model):
         return root
 
     def _generate_and_extend_cfdi(self, nodes):
-        path_extend = etree.Element("xpath")
-        path_extend.set("expr", "//*[name()='cfdi:Comprobante']")
-        path_extend.set("position", "inside")
+        path_extend = etree.Element("data")
+        path_extend.set("inherit_id", "l10n_mx_edi.cfdiv33")
         for node in nodes:
             if(type(node) == list):
                 node = node[2]
@@ -425,8 +426,8 @@ class AddendaAddenda(models.Model):
             attr = etree.Element("attribute")
             attr.set("name", "t-att-" + instance.name)
             if(node['attribute_value']):
-                attr.text = node['attribute_value'] + \
-                    " or (" + instance.value + ")"
+                attr.text = "format_string('" + node['attribute_value'] + \
+                    "') or " + instance.value
             elif(node['all_fields'] and not node['inner_field']):
                 attr.text = "record." + \
                     self.get_field_name(node['all_fields']) + \
