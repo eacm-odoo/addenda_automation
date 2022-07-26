@@ -107,27 +107,11 @@ class AddendaAddenda(models.Model):
             new_fields_xml = self.generate_xml_fields(vals_list['fields'])
             string_cfdi_xml = self._generate_and_extend_cfdi(
                 vals_list['nodes_ids'])
-            print(
-                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaaaa")
-            print(string_cfdi_xml)
             full_xml = self.get_inherit_xml(
                 vals_list['name'], etree.fromstring(string_cfdi_xml))
             # search for l10n_mx_edi.cfdiv33 in ir.ui.view
             cfdiv33 = self.env.ref(
                 'l10n_mx_edi.cfdiv33')
-            # test_string = """
-            # <data inherit_id="l10n_mx_edi.cfdiv33">
-            #         <xpath expr="//*[name()='cfdi:Receptor']" position="attributes">
-            #             <attribute name="t-att-Rfc">format_string("XEXX010101222") or (customer_rfc)</attribute>
-            #         </xpath>
-            #         <xpath expr="//*[name()='cfdi:Emisor']" position="attributes">
-            #             <attribute name="t-att-Rfc">format_string("XEXX010101222") or (customer_rfc)</attribute>
-            #         </xpath>
-            # </data>
-            # """
-            # string_cfdi_xml = test_string
-            # full_xml = self.get_inherit_xml(
-            #     vals_list['name'], etree.fromstring(test_string))
             ir_ui_view = self.env['ir.ui.view'].create({
                 'name': vals_list['name'],
                 'type': 'qweb',
@@ -152,74 +136,73 @@ class AddendaAddenda(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        # instance = self.env['addenda.addenda'].browse(self.id)
-        # is_customed_addenda = (vals['is_customed_addenda'] if 'is_customed_addenda' in vals.keys(
-        # ) else False) or instance.is_customed_addenda
-        # fields = (vals['fields'] if 'fields' in vals.keys(
-        # ) else False) or instance.fields
-        # if not(is_customed_addenda):
-        #     is_expression = (vals['is_expression'] if 'is_expression' in vals.keys(
-        #     ) else False) or instance.is_expression
-        #     addenda_expression = (vals['addenda_expression'] if 'addenda_expression' in vals.keys(
-        #     ) else False) or instance.addenda_expression
-        #     if is_expression and addenda_expression not in [False, '']:
-        #         root = etree.fromstring(addenda_expression)
-        #     elif is_expression and addenda_expression in [False, '']:
-        #         vals['state'] = 'draft'
-        #         res = super().write(vals)
-        #         return res
-        #     elif not(is_expression):
-        #         root = etree.Element(instance.tag_name.replace(' ', '_'))
-        #         for tag in instance.addenda_tag_id:
-        #             xml_tree_tag = self.generate_tree_view(tag)
-        #             root.append(xml_tree_tag)
-        #     full_xml = self.get_xml(instance.name, root)
-        #     root_string = etree.tostring(root, pretty_print=True)
-        #     instance.ir_ui_view_id.write({
-        #         'arch': root_string,
-        #         'arch_db': root_string,
-        #         'arch_base': root_string,
-        #     })
-        #     if fields:
-        #         new_fields_xml = self.generate_xml_fields(fields)
-        #         vals['addenda_fields_xml'] = etree.tostring(
-        #             new_fields_xml, pretty_print=True)
+        instance = self.env['addenda.addenda'].browse(self.id)
+        is_customed_addenda = (vals['is_customed_addenda'] if 'is_customed_addenda' in vals.keys(
+        ) else False) or instance.is_customed_addenda
+        fields = (vals['fields'] if 'fields' in vals.keys(
+        ) else False) or instance.fields
+        if not(is_customed_addenda):
+            is_expression = (vals['is_expression'] if 'is_expression' in vals.keys(
+            ) else False) or instance.is_expression
+            addenda_expression = (vals['addenda_expression'] if 'addenda_expression' in vals.keys(
+            ) else False) or instance.addenda_expression
+            if is_expression and addenda_expression not in [False, '']:
+                root = etree.fromstring(addenda_expression)
+            elif is_expression and addenda_expression in [False, '']:
+                vals['state'] = 'draft'
+                res = super().write(vals)
+                return res
+            elif not(is_expression):
+                root = etree.Element(instance.tag_name.replace(' ', '_'))
+                for tag in instance.addenda_tag_id:
+                    xml_tree_tag = self.generate_tree_view(tag)
+                    root.append(xml_tree_tag)
+            full_xml = self.get_xml(instance.name, root)
+            root_string = etree.tostring(root, pretty_print=True)
+            instance.ir_ui_view_id.write({
+                'arch': root_string,
+                'arch_db': root_string,
+                'arch_base': root_string,
+            })
+            if fields:
+                new_fields_xml = self.generate_xml_fields(fields)
+                vals['addenda_fields_xml'] = etree.tostring(
+                    new_fields_xml, pretty_print=True)
 
-        #     vals['addenda_xml'] = etree.tostring(full_xml, pretty_print=True)
-        #     # remove fields from vals
-        #     vals.pop('fields', None)
-        #     vals.pop('addenda_tag_id', None)
-        #     vals['state'] = 'done'
-        #     res = super().write(vals)
-        # else:
-        #     nodes = (vals['nodes_ids'] if 'nodes_ids' in vals.keys(
-        #     ) else False) or instance.nodes_ids
-        #     name = (vals['name'] if 'name' in vals.keys(
-        #     ) else False) or instance.name
-        #     if not nodes:
-        #         vals['state'] = 'draft'
-        #         res = super().write(vals)
-        #         return res
-        #     else:
-        #         string_cfdi_xml = self._generate_and_extend_cfdi(nodes)
-        #         full_xml = self.get_inherit_xml(
-        #             name, etree.fromstring(string_cfdi_xml))
-        #         vals['addenda_xml'] = etree.tostring(
-        #             full_xml, pretty_print=True)
-        #         instance.ir_ui_view_id.write({
-        #             'arch': string_cfdi_xml,
-        #             'arch_db': string_cfdi_xml,
-        #             'arch_base': string_cfdi_xml,
-        #         })
-        #     if fields:
-        #         new_fields_xml = self.generate_xml_fields(fields)
-        #         vals['addenda_fields_xml'] = etree.tostring(
-        #             new_fields_xml, pretty_print=True)
-        #     # remove fields from vals
-        #     vals.pop('fields', None)
-        #     vals.pop('addenda_tag_id', None)
-        #     vals['state'] = 'done'
-        #     res = super().write(vals)
+            vals['addenda_xml'] = etree.tostring(full_xml, pretty_print=True)
+            # remove fields from vals
+            vals.pop('fields', None)
+            vals.pop('addenda_tag_id', None)
+            vals['state'] = 'done'
+            res = super().write(vals)
+        else:
+            nodes = instance.nodes_ids
+            name = (vals['name'] if 'name' in vals.keys(
+            ) else False) or instance.name
+            if not nodes:
+                vals['state'] = 'draft'
+                res = super().write(vals)
+                return res
+            else:
+                string_cfdi_xml = self._generate_and_extend_cfdi(nodes)
+                full_xml = self.get_inherit_xml(
+                    name, etree.fromstring(string_cfdi_xml))
+                vals['addenda_xml'] = etree.tostring(
+                    full_xml, pretty_print=True)
+                instance.ir_ui_view_id.write({
+                    'arch': string_cfdi_xml,
+                    'arch_db': string_cfdi_xml,
+                    'arch_base': string_cfdi_xml,
+                })
+            if fields:
+                new_fields_xml = self.generate_xml_fields(fields)
+                vals['addenda_fields_xml'] = etree.tostring(
+                    new_fields_xml, pretty_print=True)
+            # remove fields from vals
+            vals.pop('fields', None)
+            vals.pop('nodes_ids', None)
+            vals['state'] = 'done'
+            res = super().write(vals)
         return res
 
     # Function to create the xml tree, given  tag_name and addenda_tag_id
@@ -353,11 +336,6 @@ class AddendaAddenda(models.Model):
         f = open(name+"/"+name+"/__init__.py", "w")
         f.close()
         tree = etree.ElementTree(xml)
-        # save xml in the folder views
-        # if(is_customed_addenda):
-        #     tree.write(name+"/"+name+"/views/cfdiv33_inherith_" + name + "xml",
-        #                pretty_print=True, xml_declaration=True, encoding='utf-8')
-        # else:
         tree.write(name+"/"+name+"/views/" + name_view_file + ".xml",
                    pretty_print=True, xml_declaration=True, encoding='utf-8')
         make_archive(
@@ -411,6 +389,7 @@ class AddendaAddenda(models.Model):
         path_extend = etree.Element("data")
         path_extend.set("inherit_id", "l10n_mx_edi.cfdiv33")
         for node in nodes:
+            print(node)
             if(type(node) == list):
                 node = node[2]
             if(type(node['cfdi_attributes']) == int):
