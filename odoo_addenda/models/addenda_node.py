@@ -1,7 +1,6 @@
 from lxml.objectify import fromstring
 import xml.etree.ElementTree as ET
 
-from pkg_resources import require
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
@@ -27,8 +26,6 @@ class AddendaNode(models.Model):
     attribute_ids = fields.One2many(
         comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_node_id', help=_('Attributes of the new tag/element'),required=True)
     cfdi_attributes = fields.Many2one(comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', required=True)
-
-   
 
     @api.onchange('nodes')
     def _compute_cfdi_attributes(self):
@@ -120,8 +117,6 @@ class AddendaNode(models.Model):
                             while(path_list[-1] != parent_map[child].tag.replace(
                                 "{http://www.sat.gob.mx/cfd/3}", "")):
                                 path_list.pop()
-                    print('----------------------------------------')
-                    print(len(child.attrib))
                     if(len(child.attrib) > 0):
                         option = "/".join(
                             path_list) + "/" + (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))
