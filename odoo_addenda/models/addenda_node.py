@@ -1,5 +1,7 @@
 from lxml.objectify import fromstring
 import xml.etree.ElementTree as ET
+from lxml import etree
+
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
@@ -28,7 +30,33 @@ class AddendaNode(models.Model):
         'Value of the attribute of the new element'))
     cfdi_attributes = fields.Many2one(
         comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', required=True)
+    node_preview = fields.Text(readonly=True,compute='_compute_node_preview')
+    
+    
+    @api.onchange('nodes','attribute_value','cfdi_attributes','all_fields')
+    def _compute_preview(self):
+        for record in self:
+            node_expr=''
+            attribute_name=''
+            attribute_value=''
+            
+            if record.nodes:
+                node=record.nodes.split('/')[-1]
+                node_expr="//*[name()='%s']"% ('cfdi:'+node)
+            if record.cfdi_attributes:
+                attribute_name='t-att-%s'% record.cfdi_attributes.name or ''
+                attribute_value=(record.attribute_value or ('record.name or (%s)'%record.all_fields.name)) or ''
+                
+            node_path = etree.Element("xpath",{'expr':node_expr})
+            attribute=etree.Element('attribute',{'name':attribute_name})
+            attribute.text=attribute_value
+            node_path.append(attribute)
 
+            node_path=etree.tostring(node_path,pretty_print=True)
+
+            record.node_preview= node_path
+        
+        
     @api.onchange('nodes')
     def _compute_cfdi_attributes(self):
         domain = {'cfdi_attributes': []}

@@ -39,7 +39,7 @@ class AddendaAddenda(models.Model):
         string='ir.ui.view view of the addenda', comodel_name='ir.ui.view')
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')          
-                
+    
     @api.onchange('is_expression')
     def _is_expression_onchange(self):
         if self.is_expression:
@@ -389,4 +389,5 @@ class AddendaAddenda(models.Model):
             path_extend.append(xpath)
         path_extend = etree.tostring(
             path_extend, pretty_print=True, encoding='utf-8')
+        
         return path_extend
