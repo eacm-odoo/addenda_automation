@@ -38,15 +38,24 @@ class AddendaAddenda(models.Model):
     ir_ui_view_id = fields.Many2one(
         string='ir.ui.view view of the addenda', comodel_name='ir.ui.view')
     fields = fields.One2many(
-        comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')          
-    
+        comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
+
     @api.onchange('is_expression')
     def _is_expression_onchange(self):
         if self.is_expression:
             self.tag_name = 'Addenda'
             self.addenda_tag_id = False
         else:
+            self.nodes_ids = False
+
+    @api.onchange('is_customed_addenda')
+    def _is_expression_onchange(self):
+        if self.is_customed_addenda:
+            self.tag_name = 'Addenda'
+            self.addenda_tag_id = False
             self.addenda_expression = False
+        else:
+            self.nodes_ids = False
 
     @api.onchange('addenda_expression')
     def evalue_expression(self):
@@ -432,7 +441,6 @@ class AddendaAddenda(models.Model):
             xpath.set("position", "attributes")
             attr = etree.Element("attribute")
             attr.set("name", "t-att-" + instance.name)
-            print(node['all_fields'])
             if(node['attribute_value']):
                 attr.text = "format_string('" + node['attribute_value'] + \
                     "') or " + instance.value
@@ -447,5 +455,5 @@ class AddendaAddenda(models.Model):
             path_extend.append(xpath)
         path_extend = etree.tostring(
             path_extend, pretty_print=True, encoding='utf-8')
-        
+
         return path_extend
