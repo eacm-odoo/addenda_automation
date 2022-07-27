@@ -13,6 +13,8 @@
                     <field name="all_fields" attrs="{'invisible': [('attribute_value', 'not in', ('',False))]}" />
                     <field name='inner_field' attrs="{'invisible': [('field_type','!=','many2one'),'|',('all_fields','in',('',False))]}" />
                     <field name="attribute_options" />
+                    <field name="attribute_pattern" attrs="{'invisible': [('attribute_pattern','=',False)]}"/>
+                    <field name="node_preview" />
                 </group>
             </form>
         </field>

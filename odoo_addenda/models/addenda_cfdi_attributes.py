@@ -10,3 +10,5 @@ class AddendaCfdiAttributes(models.Model):
     node = fields.Char(string='Node', required=True)
     nodes_ids = fields.One2many(
         comodel_name='addenda.node', string='Nodes', inverse_name='cfdi_attributes')
+    pattern =fields.Char(string='Pattern')
+    

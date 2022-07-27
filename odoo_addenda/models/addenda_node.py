@@ -1,7 +1,10 @@
 from lxml.objectify import fromstring
 import xml.etree.ElementTree as ET
+from lxml import etree
+import re
+
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class AddendaNode(models.Model):
@@ -27,6 +30,40 @@ class AddendaNode(models.Model):
         'Value of the attribute of the new element'))
     cfdi_attributes = fields.Many2one(
         comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', required=True)
+    node_preview = fields.Text(readonly=True, compute='_compute_node_preview')
+    attribute_pattern = fields.Char(string='Pattern', help=_(
+        'Pattern to validate the attribute value'), compute='_compute_attribute_pattern')
+
+    @api.onchange('cfdi_attributes')
+    def __compute_attribute_pattern(self):
+        if self.cfdi_attributes and self.cfdi_attributes.pattern:
+            self.attribute_pattern = self.cfdi_attributes.pattern
+        else:
+            self.attribute_pattern = False
+
+    @api.onchange('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields')
+    def _compute_preview(self):
+        for record in self:
+            node_expr = ''
+            attribute_name = ''
+            attribute_value = ''
+
+            if record.nodes:
+                node = record.nodes.split('/')[-1]
+                node_expr = "//*[name()='%s']" % ('cfdi:'+node)
+            if record.cfdi_attributes:
+                attribute_name = 't-att-%s' % record.cfdi_attributes.name or ''
+                attribute_value = (record.attribute_value or (
+                    'record.name or (%s)' % record.all_fields.name)) or ''
+
+            node_path = etree.Element("xpath", {'expr': node_expr})
+            attribute = etree.Element('attribute', {'name': attribute_name})
+            attribute.text = attribute_value
+            node_path.append(attribute)
+
+            node_path = etree.tostring(node_path, pretty_print=True)
+
+            record.node_preview = node_path
 
     @api.onchange('nodes')
     def _compute_cfdi_attributes(self):
@@ -97,14 +134,27 @@ class AddendaNode(models.Model):
             if record.all_fields:
                 if record.all_fields.ttype == 'many2one':
                     domain = {'inner_field': [
-                        ('model', '=', record.all_fields.relation), ('ttype', '!=', 'many2one'), ('ttype', '!=', 'many2many'),('ttype', '!=', 'one2many')]}
+                        ('model', '=', record.all_fields.relation), ('ttype', '!=', 'many2one'), ('ttype', '!=', 'many2many'), ('ttype', '!=', 'one2many')]}
         return {'domain': domain}
 
-    @ api.onchange('attribute_value')
+    @api.onchange('attribute_value')
     def delete_field(self):
         for node in self:
             if(node.attribute_value):
                 node.all_fields = False
+
+    @api.onchange('attribute_value')
+    @api.constrains('attribute_value')
+    def _check_value_with_pattern(self):
+        for record in self:
+            if record.cfdi_attributes.pattern and record.attribute_value:
+                print('------------------------------------------------------')
+                print(record.cfdi_attributes.pattern)
+                pattern = re.compile(record.cfdi_attributes.pattern)
+                if not pattern.match(record.attribute_value):
+                    record.attribute_value = ''
+                    raise ValidationError(
+                        _('The value of the attribute is not valid, the pattern is %s') % record.cfdi_attributes.pattern)
 
     # recover all the nodes of the cfdiv33 so the user can choose one
     def _compute_nodes(self):
@@ -117,9 +167,7 @@ class AddendaNode(models.Model):
         path_list = []  # list of element's parents
         previous_child = None
         for child in root.iter():
-
             try:
-
                 if child.tag == 't':
                     child.tag = parent_map[child].tag
                 if(child.tag != parent_map[child].tag):
@@ -130,9 +178,10 @@ class AddendaNode(models.Model):
                             while(path_list[-1] != parent_map[child].tag.replace(
                                     "{http://www.sat.gob.mx/cfd/3}", "")):
                                 path_list.pop()
-                    option = "/".join(
-                        path_list) + "/" + (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))
-                    selection_vals.append((option, option))
+                    if(len(child.attrib) > 0):
+                        option = "/".join(
+                            path_list) + "/" + (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))
+                        selection_vals.append((option, option))
                     path_list.append(child.tag.replace(
                         "{http://www.sat.gob.mx/cfd/3}", ""))
                     previous_child = child.tag
@@ -140,8 +189,7 @@ class AddendaNode(models.Model):
             except:
                 pass
         selection_vals = list(set(selection_vals))
-        selection_vals.append(
-            ('Comprobante/Complemento', 'Comprobante/Complemento'))
+
         selection_vals.remove(('/Comprobante', '/Comprobante'))
         selection_vals.remove(
             ('Comprobante/CfdiRelacionados', 'Comprobante/CfdiRelacionados'))
