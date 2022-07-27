@@ -23,8 +23,6 @@ class AddendaNode(models.Model):
         string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     field_type = fields.Char(compute='_compute_field_type', default='')
     path = fields.Text(string='Path', compute='_compute_path')
-    attribute_options = fields.Text(
-        string='Attributes options of reference node', help=_('Attributes of the node of the invoice xml'), compute='_compute_attributes', readonly=True)
 
     attribute_value = fields.Char(string='Value of attribute', help=_(
         'Value of the attribute of the new element'))
@@ -65,55 +63,26 @@ class AddendaNode(models.Model):
 
             record.node_preview = node_path
 
+    # @api.onchange('nodes')
+    # def _compute_cfdi_attributes(self):
+    #     print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    #     domain = {'cfdi_attributes': []}
+    #     for record in self:
+    #         print(record)
+    #         print(record.nodes)
+    #         domain = {'cfdi_attributes': [
+    #             ('node', '=', record.nodes)]}
+    #         print(domain)
+    #     return {'domain': domain}
+
     @api.onchange('nodes')
     def _compute_cfdi_attributes(self):
         domain = {'cfdi_attributes': []}
         for record in self:
-            domain = {'cfdi_attributes': [
-                ('node', '=', record.nodes)]}
+            if record.nodes:
+                domain = {'cfdi_attributes': [
+                    ('node', '=', record.nodes)]}
         return {'domain': domain}
-
-    @api.onchange('attributes')
-    def _validate_attributes(self):
-        if self.attributes and self.attribute_options:
-            list_of_attributes_options = self.attribute_options.split('\n')
-            if self.attributes not in list_of_attributes_options:
-                raise UserError(
-                    _('The attribute you entered is not in the list of attributes options of the reference node'))
-
-    @ api.onchange('nodes')
-    def _compute_attributes(self):
-        if self.nodes:
-            instance_cfdi = self.env.ref('l10n_mx_edi.cfdiv33')
-            root = ET.fromstring(instance_cfdi.arch)
-            parent_map = {c: p for p in root.iter()
-                          for c in p}
-            selection_vals = []
-            path_list = []  # list of element's parents
-            previous_child = None
-            for child in root.iter():
-                try:
-                    if child.tag == 't':
-                        child.tag = parent_map[child].tag
-                    if(child.tag != parent_map[child].tag):
-                        if parent_map[child].tag != previous_child:
-                            if path_list:
-                                while(path_list[-1] != parent_map[child].tag.replace(
-                                        "{http://www.sat.gob.mx/cfd/3}", "")):
-                                    path_list.pop()
-                        option = "/".join(
-                            path_list) + "/" + (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))
-                        if(self.nodes == option):
-                            for attr in child.attrib:
-                                selection_vals.append(
-                                    (attr.replace('t-att-', '')))
-                            self.attribute_options = '\n'.join(selection_vals)
-                            break
-                        path_list.append(child.tag.replace(
-                            "{http://www.sat.gob.mx/cfd/3}", ""))
-                        previous_child = child.tag
-                except:
-                    pass
 
     @ api.onchange('nodes')
     def _compute_all_fields_domain(self):
