@@ -26,7 +26,7 @@ class AddendaNode(models.Model):
     attribute_value = fields.Char(string='Value of attribute', help=_(
         'Value of the attribute of the new element'))
     cfdi_attributes = fields.Many2one(
-        comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', )
+        comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', required=True)
 
     @api.onchange('nodes')
     def _compute_cfdi_attributes(self):
