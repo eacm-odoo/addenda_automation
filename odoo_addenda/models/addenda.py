@@ -387,6 +387,30 @@ class AddendaAddenda(models.Model):
             xml_field.set("name", 'ttype')
             xml_field.text = field[2]['ttype']
             record.append(xml_field)
+            xml_field = etree.Element("field")
+            xml_field.set("name", 'required')
+            xml_field.text = str(field[2]['required'])
+            record.append(xml_field)
+            xml_field = etree.Element("field")
+            xml_field.set("name", 'readonly')
+            xml_field.text = str(field[2]['readonly'])
+            record.append(xml_field)
+            xml_field = etree.Element("field")
+            xml_field.set("name", 'store')
+            xml_field.text = str(field[2]['store'])
+            record.append(xml_field)
+            xml_field = etree.Element("field")
+            xml_field.set("name", 'index')
+            xml_field.text = str(field[2]['index'])
+            record.append(xml_field)
+            xml_field = etree.Element("field")
+            xml_field.set("name", 'copied')
+            xml_field.text = str(field[2]['copied'])
+            record.append(xml_field)
+            xml_field = etree.Element("field")
+            xml_field.set("name", 'translate')
+            xml_field.text = str(field[2]['translate'])
+            record.append(xml_field)
             root.append(record)
         return root
 
@@ -394,7 +418,6 @@ class AddendaAddenda(models.Model):
         path_extend = etree.Element("data")
         path_extend.set("inherit_id", "l10n_mx_edi.cfdiv33")
         for node in nodes:
-            print(node)
             if(type(node) == list):
                 node = node[2]
             if(type(node['cfdi_attributes']) == int):
@@ -409,6 +432,7 @@ class AddendaAddenda(models.Model):
             xpath.set("position", "attributes")
             attr = etree.Element("attribute")
             attr.set("name", "t-att-" + instance.name)
+            print(node['all_fields'])
             if(node['attribute_value']):
                 attr.text = "format_string('" + node['attribute_value'] + \
                     "') or " + instance.value
@@ -416,7 +440,7 @@ class AddendaAddenda(models.Model):
                 attr.text = "record." + \
                     self.get_field_name(node['all_fields']) + \
                     " or (" + instance.value + ")"
-            elif(node['inner_field'] and not node['all_fields']):
+            elif(node['inner_field'] and node['all_fields']):
                 attr.text = "record." + self.get_field_name(node['all_fields']) + "." + self.get_field_name(
                     node['inner_field']) + " or (" + instance.value + ")"
             xpath.append(attr)
