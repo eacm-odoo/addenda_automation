@@ -434,25 +434,34 @@ class AddendaAddenda(models.Model):
                     node['cfdi_attributes'])
             else:
                 instance = node['cfdi_attributes']
-            path = "//*[name()='cfdi:" + \
-                node['nodes'].split('/')[-1] + "']"
-            xpath = etree.Element("xpath")
-            xpath.set("expr", path)
-            xpath.set("position", "attributes")
-            attr = etree.Element("attribute")
-            attr.set("name", "t-att-" + instance.name)
-            if(node['attribute_value']):
-                attr.text = "format_string('" + node['attribute_value'] + \
-                    "') or " + instance.value
-            elif(node['all_fields'] and not node['inner_field']):
-                attr.text = "record." + \
-                    self.get_field_name(node['all_fields']) + \
-                    " or (" + instance.value + ")"
-            elif(node['inner_field'] and node['all_fields']):
-                attr.text = "record." + self.get_field_name(node['all_fields']) + "." + self.get_field_name(
-                    node['inner_field']) + " or (" + instance.value + ")"
-            xpath.append(attr)
-            path_extend.append(xpath)
+                path = "//*[name()='cfdi:" + \
+                    node['nodes'].split('/')[-1] + "']"
+            if(node['addenda_tag_ids']):
+                xpath = etree.Element("xpath")
+                xpath.set("expr", path)
+                xpath.set("position", node['position'])
+                for tag in node['addenda_tag_ids']:
+                    xml = self.generate_tree_view(tag)
+                    xpath.append(xml)
+                path_extend.append(xpath)
+            else:
+                xpath = etree.Element("xpath")
+                xpath.set("expr", path)
+                xpath.set("position", "attributes")
+                attr = etree.Element("attribute")
+                attr.set("name", "t-att-" + instance.name)
+                if(node['attribute_value']):
+                    attr.text = "format_string('" + node['attribute_value'] + \
+                        "') or " + instance.value
+                elif(node['all_fields'] and not node['inner_field']):
+                    attr.text = "record." + \
+                        self.get_field_name(node['all_fields']) + \
+                        " or (" + instance.value + ")"
+                elif(node['inner_field'] and node['all_fields']):
+                    attr.text = "record." + self.get_field_name(node['all_fields']) + "." + self.get_field_name(
+                        node['inner_field']) + " or (" + instance.value + ")"
+                xpath.append(attr)
+                path_extend.append(xpath)
         path_extend = etree.tostring(
             path_extend, pretty_print=True, encoding='utf-8')
 

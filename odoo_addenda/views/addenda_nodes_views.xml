@@ -8,10 +8,12 @@
                 <group>
                     <field name="field_type" invisible='True' />
                     <field name="nodes" />
-                    <field name="cfdi_attributes" widget="selection" />
-                    <field name="attribute_value" />
-                    <field name="all_fields" attrs="{'invisible': [('attribute_value', 'not in', ('',False))]}" />
-                    <field name='inner_field' attrs="{'invisible': [('field_type','!=','many2one'),'|',('all_fields','in',('',False))]}" />
+                    <field name="position" />
+                    <field name="cfdi_attributes" widget="selection" attrs="{'invisible': [('position', 'not in', ('attributes'))]}" />
+                    <field name="attribute_value" attrs="{'invisible': [('position', 'not in', ('attributes'))]}" />
+                    <field name="addenda_tag_ids" attrs="{'invisible': [('position', 'in', ('attributes', False))]}" />
+                    <field name="all_fields" attrs="{'invisible': ['|',('position', 'not in', ('attributes')),('attribute_value', 'not in', ('',False))]}" />
+                    <field name='inner_field' attrs="{'invisible': [('field_type','!=','many2one')]}" />
                     <field name="attribute_pattern" attrs="{'invisible': [('attribute_pattern','=',False)]}" />
                     <field name="node_preview" />
                 </group>

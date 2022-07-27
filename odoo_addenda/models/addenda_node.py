@@ -14,6 +14,9 @@ class AddendaNode(models.Model):
     # computed field name nodes
     nodes = fields.Selection(
         string='Reference Node', help=_('Xml element that will serve as a reference for the new element'), selection=lambda self: self._compute_nodes(), required=True)
+    position = fields.Selection(string='Position', help=_('Where the new element is placed, relative to the reference element'), selection=[
+        ('before', 'Before'), ('after', 'After'), ('inside', 'Inside'), ('attributes', 'Attributes')], required=True)
+
     addenda_id = fields.Many2one(
         string="Addenda", comodel_name="addenda.addenda")
     all_fields = fields.Many2one(
@@ -27,10 +30,25 @@ class AddendaNode(models.Model):
     attribute_value = fields.Char(string='Value of attribute', help=_(
         'Value of the attribute of the new element'))
     cfdi_attributes = fields.Many2one(
-        comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', required=True)
+        comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit')
     node_preview = fields.Text(readonly=True, compute='_compute_node_preview')
     attribute_pattern = fields.Char(string='Pattern', help=_(
         'Pattern to validate the attribute value'), compute='_compute_attribute_pattern')
+
+    addenda_tag_ids = fields.One2many(
+        string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=_('New addenda tags added'))
+
+    @api.onchange('position')
+    def _position_onchange(self):
+        for record in self:
+            if(record.position == 'attributes'):
+                record.addenda_tag_ids = False
+            else:
+                record.attribute_value = False
+                record.attribute_pattern = False
+                record.cfdi_attributes = False
+                record.inner_field = False
+                record.all_fields = False
 
     @api.onchange('cfdi_attributes')
     def _compute_attribute_pattern(self):
@@ -63,25 +81,11 @@ class AddendaNode(models.Model):
 
             record.node_preview = node_path
 
-    # @api.onchange('nodes')
-    # def _compute_cfdi_attributes(self):
-    #     print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    #     domain = {'cfdi_attributes': []}
-    #     for record in self:
-    #         print(record)
-    #         print(record.nodes)
-    #         domain = {'cfdi_attributes': [
-    #             ('node', '=', record.nodes)]}
-    #         print(domain)
-    #     return {'domain': domain}
-
     @api.onchange('nodes')
     def _compute_cfdi_attributes(self):
-        domain = {'cfdi_attributes': []}
         for record in self:
-            if record.nodes:
-                domain = {'cfdi_attributes': [
-                    ('node', '=', record.nodes)]}
+            domain = {'cfdi_attributes': [
+                ('node', '=', record.nodes)]}
         return {'domain': domain}
 
     @ api.onchange('nodes')
