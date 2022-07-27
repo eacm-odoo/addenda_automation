@@ -29,7 +29,7 @@ class AddendaAttribute(models.Model):
             if record.field:
                 if record.field.ttype == 'many2one':
                     domain = {'inner_field': [
-                        ('model', '=', record.field.relation), ('ttype', '!=', 'many2one')]}
+                        ('model', '=', record.field.relation), ('ttype', '!=', 'many2one'), ('ttype', '!=', 'many2many'),('ttype', '!=', 'one2many')]}
         return {'domain': domain}
 
     @api.depends('field')

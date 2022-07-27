@@ -97,7 +97,7 @@ class AddendaNode(models.Model):
             if record.all_fields:
                 if record.all_fields.ttype == 'many2one':
                     domain = {'inner_field': [
-                        ('model', '=', record.all_fields.relation), ('ttype', '!=', 'many2one')]}
+                        ('model', '=', record.all_fields.relation), ('ttype', '!=', 'many2one'), ('ttype', '!=', 'many2many'),('ttype', '!=', 'one2many')]}
         return {'domain': domain}
 
     @ api.onchange('attribute_value')
