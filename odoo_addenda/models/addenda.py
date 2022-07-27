@@ -165,7 +165,7 @@ class AddendaAddenda(models.Model):
                 'arch_base': root_string,
             })
             if fields:
-                new_fields_xml = self.generate_xml_fields(fields)
+                new_fields_xml = self.generate_xml_fields(fields, True)
                 vals['addenda_fields_xml'] = etree.tostring(
                     new_fields_xml, pretty_print=True)
 
@@ -195,7 +195,7 @@ class AddendaAddenda(models.Model):
                     'arch_base': string_cfdi_xml,
                 })
             if fields:
-                new_fields_xml = self.generate_xml_fields(fields)
+                new_fields_xml = self.generate_xml_fields(fields, True)
                 vals['addenda_fields_xml'] = etree.tostring(
                     new_fields_xml, pretty_print=True)
             # remove fields from vals
@@ -350,12 +350,17 @@ class AddendaAddenda(models.Model):
         # rmtree("name")
         return bytes_content
 
-    def generate_xml_fields(self, fields):
+    def generate_xml_fields(self, fields, write=False):
         root = etree.Element('odoo')
         for field in fields:
             if type(field) != list:
                 field = [0, 2, field]
                 model_name = field[2].model
+            elif write:
+                instance_field = self.env['ir.model.fields'].browse(field[1])
+                field = [0, 2, instance_field]
+                model_name = self.env['ir.model'].search(
+                    [('id', '=', int(field[2]['model_id']))]).model
             else:
                 model_name = self.env['ir.model'].search(
                     [('id', '=', field[2]['model_id'])]).model
