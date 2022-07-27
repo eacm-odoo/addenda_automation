@@ -10,6 +10,9 @@
                 <field name="index" />
                 <field name="copied" />
             </field>
+            <field name="tracking" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </field>
         </field>
     </record>
 </odoo>
