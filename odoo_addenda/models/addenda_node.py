@@ -1,10 +1,10 @@
 from lxml.objectify import fromstring
 import xml.etree.ElementTree as ET
 from lxml import etree
-
+import re
 
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError,ValidationError
 
 
 class AddendaNode(models.Model):
@@ -31,8 +31,15 @@ class AddendaNode(models.Model):
     cfdi_attributes = fields.Many2one(
         comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', required=True)
     node_preview = fields.Text(readonly=True,compute='_compute_node_preview')
+    attribute_pattern=fields.Char(string='Pattern',help=_('Pattern to validate the attribute value'), compute='_compute_attribute_pattern')
     
-    
+    @api.onchange('cfdi_attributes')
+    def __compute_attribute_pattern(self):
+        if self.cfdi_attributes and self.cfdi_attributes.pattern:
+            self.attribute_pattern=self.cfdi_attributes.pattern
+        else:
+            self.attribute_pattern=False
+            
     @api.onchange('nodes','attribute_value','cfdi_attributes','all_fields')
     def _compute_preview(self):
         for record in self:
@@ -129,12 +136,26 @@ class AddendaNode(models.Model):
                         ('model', '=', record.all_fields.relation), ('ttype', '!=', 'many2one')]}
         return {'domain': domain}
 
-    @ api.onchange('attribute_value')
+
+    @api.onchange('attribute_value')
     def delete_field(self):
         for node in self:
             if(node.attribute_value):
                 node.all_fields = False
-
+    
+    @api.onchange('attribute_value')
+    @api.constrains('attribute_value')
+    def _check_value_with_pattern(self):
+        for record in self:
+            if record.cfdi_attributes.pattern and record.attribute_value:
+                print('------------------------------------------------------')
+                print(record.cfdi_attributes.pattern)
+                pattern=re.compile(record.cfdi_attributes.pattern)
+                if not pattern.match(record.attribute_value):
+                    record.attribute_value=''
+                    raise ValidationError(
+                        _('The value of the attribute is not valid, the pattern is %s') % record.cfdi_attributes.pattern)
+                    
     # recover all the nodes of the cfdiv33 so the user can choose one
     def _compute_nodes(self):
         # use self.env.ref to get the xml file
