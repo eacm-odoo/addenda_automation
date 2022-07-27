@@ -35,14 +35,14 @@ class AddendaNode(models.Model):
         'Pattern to validate the attribute value'), compute='_compute_attribute_pattern')
 
     @api.onchange('cfdi_attributes')
-    def __compute_attribute_pattern(self):
+    def _compute_attribute_pattern(self):
         if self.cfdi_attributes and self.cfdi_attributes.pattern:
             self.attribute_pattern = self.cfdi_attributes.pattern
         else:
             self.attribute_pattern = False
 
     @api.onchange('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields')
-    def _compute_preview(self):
+    def _compute_node_preview(self):
         for record in self:
             node_expr = ''
             attribute_name = ''
@@ -148,8 +148,6 @@ class AddendaNode(models.Model):
     def _check_value_with_pattern(self):
         for record in self:
             if record.cfdi_attributes.pattern and record.attribute_value:
-                print('------------------------------------------------------')
-                print(record.cfdi_attributes.pattern)
                 pattern = re.compile(record.cfdi_attributes.pattern)
                 if not pattern.match(record.attribute_value):
                     record.attribute_value = ''
