@@ -119,6 +119,8 @@ class AddendaNode(models.Model):
     def _compute_all_fields_domain(self):
         domain = {'all_fields': []}
         for record in self:
+            #Clean attribute value
+            record.cfdi_attributes = False
             if record.nodes == 'Comprobante/Conceptos/Concepto':
                 domain = {'all_fields': [
                     ('model', 'in', ('account.move', 'account.move.line'))]}
@@ -148,8 +150,6 @@ class AddendaNode(models.Model):
     def _check_value_with_pattern(self):
         for record in self:
             if record.cfdi_attributes.pattern and record.attribute_value:
-                print('------------------------------------------------------')
-                print(record.cfdi_attributes.pattern)
                 pattern = re.compile(record.cfdi_attributes.pattern)
                 if not pattern.match(record.attribute_value):
                     record.attribute_value = ''
