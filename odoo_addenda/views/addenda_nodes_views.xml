@@ -14,7 +14,6 @@
                     <field name="addenda_tag_ids" attrs="{'invisible': [('position', 'in', ('attributes', False))]}" />
                     <field name="all_fields" attrs="{'invisible': ['|',('position', 'not in', ('attributes')),('attribute_value', 'not in', ('',False))]}" />
                     <field name='inner_field' attrs="{'invisible': [('field_type','!=','many2one')]}" />
-                    <field name="attribute_pattern" attrs="{'invisible': [('attribute_pattern','=',False)]}" />
                     <field name="node_preview" />
                 </group>
             </form>
