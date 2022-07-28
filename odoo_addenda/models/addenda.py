@@ -169,9 +169,12 @@ class AddendaAddenda(models.Model):
             full_xml = self.get_xml(instance.name, root)
             root_string = etree.tostring(root, pretty_print=True)
             instance.ir_ui_view_id.write({
+                'mode': 'primary',
+                'inherit_id': False,
                 'arch': root_string,
                 'arch_db': root_string,
                 'arch_base': root_string,
+                'l10n_mx_edi_addenda_flag': True,
             })
             if fields:
                 new_fields_xml = self.generate_xml_fields(fields, True)
@@ -198,7 +201,12 @@ class AddendaAddenda(models.Model):
                     name, etree.fromstring(string_cfdi_xml))
                 vals['addenda_xml'] = etree.tostring(
                     full_xml, pretty_print=True)
+                cfdiv33 = self.env.ref(
+                'l10n_mx_edi.cfdiv33')
                 instance.ir_ui_view_id.write({
+                    'inherit_id': cfdiv33.id,
+                    'mode': 'extension',
+                    'l10n_mx_edi_addenda_flag': False,
                     'arch': string_cfdi_xml,
                     'arch_db': string_cfdi_xml,
                     'arch_base': string_cfdi_xml,
@@ -429,13 +437,13 @@ class AddendaAddenda(models.Model):
         for node in nodes:
             if(type(node) == list):
                 node = node[2]
+            path = "//*[name()='cfdi:" + \
+                    node['nodes'].split('/')[-1] + "']"
             if(type(node['cfdi_attributes']) == int):
                 instance = self.env['addenda.cfdi.attributes'].browse(
                     node['cfdi_attributes'])
             else:
                 instance = node['cfdi_attributes']
-                path = "//*[name()='cfdi:" + \
-                    node['nodes'].split('/')[-1] + "']"
             if(node['addenda_tag_ids']):
                 xpath = etree.Element("xpath")
                 xpath.set("expr", path)
