@@ -11,10 +11,11 @@
                     <field name="tag_name" />
                     <field name="addenda_tag_childs_ids" />
                     <field name="attribute_ids" />
-                    <field name="value" attrs="{'invisible': [('len_tag_childs','>',0)]}"/>
+                    <field name="value" attrs="{'invisible': [('len_tag_childs','>',0)]}" />
                     <field name="field" attrs="{'invisible': ['|',('value','not in',('',False)),('len_tag_childs','>',0)]}" />
-                    <field name="preview"  widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }"/>
-                    <field name='inner_field' attrs="{'invisible': [('field_type','!=','many2one'),'|',('field','in',('',False))]}" />
+                    <field name='inner_field_domain' invisible='True' />
+                    <field name='inner_field' domain="[('model', '=', inner_field_domain)]" attrs="{'invisible': [('field_type','!=','many2one'),'|',('field','in',('',False))]}" />
+                    <field name="preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" />
                 </group>
             </form>
         </field>

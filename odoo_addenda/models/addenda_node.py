@@ -24,12 +24,16 @@ class AddendaNode(models.Model):
         domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))])
     inner_field = fields.Many2one(
         string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
+    inner_field_domain = fields.Char(
+        string='Inner field domain', help=_('Domain to filter the inner field'))
     field_type = fields.Char(compute='_compute_field_type', default='')
     path = fields.Text(string='Path', compute='_compute_path')
     attribute_value = fields.Char(string='Value of attribute', help=_(
         'Value of the attribute of the new element'))
+    cfdi_attributes_domain = fields.Char(
+        string='cfdi_attributes domain', help=_('Domain to filter the cfdi_attributes'))
     cfdi_attributes = fields.Many2one(
-        comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', required=True)
+        comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit')
     node_preview = fields.Text(readonly=True, compute='_compute_node_preview')
     attribute_pattern = fields.Char(string='Pattern', help=_(
         'Pattern to validate the attribute value'), compute='_compute_attribute_pattern')
@@ -47,6 +51,18 @@ class AddendaNode(models.Model):
                 record.cfdi_attributes = False
                 record.inner_field = False
                 record.all_fields = False
+
+    @api.onchange('all_fields')
+    def _compute_inner_fields_domain(self):
+        for record in self:
+            if record.all_fields:
+                record.inner_field_domain = record.all_fields.relation
+
+    @api.onchange('nodes')
+    def _compute_cfdi_attributes_domain(self):
+        for record in self:
+            if record.nodes:
+                record.cfdi_attributes_domain = record.nodes
 
     @api.onchange('cfdi_attributes')
     def _compute_attribute_pattern(self):
@@ -88,12 +104,12 @@ class AddendaNode(models.Model):
 
             record.node_preview = node_path
 
-    @api.onchange('nodes')
-    def _compute_cfdi_attributes(self):
-        for record in self:
-            domain = {'cfdi_attributes': [
-                ('node', '=', record.nodes)]}
-        return {'domain': domain}
+    # @api.onchange('nodes')
+    # def _compute_cfdi_attributes(self):
+    #     for record in self:
+    #         domain = {'cfdi_attributes': [
+    #             ('node', '=', record.nodes)]}
+    #     return {'domain': domain}
 
     @ api.onchange('nodes')
     def _compute_all_fields_domain(self):
@@ -110,15 +126,15 @@ class AddendaNode(models.Model):
 
         return {'domain': domain}
 
-    @api.onchange('all_fields')
-    def _compute_inner_fields(self):
-        domain = {'inner_field': []}
-        for record in self:
-            if record.all_fields:
-                if record.all_fields.ttype == 'many2one':
-                    domain = {'inner_field': [
-                        ('model', '=', record.all_fields.relation), ('ttype', '!=', 'many2one'), ('ttype', '!=', 'many2many'), ('ttype', '!=', 'one2many')]}
-        return {'domain': domain}
+    # @api.onchange('all_fields')
+    # def _compute_inner_fields(self):
+    #     domain = {'inner_field': []}
+    #     for record in self:
+    #         if record.all_fields:
+    #             if record.all_fields.ttype == 'many2one':
+    #                 domain = {'inner_field': [
+    #                     ('model', '=', record.all_fields.relation), ('ttype', '!=', 'many2one'), ('ttype', '!=', 'many2many'), ('ttype', '!=', 'one2many')]}
+    #     return {'domain': domain}
 
     @api.onchange('attribute_value')
     def delete_field(self):

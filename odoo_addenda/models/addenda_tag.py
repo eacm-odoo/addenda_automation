@@ -30,6 +30,8 @@ class AddendaTag(models.Model):
         domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'many2one', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
     inner_field = fields.Many2one(
         string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
+    inner_field_domain = fields.Char(
+        string='Inner field domain', help=_('Domain to filter the inner field'))
     preview = fields.Text(store=False, string='Preview',
                           readonly=True, compute='_compute_preview', help=_('A preview to hel the user to create the xml'))
 
@@ -41,15 +43,21 @@ class AddendaTag(models.Model):
         self.len_tag_childs = len(self.addenda_tag_childs_ids)
 
     @api.onchange('field')
-    def _compute_inner_fields(self):
-        domain = {'inner_field': []}
+    def _compute_inner_fields_domain(self):
         for record in self:
             if record.field:
-                record.addenda_tag_childs_ids = False
-                if record.field.ttype == 'many2one':
-                    domain = {'inner_field': [
-                        ('model', '=', record.field.relation), ('ttype', '!=', 'many2many'), ('ttype', '!=', 'one2many')]}
-        return {'domain': domain}
+                record.inner_field_domain = record.field.relation
+
+    # @api.onchange('field')
+    # def _compute_inner_fields(self):
+    #     domain = {'inner_field': []}
+    #     for record in self:
+    #         if record.field:
+    #             record.addenda_tag_childs_ids = False
+    #             if record.field.ttype == 'many2one':
+    #                 domain = {'inner_field': [
+    #                     ('model', '=', record.field.relation), ('ttype', '!=', 'many2many'), ('ttype', '!=', 'one2many')]}
+    #     return {'domain': domain}
 
     @api.onchange('addenda_tag_childs_ids')
     def _child_ids_attribute_onchange(self):
