@@ -35,7 +35,7 @@ class AddendaNode(models.Model):
         'Pattern to validate the attribute value'), compute='_compute_attribute_pattern')
     addenda_tag_ids = fields.One2many(
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=_('New addenda tags added'))
-    
+
     @api.onchange('position')
     def _position_onchange(self):
         for record in self:
@@ -55,11 +55,11 @@ class AddendaNode(models.Model):
         else:
             self.attribute_pattern = False
 
-    @api.onchange('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields','inner_field')
+    @api.onchange('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields', 'inner_field')
     def _compute_node_preview(self):
         for record in self:
             node_expr = ''
-            node=''
+            node = ''
             attribute_name = ''
             attribute_value = ''
             if record.nodes:
@@ -67,17 +67,18 @@ class AddendaNode(models.Model):
                 node_expr = "//*[name()='%s']" % ('cfdi:'+node)
             if record.cfdi_attributes:
                 attribute_name = 't-att-%s' % record.cfdi_attributes.name or ''
-                
+
             if record.attribute_value:
-                attribute_value = ('format_string(%s)'% record.attribute_value)
-            
+                attribute_value = ('format_string(%s)' %
+                                   record.attribute_value)
+
             else:
-                attribute_value = ('line.%s' % record.all_fields.name) or '' if node =='Concepto' and record.all_fields.model == 'account.move.line' else ('record.%s' % record.all_fields.name) or ''
+                attribute_value = ('line.%s' % record.all_fields.name) or '' if node == 'Concepto' and record.all_fields.model == 'account.move.line' else (
+                    'record.%s' % record.all_fields.name) or ''
                 if record.inner_field:
                     print(record.inner_field.name)
-                    attribute_value+='.%s' % record.inner_field.name
-    
-                
+                    attribute_value += '.%s' % record.inner_field.name
+
             node_path = etree.Element("xpath", {'expr': node_expr})
             attribute = etree.Element('attribute', {'name': attribute_name})
             attribute.text = attribute_value
@@ -87,28 +88,6 @@ class AddendaNode(models.Model):
 
             record.node_preview = node_path
 
-    # # @api.onchange('nodes')
-    # def _compute_cfdi_attributes(self):
-    #     print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    #     domain = {'cfdi_attributes': []}
-    #     domain = [()]
-    #     records = self.search([('nodes', 'in', self.cfdi_attributes.nodes_ids.mapped('name
-    #     for record in self:
-    #         print(record)
-    #         print(record.nodes)
-    #         domain = {'cfdi_attributes': [
-    #             ('node', '=', record.nodes)]}
-    #         print(domain)
-    #     return {'domain': domain}
-
-    # @api.onchange('nodes')
-    # def _compute_cfdi_attributes(self):
-    #     domain = {'cfdi_attributes': []}
-    #     for record in self:
-    #         if record.nodes:
-    #             domain = {'cfdi_attributes': [
-    #                 ('node', '=', record.nodes)]}
-    #     return {'domain': domain}
     @api.onchange('nodes')
     def _compute_cfdi_attributes(self):
         for record in self:
@@ -120,7 +99,7 @@ class AddendaNode(models.Model):
     def _compute_all_fields_domain(self):
         domain = {'all_fields': []}
         for record in self:
-            #Clean attribute value
+            # Clean attribute value
             record.cfdi_attributes = False
             if record.nodes == 'Comprobante/Conceptos/Concepto':
                 domain = {'all_fields': [
@@ -180,10 +159,9 @@ class AddendaNode(models.Model):
                             while(path_list[-1] != parent_map[child].tag.replace(
                                     "{http://www.sat.gob.mx/cfd/3}", "")):
                                 path_list.pop()
-                    if(len(child.attrib) > 0):
-                        option = "/".join(
-                            path_list) + "/" + (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))
-                        selection_vals.append((option, option))
+                    option = "/".join(
+                        path_list) + "/" + (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))
+                    selection_vals.append((option, option))
                     path_list.append(child.tag.replace(
                         "{http://www.sat.gob.mx/cfd/3}", ""))
                     previous_child = child.tag
@@ -193,10 +171,6 @@ class AddendaNode(models.Model):
         selection_vals = list(set(selection_vals))
 
         selection_vals.remove(('/Comprobante', '/Comprobante'))
-        selection_vals.remove(
-            ('Comprobante/CfdiRelacionados', 'Comprobante/CfdiRelacionados'))
-        selection_vals.remove(('Comprobante/CfdiRelacionados/CfdiRelacionado',
-                              'Comprobante/CfdiRelacionados/CfdiRelacionado'))
         return selection_vals
 
     @api.depends('all_fields')
