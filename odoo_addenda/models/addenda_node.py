@@ -87,7 +87,6 @@ class AddendaNode(models.Model):
 
             record.node_preview = node_path
 
-<<<<<<< HEAD
     # # @api.onchange('nodes')
     # def _compute_cfdi_attributes(self):
     #     print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
@@ -110,14 +109,12 @@ class AddendaNode(models.Model):
     #             domain = {'cfdi_attributes': [
     #                 ('node', '=', record.nodes)]}
     #     return {'domain': domain}
-=======
     @api.onchange('nodes')
     def _compute_cfdi_attributes(self):
         for record in self:
             domain = {'cfdi_attributes': [
                 ('node', '=', record.nodes)]}
         return {'domain': domain}
->>>>>>> 5df7010bbc39438939c5ea2f85cd8a06aeff5b48
 
     @ api.onchange('nodes')
     def _compute_all_fields_domain(self):
