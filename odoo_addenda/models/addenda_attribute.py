@@ -25,11 +25,10 @@ class AddendaAttribute(models.Model):
     def _compute_inner_fields(self):
         domain = {'inner_field': []}
         for record in self:
-            print(record.addenda_node_id.nodes)
             if record.field:
                 if record.field.ttype == 'many2one':
                     domain = {'inner_field': [
-                        ('model', '=', record.field.relation), ('ttype', '!=', 'many2one'), ('ttype', '!=', 'many2many'),('ttype', '!=', 'one2many')]}
+                        ('model', '=', record.field.relation), ('ttype', '!=', 'many2one'), ('ttype', '!=', 'many2many'), ('ttype', '!=', 'one2many')]}
         return {'domain': domain}
 
     @api.depends('field')
