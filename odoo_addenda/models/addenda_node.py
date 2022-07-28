@@ -2,7 +2,7 @@ from lxml.objectify import fromstring
 import xml.etree.ElementTree as ET
 from lxml import etree
 import re
-
+import json
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -26,18 +26,16 @@ class AddendaNode(models.Model):
         string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     field_type = fields.Char(compute='_compute_field_type', default='')
     path = fields.Text(string='Path', compute='_compute_path')
-
     attribute_value = fields.Char(string='Value of attribute', help=_(
         'Value of the attribute of the new element'))
     cfdi_attributes = fields.Many2one(
-        comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit')
+        comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit', required=True)
     node_preview = fields.Text(readonly=True, compute='_compute_node_preview')
     attribute_pattern = fields.Char(string='Pattern', help=_(
         'Pattern to validate the attribute value'), compute='_compute_attribute_pattern')
-
     addenda_tag_ids = fields.One2many(
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=_('New addenda tags added'))
-
+    
     @api.onchange('position')
     def _position_onchange(self):
         for record in self:
@@ -57,21 +55,29 @@ class AddendaNode(models.Model):
         else:
             self.attribute_pattern = False
 
-    @api.onchange('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields')
+    @api.onchange('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields','inner_field')
     def _compute_node_preview(self):
         for record in self:
             node_expr = ''
+            node=''
             attribute_name = ''
             attribute_value = ''
-
             if record.nodes:
                 node = record.nodes.split('/')[-1]
                 node_expr = "//*[name()='%s']" % ('cfdi:'+node)
             if record.cfdi_attributes:
                 attribute_name = 't-att-%s' % record.cfdi_attributes.name or ''
-                attribute_value = (record.attribute_value or (
-                    'record.name or (%s)' % record.all_fields.name)) or ''
-
+                
+            if record.attribute_value:
+                attribute_value = ('format_string(%s)'% record.attribute_value)
+            
+            else:
+                attribute_value = ('line.%s' % record.all_fields.name) or '' if node =='Concepto' and record.all_fields.model == 'account.move.line' else ('record.%s' % record.all_fields.name) or ''
+                if record.inner_field:
+                    print(record.inner_field.name)
+                    attribute_value+='.%s' % record.inner_field.name
+    
+                
             node_path = etree.Element("xpath", {'expr': node_expr})
             attribute = etree.Element('attribute', {'name': attribute_name})
             attribute.text = attribute_value
@@ -81,6 +87,28 @@ class AddendaNode(models.Model):
 
             record.node_preview = node_path
 
+    # # @api.onchange('nodes')
+    # def _compute_cfdi_attributes(self):
+    #     print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    #     domain = {'cfdi_attributes': []}
+    #     domain = [()]
+    #     records = self.search([('nodes', 'in', self.cfdi_attributes.nodes_ids.mapped('name
+    #     for record in self:
+    #         print(record)
+    #         print(record.nodes)
+    #         domain = {'cfdi_attributes': [
+    #             ('node', '=', record.nodes)]}
+    #         print(domain)
+    #     return {'domain': domain}
+
+    # @api.onchange('nodes')
+    # def _compute_cfdi_attributes(self):
+    #     domain = {'cfdi_attributes': []}
+    #     for record in self:
+    #         if record.nodes:
+    #             domain = {'cfdi_attributes': [
+    #                 ('node', '=', record.nodes)]}
+    #     return {'domain': domain}
     @api.onchange('nodes')
     def _compute_cfdi_attributes(self):
         for record in self:
@@ -92,6 +120,8 @@ class AddendaNode(models.Model):
     def _compute_all_fields_domain(self):
         domain = {'all_fields': []}
         for record in self:
+            #Clean attribute value
+            record.cfdi_attributes = False
             if record.nodes == 'Comprobante/Conceptos/Concepto':
                 domain = {'all_fields': [
                     ('model', 'in', ('account.move', 'account.move.line')), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))]}
