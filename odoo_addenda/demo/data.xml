@@ -5,13 +5,11 @@
         <field name="name">Rfc</field>
         <field name="value">supplier.vat</field>
         <field name="node">Comprobante/Emisor</field>
-        <field name="pattern">[A-Z&#38;Ñ]{3,4}[0-9]{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]</field>
     </record>
     <record model="addenda.cfdi.attributes" id="emisor_nombre">
         <field name="name">Nombre</field>
         <field name="value">format_string(supplier.name, 254)</field>
         <field name="node">Comprobante/Emisor</field>
-        <field name="pattern">[^|]{1,254}</field>
     </record>
     <record model="addenda.cfdi.attributes" id="emisor_regimen_fiscal">
         <field name="name">RegimenFiscal</field>
@@ -29,7 +27,6 @@
         <field name="name">Nombre</field>
         <field name="value">format_string(customer.commercial_partner_id.name, 254)</field>
         <field name="node">Comprobante/Receptor</field>
-        <field name="pattern">[^|]{1,254}</field>
     </record>
     <record model="addenda.cfdi.attributes" id="receptor_residencia">
         <field name="name">ResidenciaFiscal</field>
@@ -130,7 +127,6 @@
         <field name="name">NoIdentificacion</field>
         <field name="value">format_string(line.product_id.default_code)</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
-        <field name="pattern">[^|]{1,100}</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_Cantidad">
         <field name="name">Cantidad</field>
@@ -146,14 +142,11 @@
         <field name="name">Unidad</field>
         <field name="value">format_string(line.product_uom_id.name, 20)</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
-        <field name="pattern">[^|]{1,20}</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_Descripcion">
         <field name="name">Descripcion</field>
         <field name="value">format_string(line.name, 1000)</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
-        <field name="pattern">[^|]{1,1000}</field>
-
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_ValorUnitario">
         <field name="name">ValorUnitario</field>

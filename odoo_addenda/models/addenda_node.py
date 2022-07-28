@@ -35,8 +35,6 @@ class AddendaNode(models.Model):
     cfdi_attributes = fields.Many2one(
         comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit')
     node_preview = fields.Text(readonly=True, compute='_compute_node_preview')
-    attribute_pattern = fields.Char(string='Pattern', help=_(
-        'Pattern to validate the attribute value'), compute='_compute_attribute_pattern')
     addenda_tag_ids = fields.One2many(
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=_('New addenda tags added'))
 
@@ -47,7 +45,6 @@ class AddendaNode(models.Model):
                 record.addenda_tag_ids = False
             else:
                 record.attribute_value = False
-                record.attribute_pattern = False
                 record.cfdi_attributes = False
                 record.inner_field = False
                 record.all_fields = False
@@ -63,13 +60,6 @@ class AddendaNode(models.Model):
         for record in self:
             if record.nodes:
                 record.cfdi_attributes_domain = record.nodes
-
-    @api.onchange('cfdi_attributes')
-    def _compute_attribute_pattern(self):
-        if self.cfdi_attributes and self.cfdi_attributes.pattern:
-            self.attribute_pattern = self.cfdi_attributes.pattern
-        else:
-            self.attribute_pattern = False
 
     @api.onchange('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields', 'inner_field')
     def _compute_node_preview(self):
@@ -104,13 +94,6 @@ class AddendaNode(models.Model):
 
             record.node_preview = node_path
 
-    # @api.onchange('nodes')
-    # def _compute_cfdi_attributes(self):
-    #     for record in self:
-    #         domain = {'cfdi_attributes': [
-    #             ('node', '=', record.nodes)]}
-    #     return {'domain': domain}
-
     @ api.onchange('nodes')
     def _compute_all_fields_domain(self):
         domain = {'all_fields': []}
@@ -126,32 +109,11 @@ class AddendaNode(models.Model):
 
         return {'domain': domain}
 
-    # @api.onchange('all_fields')
-    # def _compute_inner_fields(self):
-    #     domain = {'inner_field': []}
-    #     for record in self:
-    #         if record.all_fields:
-    #             if record.all_fields.ttype == 'many2one':
-    #                 domain = {'inner_field': [
-    #                     ('model', '=', record.all_fields.relation), ('ttype', '!=', 'many2one'), ('ttype', '!=', 'many2many'), ('ttype', '!=', 'one2many')]}
-    #     return {'domain': domain}
-
     @api.onchange('attribute_value')
     def delete_field(self):
         for node in self:
             if(node.attribute_value):
                 node.all_fields = False
-
-    @api.onchange('attribute_value')
-    @api.constrains('attribute_value')
-    def _check_value_with_pattern(self):
-        for record in self:
-            if record.cfdi_attributes.pattern and record.attribute_value:
-                pattern = re.compile(record.cfdi_attributes.pattern)
-                if not pattern.match(record.attribute_value):
-                    record.attribute_value = ''
-                    raise ValidationError(
-                        _('The value of the attribute is not valid, the pattern is %s') % record.cfdi_attributes.pattern)
 
     # recover all the nodes of the cfdiv33 so the user can choose one
     def _compute_nodes(self):

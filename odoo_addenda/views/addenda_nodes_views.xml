@@ -16,7 +16,6 @@
                     <field name="all_fields" attrs="{'invisible': ['|',('position', 'not in', ('attributes')),('attribute_value', 'not in', ('',False))]}" />
                     <field name='inner_field_domain' invisible='True' />
                     <field name='inner_field' domain="[('model', '=', inner_field_domain)]" attrs="{'invisible': [('field_type','!=','many2one'),'|',('all_fields','in',('',False))]}" />
-                    <field name="attribute_pattern" attrs="{'invisible': [('attribute_pattern','=',False)]}" />
                     <field name="node_preview" />
                 </group>
             </form>
