@@ -21,7 +21,7 @@ class AddendaNode(models.Model):
         string="Addenda", comodel_name="addenda.addenda")
     all_fields = fields.Many2one(
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
-        domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
+        domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))])
     inner_field = fields.Many2one(
         string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     field_type = fields.Char(compute='_compute_field_type', default='')
@@ -94,9 +94,10 @@ class AddendaNode(models.Model):
         for record in self:
             if record.nodes == 'Comprobante/Conceptos/Concepto':
                 domain = {'all_fields': [
-                    ('model', 'in', ('account.move', 'account.move.line'))]}
+                    ('model', 'in', ('account.move', 'account.move.line')), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))]}
             else:
-                domain = {'all_fields': [('model', '=', ('account.move'))]}
+                domain = {'all_fields': [('model', '=', ('account.move')), ('ttype', 'in', (
+                    'char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))]}
 
         return {'domain': domain}
 

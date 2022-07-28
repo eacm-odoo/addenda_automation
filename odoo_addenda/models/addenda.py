@@ -454,12 +454,21 @@ class AddendaAddenda(models.Model):
                     attr.text = "format_string('" + node['attribute_value'] + \
                         "') or " + instance.value
                 elif(node['all_fields'] and not node['inner_field']):
-                    attr.text = "record." + \
-                        self.get_field_name(node['all_fields']) + \
-                        " or (" + instance.value + ")"
+                    if(node['all_fields'].model == 'account.move.line'):
+                        attr.text = "line." + \
+                            self.get_field_name(node['all_fields']) + \
+                            " or (" + instance.value + ")"
+                    else:
+                        attr.text = "record." + \
+                            self.get_field_name(node['all_fields']) + \
+                            " or (" + instance.value + ")"
                 elif(node['inner_field'] and node['all_fields']):
-                    attr.text = "record." + self.get_field_name(node['all_fields']) + "." + self.get_field_name(
-                        node['inner_field']) + " or (" + instance.value + ")"
+                    if(node['all_fields'].model == 'account.move.line'):
+                        attr.text = "line." + self.get_field_name(node['all_fields']) + "." + self.get_field_name(
+                            node['inner_field']) + " or (" + instance.value + ")"
+                    else:
+                        attr.text = "record." + self.get_field_name(node['all_fields']) + "." + self.get_field_name(
+                            node['inner_field']) + " or (" + instance.value + ")"
                 xpath.append(attr)
                 path_extend.append(xpath)
         path_extend = etree.tostring(
