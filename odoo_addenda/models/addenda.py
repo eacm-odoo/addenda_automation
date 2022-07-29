@@ -444,6 +444,16 @@ class AddendaAddenda(models.Model):
                     node['cfdi_attributes'])
             else:
                 instance = node['cfdi_attributes']
+            if(type(node['all_fields']) == int):
+                all_fields = self.env['addenda.cfdi.fields'].browse(
+                    node['all_fields'])
+            else:
+                all_fields = node['all_fields']
+            if(type(node['inner_field']) == int):
+                inner_field = self.env['addenda.cfdi.fields'].browse(
+                    node['inner_field'])
+            else:
+                inner_field = node['inner_field']
             if(node['addenda_tag_ids']):
                 xpath = etree.Element("xpath")
                 xpath.set("expr", path)
@@ -461,22 +471,22 @@ class AddendaAddenda(models.Model):
                 if(node['attribute_value']):
                     attr.text = "format_string('" + node['attribute_value'] + \
                         "') or " + instance.value
-                elif(node['all_fields'] and not node['inner_field']):
-                    if(node['all_fields'].model == 'account.move.line'):
+                elif(all_fields and not inner_field):
+                    if(all_fields.model == 'account.move.line'):
                         attr.text = "line." + \
-                            self.get_field_name(node['all_fields']) + \
+                            self.get_field_name(all_fields) + \
                             " or (" + instance.value + ")"
                     else:
                         attr.text = "record." + \
-                            self.get_field_name(node['all_fields']) + \
+                            self.get_field_name(all_fields) + \
                             " or (" + instance.value + ")"
-                elif(node['inner_field'] and node['all_fields']):
-                    if(node['all_fields'].model == 'account.move.line'):
-                        attr.text = "line." + self.get_field_name(node['all_fields']) + "." + self.get_field_name(
-                            node['inner_field']) + " or (" + instance.value + ")"
+                elif(inner_field and all_fields):
+                    if(all_fields.model == 'account.move.line'):
+                        attr.text = "line." + self.get_field_name(all_fields) + "." + self.get_field_name(
+                            inner_field) + " or (" + instance.value + ")"
                     else:
-                        attr.text = "record." + self.get_field_name(node['all_fields']) + "." + self.get_field_name(
-                            node['inner_field']) + " or (" + instance.value + ")"
+                        attr.text = "record." + self.get_field_name(all_fields) + "." + self.get_field_name(
+                            inner_field) + " or (" + instance.value + ")"
                 xpath.append(attr)
                 path_extend.append(xpath)
         path_extend = etree.tostring(
