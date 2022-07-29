@@ -55,34 +55,36 @@ class AddendaNode(models.Model):
         else:
             self.attribute_pattern = False
 
-    @api.onchange('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields','inner_field')
+    @api.onchange('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields','inner_field','position')
     def _compute_node_preview(self):
         for record in self:
             node_expr = ''
             node=''
             attribute_name = ''
             attribute_value = ''
+            node_path=''
             if record.nodes:
-                node = record.nodes.split('/')[-1]
-                node_expr = "//*[name()='%s']" % ('cfdi:'+node)
-            if record.cfdi_attributes:
-                attribute_name = 't-att-%s' % record.cfdi_attributes.name or ''
-                
-            if record.attribute_value:
-                attribute_value = ('format_string(%s)'% record.attribute_value)
-            
-            else:
-                attribute_value = ('line.%s' % record.all_fields.name) or '' if node =='Concepto' and record.all_fields.model == 'account.move.line' else ('record.%s' % record.all_fields.name) or ''
-                if record.inner_field:
-                    print(record.inner_field.name)
-                    attribute_value+='.%s' % record.inner_field.name
-    
-                
-            node_path = etree.Element("xpath", {'expr': node_expr})
-            attribute = etree.Element('attribute', {'name': attribute_name})
-            attribute.text = attribute_value
-            node_path.append(attribute)
+                    node = record.nodes.split('/')[-1]
+                    node_expr = "//*[name()='%s']" % ('cfdi:'+node)
+                    node_path = etree.Element("xpath", {'expr': node_expr, 'position': record.position or ''})
 
+            if record.position == 'attributes':
+                if record.cfdi_attributes:
+                    attribute_name = 't-att-%s' % record.cfdi_attributes.name or ''
+                if record.attribute_value:
+                    attribute_value = ('format_string(%s)'% record.attribute_value) or ''
+                else:
+                    attribute_value = ('line.%s' % record.all_fields.name) or '' if node =='Concepto' and record.all_fields.model == 'account.move.line' else (('record.%s' % record.all_fields.name)or '') or ''
+                    if record.inner_field:
+                        print(record.inner_field.name)
+                        attribute_value+='.%s' % record.inner_field.name
+                attribute = etree.Element('attribute', {'name': attribute_name})
+                attribute.text = attribute_value
+                node_path.append(attribute)
+            else:
+                if record.addenda_tag_ids:
+                    for tag in record.addenda_tag_ids:
+                        print(tag)
             node_path = etree.tostring(node_path, pretty_print=True)
 
             record.node_preview = node_path
