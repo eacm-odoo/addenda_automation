@@ -4,9 +4,6 @@ from shutil import make_archive, rmtree
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from lxml import etree
-import logging
-
-_logger = logging.getLogger(__name__)
 
 
 class AddendaAddenda(models.Model):
@@ -118,7 +115,6 @@ class AddendaAddenda(models.Model):
                 vals_list['nodes_ids'])
             full_xml = self.get_inherit_xml(
                 vals_list['name'], etree.fromstring(string_cfdi_xml))
-            # search for l10n_mx_edi.cfdiv33 in ir.ui.view
             cfdiv33 = self.env.ref(
                 'l10n_mx_edi.cfdiv33')
             ir_ui_view = self.env['ir.ui.view'].create({
@@ -142,7 +138,6 @@ class AddendaAddenda(models.Model):
         return res
 
     # override write function
-
     def write(self, vals):
         res = super().write(vals)
         instance = self.env['addenda.addenda'].browse(self.id)
@@ -223,7 +218,6 @@ class AddendaAddenda(models.Model):
         return res
 
     # Function to create the xml tree, given  tag_name and addenda_tag_id
-
     def generate_tree_view(self, addenda_tag):
         if type(addenda_tag) is list:
             addenda_tag = addenda_tag[2]
@@ -491,5 +485,4 @@ class AddendaAddenda(models.Model):
                 path_extend.append(xpath)
         path_extend = etree.tostring(
             path_extend, pretty_print=True, encoding='utf-8')
-
         return path_extend

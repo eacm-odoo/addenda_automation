@@ -1,5 +1,4 @@
 from odoo import models, fields, api, _
-from lxml import etree
 
 
 class AddendaAttribute(models.Model):
@@ -20,18 +19,16 @@ class AddendaAttribute(models.Model):
     inner_field = fields.Many2one(
         string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     field_type = fields.Char(compute='_compute_field_type', default='')
-
-    @api.onchange('field')
-    def _compute_inner_fields(self):
-        domain = {'inner_field': []}
-        for record in self:
-            if record.field:
-                if record.field.ttype == 'many2one':
-                    domain = {'inner_field': [
-                        ('model', '=', record.field.relation), ('ttype', '!=', 'many2one'), ('ttype', '!=', 'many2many'), ('ttype', '!=', 'one2many')]}
-        return {'domain': domain}
+    inner_field_domain = fields.Char(
+        string='Inner field domain', help=_('Domain to filter the inner field'))
 
     @api.depends('field')
     def _compute_field_type(self):
         for record in self:
             record.field_type = record.field.ttype
+
+    @api.onchange('field')
+    def _compute_inner_fields_domain(self):
+        for record in self:
+            if record.field:
+                record.inner_field_domain = record.field.relation

@@ -1,9 +1,5 @@
 from lxml import etree as ET
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
-import logging
-
-_logger = logging.getLogger(__name__)
 
 
 class AddendaTag(models.Model):
@@ -22,7 +18,6 @@ class AddendaTag(models.Model):
                            help=_('Name of the new tag/element'))
     attribute_ids = fields.One2many(
         comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_tag_id', help=_('Attributes of the new tag/element'))
-
     value = fields.Char(string='Attribute Value', help=_(
         'Value of the attribute of the new element'))
     field = fields.Many2one(
@@ -47,17 +42,6 @@ class AddendaTag(models.Model):
         for record in self:
             if record.field:
                 record.inner_field_domain = record.field.relation
-
-    # @api.onchange('field')
-    # def _compute_inner_fields(self):
-    #     domain = {'inner_field': []}
-    #     for record in self:
-    #         if record.field:
-    #             record.addenda_tag_childs_ids = False
-    #             if record.field.ttype == 'many2one':
-    #                 domain = {'inner_field': [
-    #                     ('model', '=', record.field.relation), ('ttype', '!=', 'many2many'), ('ttype', '!=', 'one2many')]}
-    #     return {'domain': domain}
 
     @api.onchange('addenda_tag_childs_ids')
     def _child_ids_attribute_onchange(self):
@@ -86,7 +70,6 @@ class AddendaTag(models.Model):
                 tag = record.tag_name.replace(' ', '_')
             else:
                 tag = 'TagName'
-            value = ''
             body = ''
             record.preview = ''
             attrs = {}

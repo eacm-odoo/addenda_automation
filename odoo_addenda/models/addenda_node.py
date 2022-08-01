@@ -1,10 +1,7 @@
 from lxml.objectify import fromstring
 import xml.etree.ElementTree as ET
 from lxml import etree
-import re
-import json
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError, ValidationError
 
 
 class AddendaNode(models.Model):
@@ -16,7 +13,6 @@ class AddendaNode(models.Model):
         string='Reference Node', help=_('Xml element that will serve as a reference for the new element'), selection=lambda self: self._compute_nodes(), required=True)
     position = fields.Selection(string='Position', help=_('Where the new element is placed, relative to the reference element'), selection=[
         ('before', 'Before'), ('after', 'After'), ('inside', 'Inside'), ('attributes', 'Attributes')], required=True)
-
     addenda_id = fields.Many2one(
         string="Addenda", comodel_name="addenda.addenda")
     all_fields = fields.Many2one(
@@ -77,7 +73,6 @@ class AddendaNode(models.Model):
             if record.attribute_value:
                 attribute_value = ('format_string(%s)' %
                                    record.attribute_value)
-
             else:
                 attribute_value = ('line.%s' % record.all_fields.name) or '' if node == 'Concepto' and record.all_fields.model == 'account.move.line' else (
                     'record.%s' % record.all_fields.name) or ''
@@ -91,7 +86,6 @@ class AddendaNode(models.Model):
             node_path.append(attribute)
 
             node_path = etree.tostring(node_path, pretty_print=True)
-
             record.node_preview = node_path
 
     @ api.onchange('nodes')
@@ -106,7 +100,6 @@ class AddendaNode(models.Model):
             else:
                 domain = {'all_fields': [('model', '=', ('account.move')), ('ttype', 'in', (
                     'char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))]}
-
         return {'domain': domain}
 
     @api.onchange('attribute_value')
@@ -147,7 +140,6 @@ class AddendaNode(models.Model):
             except:
                 pass
         selection_vals = list(set(selection_vals))
-
         selection_vals.remove(('/Comprobante', '/Comprobante'))
         return selection_vals
 

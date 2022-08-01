@@ -10,7 +10,8 @@
                     <field name="attribute" />
                     <field name="value" />
                     <field name="field" attrs="{'invisible': [('value','not in',('',False))]}" />
-                    <field name='inner_field' attrs="{'invisible': [('field_type','!=','many2one'),'|',('field','in',('',False))]}" />
+                    <field name='inner_field_domain' invisible='True' />
+                    <field name='inner_field' domain="[('model', '=', inner_field_domain)]" attrs="{'invisible': [('field_type','!=','many2one'),'|',('field','in',('',False))]}" />
                 </group>
             </form>
         </field>
