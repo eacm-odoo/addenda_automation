@@ -73,6 +73,17 @@ class AddendaAddenda(models.Model):
             etree.indent(root, '    ')
 
             record.main_preview = etree.tostring(root, pretty_print=True)
+    
+    @api.onchange('nodes_ids')
+    def _compute_nodes_preview(self):
+        for record in self:
+            if(record.nodes_ids):
+                main_preview = etree.Element("data")
+                for node in record.nodes_ids:
+                    main_preview.append(etree.fromstring(node.node_preview))
+                etree.indent(main_preview, '    ')
+                record.main_preview = etree.tostring(
+                    main_preview, pretty_print=True)
 
     @api.model
     def create(self, vals_list):
@@ -175,7 +186,6 @@ class AddendaAddenda(models.Model):
                 new_fields_xml = self.generate_xml_fields(fields, True)
                 vals['addenda_fields_xml'] = etree.tostring(
                     new_fields_xml, pretty_print=True)
-
             vals['addenda_xml'] = etree.tostring(full_xml, pretty_print=True)
             # remove fields from vals
             vals.pop('fields', None)
