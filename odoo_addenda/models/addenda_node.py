@@ -39,6 +39,7 @@ class AddendaNode(models.Model):
         for record in self:
             if(record.position == 'attributes'):
                 record.addenda_tag_ids = False
+                
             else:
                 record.attribute_value = False
                 record.cfdi_attributes = False
@@ -64,6 +65,7 @@ class AddendaNode(models.Model):
             node = ''
             attribute_name = ''
             attribute_value = ''
+            node_path=''
             if record.nodes:
                 node = record.nodes.split('/')[-1]
                 node_expr = "//*[name()='%s']" % ('cfdi:'+node)
@@ -76,7 +78,7 @@ class AddendaNode(models.Model):
                                        record.attribute_value)
                 else:
                     attribute_value = ('line.%s' % record.all_fields.name) or '' if node == 'Concepto' and record.all_fields.model == 'account.move.line' else (
-                        'record.%s' % record.all_fields.name) or ''
+                        ('record.%s' % record.all_fields.name) if record.all_fields else '')
                     if record.inner_field:
                         print(record.inner_field.name)
                         attribute_value += '.%s' % record.inner_field.name

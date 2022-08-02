@@ -102,3 +102,38 @@ class AddendaTag(models.Model):
 
             record.preview = ET.tostring(
                 root_node, encoding='unicode', pretty_print=True)
+
+    def genereate_xml_element(self,record):
+        print(self.addenda_node_id)
+        if(record.tag_name):
+            tag = record.tag_name.replace(' ', '_')
+        else:
+            tag = 'TagName'
+        value = ''
+        body = ''
+        record.preview = ''
+        attrs = {}
+        if len(record.attribute_ids) > 0:
+            for attr_record in record.attribute_ids:
+                if attr_record.value:
+                    attrs['t-att-'+attr_record.attribute] = attr_record.value
+                elif attr_record.field and not attr_record.inner_field:
+                    attrs['t-att-'+attr_record.attribute] = 'record.' + \
+                        attr_record.field.name
+                elif attr_record.inner_field and attr_record.field:
+                    attrs['t-att-'+attr_record.attribute] = 'record.' + \
+                        attr_record.field.name + '.' + attr_record.inner_field.name
+        if record.value:
+            body = record.value
+        elif record.field and not record.inner_field:
+            body = 'record.' + record.field.name
+        elif record.field and record.inner_field:
+            body = 'record.' + record.field.name + '.' + record.inner_field.name
+        root_node = ET.Element(tag, attrs)
+        # call generate_node ->tag tree
+        if body != '':
+            root_node.append(ET.Element('t', {'t-esc': body}))
+        for tag_child in record.addenda_tag_childs_ids:
+            root_node.append(ET.fromstring(tag_child.preview))
+        ET.indent(root_node, '    ')
+        return root_node
