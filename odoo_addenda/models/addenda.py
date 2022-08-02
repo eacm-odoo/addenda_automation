@@ -14,6 +14,8 @@ class AddendaAddenda(models.Model):
         'The name of the new customed addenda'))
     main_preview = fields.Text(string='Main Preview', help=_(
         'Main Preview'), compute='_compute_main_preview')
+    node_main_preview = fields.Text(string='Main Preview of the nodes', help=_(
+        'Main Preview'), compute='_compute_nodes_preview')
 
     nodes_ids = fields.One2many(
         comodel_name='addenda.node', string='Nodes', inverse_name='addenda_id')
@@ -82,7 +84,7 @@ class AddendaAddenda(models.Model):
                 for node in record.nodes_ids:
                     main_preview.append(etree.fromstring(node.node_preview))
                 etree.indent(main_preview, '    ')
-                record.main_preview = etree.tostring(
+                record.node_main_preview = etree.tostring(
                     main_preview, pretty_print=True)
 
     @api.model

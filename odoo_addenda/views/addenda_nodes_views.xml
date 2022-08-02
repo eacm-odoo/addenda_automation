@@ -10,7 +10,7 @@
                     <field name="nodes" />
                     <field name="position" />
                     <field name='cfdi_attributes_domain' invisible='True' />
-                    <field name="cfdi_attributes" widget="selection" domain="[('node', '=', cfdi_attributes_domain)]" attrs="{'invisible': [('position', 'not in', ('attributes'))]}" />
+                    <field name="cfdi_attributes" widget="selection" domain="[('node', '=', cfdi_attributes_domain)]" attrs="{'invisible': [('position', 'not in', ('attributes'))], 'required': [('position', 'in', ('attributes'))] }" />
                     <field name="attribute_value" attrs="{'invisible': [('position', 'not in', ('attributes'))]}" />
                     <field name="addenda_tag_ids" attrs="{'invisible': [('position', 'in', ('attributes', False))]}" />
                     <field name="all_fields" attrs="{'invisible': ['|',('position', 'not in', ('attributes')),('attribute_value', 'not in', ('',False))]}" />
@@ -28,8 +28,7 @@
         <field name="arch" type="xml">
             <tree string="Addenda Form">
                 <field name="nodes" string="Nodes" />
-                <field name="path" />
-                <field name="all_fields" />
+                <field name="position" string="Position" />
             </tree>
         </field>
     </record>
