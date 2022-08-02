@@ -37,7 +37,7 @@
         <field name="name">NumRegIdTrib</field>
         <field name="value"></field>
         <field name="node">Comprobante/Receptor</field>
-    </record>   
+    </record>
     <record model="addenda.cfdi.attributes" id="receptor_uso_cfdi">
         <field name="name">UsoCFDI</field>
         <field name="value">record.l10n_mx_edi_usage</field>
@@ -189,5 +189,17 @@
         <field name="name">Importe</field>
         <field name="value">format_float(balance_multiplicator * tax_detail_vals['tax_amount_currency'], 2) if tax.l10n_mx_tax_type != 'Exento' else False"</field>
         <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado</field>
+    </record>
+    <!-- Comprobante/CfdiRelacionados -->
+    <record model="addenda.cfdi.attributes" id="CfdiRelacionados_TipoRelacion">
+        <field name="name">TipoRelacion</field>
+        <field name="value">origin_type</field>
+        <field name="node">Comprobante/CfdiRelacionados</field>
+    </record>
+    <!-- Comprobante/CfdiRelacionados/CfdiRelacionado -->
+    <record model="addenda.cfdi.attributes" id="CfdiRelacionado_UUID">
+        <field name="name">UUID</field>
+        <field name="value">uuid</field>
+        <field name="node">Comprobante/CfdiRelacionados/CfdiRelacionado</field>
     </record>
 </odoo>
