@@ -22,7 +22,7 @@
                         <page string="Addenda Nodes" attrs="{'invisible': [('is_customed_addenda', '=', False)]}">
                             <field name="is_customed_addenda" invisible='True'></field>
                             <field name="nodes_ids" />
-                            <field name="main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" />
+                            <field name="node_main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" />
                         </page>
                         <page string="Addenda xml" attrs="{'invisible': [('is_customed_addenda', '=', True)]}">
                             <field name="is_customed_addenda" invisible='True'></field>

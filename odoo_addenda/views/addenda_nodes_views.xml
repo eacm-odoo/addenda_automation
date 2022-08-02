@@ -28,8 +28,7 @@
         <field name="arch" type="xml">
             <tree string="Addenda Form">
                 <field name="nodes" string="Nodes" />
-                <field name="path" />
-                <field name="all_fields" />
+                <field name="position" string="Position" />
             </tree>
         </field>
     </record>

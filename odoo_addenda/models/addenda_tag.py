@@ -18,7 +18,7 @@ class AddendaTag(models.Model):
                            help=_('Name of the new tag/element'))
     attribute_ids = fields.One2many(
         comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_tag_id', help=_('Attributes of the new tag/element'))
-    value = fields.Char(string='Attribute Value', help=_(
+    value = fields.Char(string='Value', help=_(
         'Value of the attribute of the new element'))
     field = fields.Many2one(
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
