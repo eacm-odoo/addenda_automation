@@ -64,6 +64,7 @@ class AddendaNode(models.Model):
             node = ''
             attribute_name = ''
             attribute_value = ''
+            node_path=''
             if record.nodes:
                 node = record.nodes.split('/')[-1]
                 node_expr = "//*[name()='%s']" % ('cfdi:'+node)
