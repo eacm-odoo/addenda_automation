@@ -382,10 +382,12 @@ class AddendaAddenda(models.Model):
                 field = [0, 2, field]
                 model_name = field[2].model
             elif write:
-                instance_field = self.env['ir.model.fields'].browse(field[1])
-                field = [0, 2, instance_field]
+                if(type(field[1]) == int):
+                    field = [0, 2, self.env['ir.model.fields'].browse(field[1])]
+                else:
+                    field = [0, 2, field[2]]
                 model_name = self.env['ir.model'].search(
-                    [('id', '=', int(field[2]['model_id']))]).model
+                        [('id', '=', int(field[2]['model_id']))]).model
             else:
                 model_name = self.env['ir.model'].search(
                     [('id', '=', field[2]['model_id'])]).model
@@ -433,9 +435,6 @@ class AddendaAddenda(models.Model):
             xml_field.text = str(field[2]['copied'])
             record.append(xml_field)
             xml_field = etree.Element("field")
-            xml_field.set("name", 'translate')
-            xml_field.text = str(field[2]['translate'])
-            record.append(xml_field)
             root.append(record)
         return root
 
