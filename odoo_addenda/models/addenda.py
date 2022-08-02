@@ -86,6 +86,8 @@ class AddendaAddenda(models.Model):
                 etree.indent(main_preview, '    ')
                 record.node_main_preview = etree.tostring(
                     main_preview, pretty_print=True)
+            else: 
+                record.node_main_preview = False
 
     @api.model
     def create(self, vals_list):
