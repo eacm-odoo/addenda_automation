@@ -73,7 +73,7 @@ class AddendaAddenda(models.Model):
             etree.indent(root, '    ')
 
             record.main_preview = etree.tostring(root, pretty_print=True)
-    
+
     @api.onchange('nodes_ids')
     def _compute_nodes_preview(self):
         for record in self:
@@ -207,7 +207,7 @@ class AddendaAddenda(models.Model):
                 vals['addenda_xml'] = etree.tostring(
                     full_xml, pretty_print=True)
                 cfdiv33 = self.env.ref(
-                'l10n_mx_edi.cfdiv33')
+                    'l10n_mx_edi.cfdiv33')
                 instance.ir_ui_view_id.write({
                     'inherit_id': cfdiv33.id,
                     'mode': 'extension',
@@ -442,19 +442,19 @@ class AddendaAddenda(models.Model):
             if(type(node) == list):
                 node = node[2]
             path = "//*[name()='cfdi:" + \
-                    node['nodes'].split('/')[-1] + "']"
+                node['nodes'].split('/')[-1] + "']"
             if(type(node['cfdi_attributes']) == int):
                 instance = self.env['addenda.cfdi.attributes'].browse(
                     node['cfdi_attributes'])
             else:
                 instance = node['cfdi_attributes']
             if(type(node['all_fields']) == int):
-                all_fields = self.env['addenda.cfdi.fields'].browse(
+                all_fields = self.env['ir.model.fields'].browse(
                     node['all_fields'])
             else:
                 all_fields = node['all_fields']
             if(type(node['inner_field']) == int):
-                inner_field = self.env['addenda.cfdi.fields'].browse(
+                inner_field = self.env['ir.model.fields'].browse(
                     node['inner_field'])
             else:
                 inner_field = node['inner_field']

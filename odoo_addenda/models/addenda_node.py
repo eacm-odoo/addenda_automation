@@ -29,7 +29,8 @@ class AddendaNode(models.Model):
         string='cfdi_attributes domain', help=_('Domain to filter the cfdi_attributes'))
     cfdi_attributes = fields.Many2one(
         comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit')
-    node_preview = fields.Text(string="Previw of the node", compute='_compute_node_preview')
+    node_preview = fields.Text(
+        string="Preview", compute='_compute_node_preview')
     addenda_tag_ids = fields.One2many(
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=_('New addenda tags added'))
 
@@ -66,13 +67,13 @@ class AddendaNode(models.Model):
             if record.nodes:
                 node = record.nodes.split('/')[-1]
                 node_expr = "//*[name()='%s']" % ('cfdi:'+node)
-            if  record.position and record.position == 'attributes':
+            if record.position and record.position == 'attributes':
                 if record.cfdi_attributes:
                     attribute_name = 't-att-%s' % record.cfdi_attributes.name or ''
 
                 if record.attribute_value:
                     attribute_value = ('format_string(%s)' %
-                                    record.attribute_value)
+                                       record.attribute_value)
                 else:
                     attribute_value = ('line.%s' % record.all_fields.name) or '' if node == 'Concepto' and record.all_fields.model == 'account.move.line' else (
                         'record.%s' % record.all_fields.name) or ''
@@ -80,21 +81,23 @@ class AddendaNode(models.Model):
                         print(record.inner_field.name)
                         attribute_value += '.%s' % record.inner_field.name
 
-                node_path = etree.Element("xpath", {'expr': node_expr, 'position': 'attributes'})
-                attribute = etree.Element('attribute', {'name': attribute_name})
+                node_path = etree.Element(
+                    "xpath", {'expr': node_expr, 'position': 'attributes'})
+                attribute = etree.Element(
+                    'attribute', {'name': attribute_name})
                 attribute.text = attribute_value
                 node_path.append(attribute)
 
                 node_path = etree.tostring(node_path, pretty_print=True)
                 record.node_preview = node_path
             elif record.position:
-                node_path = etree.Element("xpath", {'expr': node_expr, 'position': record.position})
+                node_path = etree.Element(
+                    "xpath", {'expr': node_expr, 'position': record.position})
                 if record.addenda_tag_ids:
                     for tag in record.addenda_tag_ids:
                         node_path.append(etree.fromstring(tag.preview))
-                record.node_preview = etree.tostring(node_path, pretty_print=True)
-
-
+                record.node_preview = etree.tostring(
+                    node_path, pretty_print=True)
 
     @ api.onchange('nodes')
     def _compute_all_fields_domain(self):
