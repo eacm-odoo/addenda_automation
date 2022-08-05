@@ -156,15 +156,11 @@ class AddendaAddenda(models.Model):
     def write(self, vals):
         res = super().write(vals)
         instance = self.env['addenda.addenda'].browse(self.id)
-        is_customed_addenda = (vals['is_customed_addenda'] if 'is_customed_addenda' in vals.keys(
-        ) else False) or instance.is_customed_addenda
-        fields = (vals['fields'] if 'fields' in vals.keys(
-        ) else False) or instance.fields
+        is_customed_addenda = instance.is_customed_addenda
+        fields = instance.fields
         if not(is_customed_addenda):
-            is_expression = (vals['is_expression'] if 'is_expression' in vals.keys(
-            ) else False) or instance.is_expression
-            addenda_expression = (vals['addenda_expression'] if 'addenda_expression' in vals.keys(
-            ) else False) or instance.addenda_expression
+            is_expression = instance.is_expression
+            addenda_expression =  instance.addenda_expression
             if is_expression and addenda_expression not in [False, '']:
                 root = etree.fromstring(addenda_expression)
             elif is_expression and addenda_expression in [False, '']:
@@ -187,6 +183,7 @@ class AddendaAddenda(models.Model):
                 'l10n_mx_edi_addenda_flag': True,
             })
             if fields:
+                print(fields)
                 new_fields_xml = self.generate_xml_fields(fields, True)
                 vals['addenda_fields_xml'] = etree.tostring(
                     new_fields_xml, pretty_print=True)
