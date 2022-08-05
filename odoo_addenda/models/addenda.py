@@ -315,7 +315,7 @@ class AddendaAddenda(models.Model):
             'mimetype': 'application/zip',
             'description': _('Zip file with the addenda and the new fields'),
         })
-        rmtree(self.name)
+        rmtree(self.name.replace(' ', '_').replace('.', ''))
         os.remove('addenda.zip')
         return {
             'target': 'new',
@@ -324,6 +324,7 @@ class AddendaAddenda(models.Model):
         }
 
     def create_directory(self, name, xml, fields, is_customed_addenda):
+        name = name.replace(' ', '_').replace('.', '')
         name_view_file = "addenda" if not is_customed_addenda else "cfdiv33_inherit"
         template = {
             'name': name,
@@ -393,7 +394,7 @@ class AddendaAddenda(models.Model):
             external_id = model_data.module + '.model_' + \
                 (model_data.model.replace('.', '_'))
             record = etree.Element("record")
-            record.set("id", field[2]['field_description'].replace(' ', '_'))
+            record.set("id", field[2]['field_description'].replace(' ', '_').replace('.', ''))
             record.set("model", "ir.model.fields")
             xml_field = etree.Element("field")
             xml_field.set("name", 'name')
