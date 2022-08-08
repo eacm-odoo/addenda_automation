@@ -1,9 +1,10 @@
 import os
 import base64
 from shutil import make_archive, rmtree
+from lxml import etree
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
-from lxml import etree
 
 
 class AddendaAddenda(models.Model):
@@ -19,7 +20,8 @@ class AddendaAddenda(models.Model):
 
     nodes_ids = fields.One2many(
         comodel_name='addenda.node', string='Nodes', inverse_name='addenda_id')
-    is_customed_addenda = fields.Boolean(string='Customed Addenda', )
+    is_customed_addenda = fields.Boolean(string='Inherit CFDI template', help=_(
+        'Inherit the CFDI template and override it'))
     is_expression = fields.Boolean(string='Is an expression', default=True)
     addenda_tag_id = fields.One2many(
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_addenda_id', help=_('New addenda tags added'))
@@ -86,7 +88,7 @@ class AddendaAddenda(models.Model):
                 etree.indent(main_preview, '    ')
                 record.node_main_preview = etree.tostring(
                     main_preview, pretty_print=True)
-            else: 
+            else:
                 record.node_main_preview = False
 
     @api.model
@@ -160,7 +162,7 @@ class AddendaAddenda(models.Model):
         fields = instance.fields
         if not(is_customed_addenda):
             is_expression = instance.is_expression
-            addenda_expression =  instance.addenda_expression
+            addenda_expression = instance.addenda_expression
             if is_expression and addenda_expression not in [False, '']:
                 root = etree.fromstring(addenda_expression)
             elif is_expression and addenda_expression in [False, '']:
@@ -260,7 +262,18 @@ class AddendaAddenda(models.Model):
             t.set(
                 "t-esc", "record.{}".format(self.get_field_name(addenda_tag['field'])))
             parent_node.append(t)
-        if(not addenda_tag['value'] and addenda_tag['field'] and addenda_tag['inner_field']):
+        if(not addenda_tag['value'] and addenda_tag['field'] and self.get_field_type(addenda_tag['field']) in ('many2many', 'one2many') and addenda_tag['inner_field']):
+            t = etree.Element('t')
+            t.set(
+                "t-foreach", "record.{}".format(self.get_field_name(addenda_tag['field'])))
+            t.set("t-as", "l")
+            t2 = etree.Element('t')
+            t2.set(
+                "t-esc", "l.{}".format(self.get_field_name(addenda_tag['inner_field'])))
+            parent_node.append(t2)
+            t.append(parent_node)
+            parent_node = t
+        elif(not addenda_tag['value'] and addenda_tag['field'] and addenda_tag['inner_field']):
             t = etree.Element('t')
             t.set(
                 "t-esc", "record.{}.{}".format(self.get_field_name(addenda_tag['field']), self.get_field_name(addenda_tag['inner_field'])))
@@ -272,6 +285,12 @@ class AddendaAddenda(models.Model):
             return self.env['ir.model.fields'].browse(field_id).name
         else:
             return field_id.name
+
+    def get_field_type(self, field_id):
+        if type(field_id) is int:
+            return self.env['ir.model.fields'].browse(field_id).ttype
+        else:
+            return field_id.ttype
 
     def get_xml(self, name, root):
         xml = etree.Element("odoo")
@@ -381,11 +400,12 @@ class AddendaAddenda(models.Model):
                 model_name = field[2].model
             elif write:
                 if(type(field[1]) == int):
-                    field = [0, 2, self.env['ir.model.fields'].browse(field[1])]
+                    field = [
+                        0, 2, self.env['ir.model.fields'].browse(field[1])]
                 else:
                     field = [0, 2, field[2]]
                 model_name = self.env['ir.model'].search(
-                        [('id', '=', int(field[2]['model_id']))]).model
+                    [('id', '=', int(field[2]['model_id']))]).model
             else:
                 model_name = self.env['ir.model'].search(
                     [('id', '=', field[2]['model_id'])]).model
@@ -394,7 +414,8 @@ class AddendaAddenda(models.Model):
             external_id = model_data.module + '.model_' + \
                 (model_data.model.replace('.', '_'))
             record = etree.Element("record")
-            record.set("id", field[2]['field_description'].replace(' ', '_').replace('.', ''))
+            record.set("id", field[2]['field_description'].replace(
+                ' ', '_').replace('.', ''))
             record.set("model", "ir.model.fields")
             xml_field = etree.Element("field")
             xml_field.set("name", 'name')

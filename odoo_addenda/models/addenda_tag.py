@@ -1,4 +1,5 @@
 from lxml import etree as ET
+
 from odoo import models, fields, api, _
 
 
@@ -22,7 +23,7 @@ class AddendaTag(models.Model):
         'Value of the attribute of the new element'))
     field = fields.Many2one(
         string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
-        domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'many2one', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
+        domain=[('model', '=', 'account.move'), ('ttype', 'not in', ('binary', 'html', 'many2one_reference'))])
     inner_field = fields.Many2one(
         string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     inner_field_domain = fields.Char(
@@ -73,6 +74,7 @@ class AddendaTag(models.Model):
             body = ''
             record.preview = ''
             attrs = {}
+            t_foreach = False
             if len(record.attribute_ids) > 0:
                 for attr_record in record.attribute_ids:
                     if attr_record.value:
@@ -87,23 +89,42 @@ class AddendaTag(models.Model):
             if record.value:
                 body = record.value
             elif record.field and not record.inner_field:
-                body = 'record.' + record.field.name
+                if record.field.ttype in ('one2many', 'many2many'):
+                    t_foreach = ET.Element(
+                        't', {'t-foreach': record.field.name, 't-as': 'l'})
+                    tag_node = ET.Element(tag)
+                    t_foreach.append(tag_node)
+                else:
+                    body = 'record.' + record.field.name
             elif record.field and record.inner_field:
-                body = 'record.' + record.field.name + '.' + record.inner_field.name
+                if record.field.ttype in ('one2many', 'many2many'):
+                    t_foreach = ET.Element(
+                        't', {'t-foreach': record.field.name, 't-as': 'l'})
+                    tag_node = ET.Element(tag)
+                    t = ET.Element(
+                        't', {'t-esc': 'l.' + record.inner_field.name})
+                    tag_node.append(t)
+                    t_foreach.append(tag_node)
+                else:
+                    body = 'record.' + record.field.name + '.' + record.inner_field.name
+            if t_foreach:
+                record.preview = ET.tostring(t_foreach, pretty_print=True)
 
-            root_node = ET.Element(tag, attrs)
-            # call generate_node ->tag tree
-            if body != '':
-                root_node.append(ET.Element('t', {'t-esc': body}))
+            else:
+                root_node = ET.Element(tag, attrs)
 
-            for tag_child in record.addenda_tag_childs_ids:
-                root_node.append(ET.fromstring(tag_child.preview))
-            ET.indent(root_node, '    ')
+                # call generate_node ->tag tree
+                if body != '':
+                    root_node.append(ET.Element('t', {'t-esc': body}))
 
-            record.preview = ET.tostring(
-                root_node, encoding='unicode', pretty_print=True)
+                for tag_child in record.addenda_tag_childs_ids:
+                    root_node.append(ET.fromstring(tag_child.preview))
+                ET.indent(root_node, '    ')
 
-    def genereate_xml_element(self,record):
+                record.preview = ET.tostring(
+                    root_node, encoding='unicode', pretty_print=True)
+
+    def genereate_xml_element(self, record):
         print(self.addenda_node_id)
         if(record.tag_name):
             tag = record.tag_name.replace(' ', '_')

@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 from lxml import etree
+
 from odoo import models, fields, api, _
 
 
@@ -39,7 +40,7 @@ class AddendaNode(models.Model):
         for record in self:
             if(record.position == 'attributes'):
                 record.addenda_tag_ids = False
-                
+
             else:
                 record.attribute_value = False
                 record.cfdi_attributes = False
@@ -65,7 +66,7 @@ class AddendaNode(models.Model):
             node = ''
             attribute_name = ''
             attribute_value = ''
-            node_path=''
+            node_path = ''
             if record.nodes:
                 node = record.nodes.split('/')[-1]
                 node_expr = "//*[name()='%s']" % ('cfdi:'+node)
