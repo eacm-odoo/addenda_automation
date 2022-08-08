@@ -41,6 +41,31 @@ class AddendaAddenda(models.Model):
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
 
+    @api.depends('tag_name', 'addenda_tag_id')
+    def _compute_main_preview(self):
+        for record in self:
+            root_tag = record.tag_name.replace(' ', '_') or 'root'
+            root = etree.Element(root_tag)
+
+            for tag in record.addenda_tag_id:
+                root.append(etree.fromstring(tag.preview))
+            etree.indent(root, '    ')
+
+            record.main_preview = etree.tostring(root, pretty_print=True)
+
+    @api.depends('nodes_ids')
+    def _compute_nodes_preview(self):
+        for record in self:
+            if(record.nodes_ids):
+                main_preview = etree.Element("data")
+                for node in record.nodes_ids:
+                    main_preview.append(etree.fromstring(node.node_preview))
+                etree.indent(main_preview, '    ')
+                record.node_main_preview = etree.tostring(
+                    main_preview, pretty_print=True)
+            else:
+                record.node_main_preview = False
+
     @api.onchange('is_expression')
     def _is_expression_onchange(self):
         if self.is_expression:
@@ -65,31 +90,6 @@ class AddendaAddenda(models.Model):
                 etree.fromstring(self.addenda_expression)
             except:
                 raise UserError(_("invalid format for xml"))
-
-    @api.onchange('tag_name', 'addenda_tag_id')
-    def _compute_main_preview(self):
-        for record in self:
-            root_tag = record.tag_name.replace(' ', '_') or 'root'
-            root = etree.Element(root_tag)
-
-            for tag in record.addenda_tag_id:
-                root.append(etree.fromstring(tag.preview))
-            etree.indent(root, '    ')
-
-            record.main_preview = etree.tostring(root, pretty_print=True)
-
-    @api.onchange('nodes_ids')
-    def _compute_nodes_preview(self):
-        for record in self:
-            if(record.nodes_ids):
-                main_preview = etree.Element("data")
-                for node in record.nodes_ids:
-                    main_preview.append(etree.fromstring(node.node_preview))
-                etree.indent(main_preview, '    ')
-                record.node_main_preview = etree.tostring(
-                    main_preview, pretty_print=True)
-            else:
-                record.node_main_preview = False
 
     @api.model
     def create(self, vals_list):
@@ -185,7 +185,6 @@ class AddendaAddenda(models.Model):
                 'l10n_mx_edi_addenda_flag': True,
             })
             if fields:
-                print(fields)
                 new_fields_xml = self.generate_xml_fields(fields, True)
                 vals['addenda_fields_xml'] = etree.tostring(
                     new_fields_xml, pretty_print=True)
@@ -229,6 +228,24 @@ class AddendaAddenda(models.Model):
             vals['state'] = 'done'
             res = super().write(vals)
         return res
+
+    def action_export_zip(self):
+        zip_file = self.create_directory(
+            self.name, etree.fromstring(self.addenda_xml), etree.fromstring(self.addenda_fields_xml), self.is_customed_addenda)
+        attachment = self.env['ir.attachment'].create({
+            'name': 'export_zip_module',
+            'type': 'binary',
+            'datas': zip_file,
+            'mimetype': 'application/zip',
+            'description': _('Zip file with the addenda and the new fields'),
+        })
+        rmtree(self.name.replace(' ', '_').replace('.', ''))
+        os.remove('addenda.zip')
+        return {
+            'target': 'new',
+            'type': 'ir.actions.act_url',
+            'url': '/web/content/%s?download=1' % attachment['id']
+        }
 
     # Function to create the xml tree, given  tag_name and addenda_tag_id
     def generate_tree_view(self, addenda_tag):
@@ -323,24 +340,6 @@ class AddendaAddenda(models.Model):
             template.append(element)
         xml.append(template)
         return xml
-
-    def action_export_zip(self):
-        zip_file = self.create_directory(
-            self.name, etree.fromstring(self.addenda_xml), etree.fromstring(self.addenda_fields_xml), self.is_customed_addenda)
-        attachment = self.env['ir.attachment'].create({
-            'name': 'export_zip_module',
-            'type': 'binary',
-            'datas': zip_file,
-            'mimetype': 'application/zip',
-            'description': _('Zip file with the addenda and the new fields'),
-        })
-        rmtree(self.name.replace(' ', '_').replace('.', ''))
-        os.remove('addenda.zip')
-        return {
-            'target': 'new',
-            'type': 'ir.actions.act_url',
-            'url': '/web/content/%s?download=1' % attachment['id']
-        }
 
     def create_directory(self, name, xml, fields, is_customed_addenda):
         name = name.replace(' ', '_').replace('.', '')

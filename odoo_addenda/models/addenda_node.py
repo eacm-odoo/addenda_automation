@@ -8,9 +8,8 @@ class AddendaNode(models.Model):
     _name = 'addenda.node'
     _description = 'Add nodes to addenda'
 
-    # computed field name nodes
     nodes = fields.Selection(
-        string='Reference Node', help=_('Xml element that will serve as a reference for the new element'), selection=lambda self: self._compute_nodes(), required=True)
+        string='Reference Node', help=_('Xml element that will serve as a reference for the new element'), selection=lambda self: self._selection_nodes(), required=True)
     position = fields.Selection(string='Position', help=_('Where the new element is placed, relative to the reference element'), selection=[
         ('before', 'Before'), ('after', 'After'), ('inside', 'Inside'), ('attributes', 'Attributes')], required=True)
     addenda_id = fields.Many2one(
@@ -35,31 +34,21 @@ class AddendaNode(models.Model):
     addenda_tag_ids = fields.One2many(
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=_('New addenda tags added'))
 
-    @api.onchange('position')
-    def _position_onchange(self):
+    @api.depends('all_fields')
+    def _compute_field_type(self):
         for record in self:
-            if(record.position == 'attributes'):
-                record.addenda_tag_ids = False
+            record.field_type = record.all_fields.ttype
 
+    @api.depends('nodes')
+    def _compute_path(self):
+        for node in self:
+            if(node.nodes):
+                node.path = ("{http://www.sat.gob.mx/cfd/3}" + node.nodes.replace(
+                    '/', '/{http://www.sat.gob.mx/cfd/3}')).replace('{http://www.sat.gob.mx/cfd/3}Comprobante', '.')
             else:
-                record.attribute_value = False
-                record.cfdi_attributes = False
-                record.inner_field = False
-                record.all_fields = False
+                node.path = False
 
-    @api.onchange('all_fields')
-    def _compute_inner_fields_domain(self):
-        for record in self:
-            if record.all_fields:
-                record.inner_field_domain = record.all_fields.relation
-
-    @api.onchange('nodes')
-    def _compute_cfdi_attributes_domain(self):
-        for record in self:
-            if record.nodes:
-                record.cfdi_attributes_domain = record.nodes
-
-    @api.onchange('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields', 'inner_field', 'position', 'addenda_tag_ids')
+    @api.depends('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields', 'inner_field', 'position', 'addenda_tag_ids')
     def _compute_node_preview(self):
         for record in self:
             node_expr = ''
@@ -101,30 +90,9 @@ class AddendaNode(models.Model):
                         node_path.append(etree.fromstring(tag.preview))
                 record.node_preview = etree.tostring(
                     node_path, pretty_print=True)
+     # recover all the nodes of the cfdiv33 so the user can choose one
 
-    @ api.onchange('nodes')
-    def _compute_all_fields_domain(self):
-        domain = {'all_fields': []}
-        for record in self:
-            # Clean attribute value
-            record.cfdi_attributes = False
-            if record.nodes == 'Comprobante/Conceptos/Concepto':
-                domain = {'all_fields': [
-                    ('model', 'in', ('account.move', 'account.move.line')), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))]}
-            else:
-                domain = {'all_fields': [('model', '=', ('account.move')), ('ttype', 'in', (
-                    'char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))]}
-        return {'domain': domain}
-
-    @api.onchange('attribute_value')
-    def delete_field(self):
-        for node in self:
-            if(node.attribute_value):
-                node.all_fields = False
-
-    # recover all the nodes of the cfdiv33 so the user can choose one
-    def _compute_nodes(self):
-        # use self.env.ref to get the xml file
+    def _selection_nodes(self):
         instance_cfdi = self.env.ref('l10n_mx_edi.cfdiv33')
         root = ET.fromstring(instance_cfdi.arch)
         parent_map = {c: p for p in root.iter()
@@ -157,17 +125,46 @@ class AddendaNode(models.Model):
         selection_vals.remove(('/Comprobante', '/Comprobante'))
         return selection_vals
 
-    @api.depends('all_fields')
-    def _compute_field_type(self):
+    @api.onchange('all_fields')
+    def _generate_inner_fields_domain(self):
         for record in self:
-            record.field_type = record.all_fields.ttype
+            if record.all_fields:
+                record.inner_field_domain = record.all_fields.relation
 
-    # compute the whole path of the node
-    @ api.depends('nodes')
-    def _compute_path(self):
-        for node in self:
-            if(node.nodes):
-                node.path = ("{http://www.sat.gob.mx/cfd/3}" + node.nodes.replace(
-                    '/', '/{http://www.sat.gob.mx/cfd/3}')).replace('{http://www.sat.gob.mx/cfd/3}Comprobante', '.')
+    @api.onchange('nodes')
+    def _generate_cfdi_attributes_domain(self):
+        for record in self:
+            if record.nodes:
+                record.cfdi_attributes_domain = record.nodes
+
+    @ api.onchange('nodes')
+    def _generate_all_fields_domain(self):
+        domain = {'all_fields': []}
+        for record in self:
+            # Clean attribute value
+            record.cfdi_attributes = False
+            if record.nodes == 'Comprobante/Conceptos/Concepto':
+                domain = {'all_fields': [
+                    ('model', 'in', ('account.move', 'account.move.line')), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))]}
             else:
-                node.path = False
+                domain = {'all_fields': [('model', '=', ('account.move')), ('ttype', 'in', (
+                    'char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))]}
+        return {'domain': domain}
+
+    @api.onchange('position')
+    def _position_onchange(self):
+        for record in self:
+            if(record.position == 'attributes'):
+                record.addenda_tag_ids = False
+
+            else:
+                record.attribute_value = False
+                record.cfdi_attributes = False
+                record.inner_field = False
+                record.all_fields = False
+
+    @api.onchange('attribute_value')
+    def delete_field(self):
+        for node in self:
+            if(node.attribute_value):
+                node.all_fields = False

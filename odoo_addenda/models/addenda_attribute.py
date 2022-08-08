@@ -28,7 +28,7 @@ class AddendaAttribute(models.Model):
             record.field_type = record.field.ttype
 
     @api.onchange('field')
-    def _compute_inner_fields_domain(self):
+    def _generate_inner_fields_domain(self):
         for record in self:
             if record.field:
                 record.inner_field_domain = record.field.relation
