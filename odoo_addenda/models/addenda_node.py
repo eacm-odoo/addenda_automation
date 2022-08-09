@@ -90,7 +90,8 @@ class AddendaNode(models.Model):
                         node_path.append(etree.fromstring(tag.preview))
                 record.node_preview = etree.tostring(
                     node_path, pretty_print=True)
-     # recover all the nodes of the cfdiv33 so the user can choose one
+            else:
+                record.node_preview = False
 
     def _selection_nodes(self):
         instance_cfdi = self.env.ref('l10n_mx_edi.cfdiv33')
