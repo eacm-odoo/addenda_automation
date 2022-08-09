@@ -368,18 +368,18 @@ class AddendaAddenda(models.Model):
             'depends': ['l10n_mx_edi'],
             'license': 'OPL-1',
             'data': [
-                'views/' + name_view_file + '.xml',
+                "".join(['views/', name_view_file, '.xml']),
             ],
         }
 
-        os.makedirs(name+"/"+name+"/views")
+        os.makedirs("".join([name,"/",name,"/views"]))
         if(len(fields) > 0):
-            os.mkdir(name+"/"+name+"/data")
+            os.mkdir("".join([name,"/",name,"/data"]))
             tree = etree.ElementTree(fields)
-            tree.write(name+"/"+name+"/data/addenda_fields.xml",
+            tree.write("".join([name,"/",name,"/data/addenda_fields.xml"]),
                        pretty_print=True, xml_declaration=True, encoding='utf-8')
             template['data'].append('data/addenda_fields.xml')
-        f = open(name+"/"+name+"/__manifest__.py", "w")
+        f = open("".join([name,"/",name,"/__manifest__.py"]), "w")
         f.write('{\n')
         for key, value in template.items():
             if(type(value) == list):
@@ -388,10 +388,10 @@ class AddendaAddenda(models.Model):
                 f.write("'%s' : '%s',\n" % (key, value))
         f.write('}')
         f.close()
-        f = open(name+"/"+name+"/__init__.py", "w")
+        f = open("".join([name,"/",name,"/__init__.py"]), "w")
         f.close()
         tree = etree.ElementTree(xml)
-        tree.write(name+"/"+name+"/views/" + name_view_file + ".xml",
+        tree.write("".join([name,"/",name,"/views/", name_view_file, ".xml"]),
                    pretty_print=True, xml_declaration=True, encoding='utf-8')
         make_archive(
             'addenda',
@@ -427,8 +427,7 @@ class AddendaAddenda(models.Model):
                     [('id', '=', field[2]['model_id'])]).model
             model_data = self.env['ir.model.data'].search(
                 [('model', '=', model_name)], limit=1)
-            external_id = model_data.module + '.model_' + \
-                (model_data.model.replace('.', '_'))
+            external_id = "".join([model_data.module, '.model_',(model_data.model.replace('.', '_'))])
             record = etree.Element("record")
             record.set("id", field[2]['field_description'].replace(
                 ' ', '_').replace('.', ''))
@@ -479,8 +478,8 @@ class AddendaAddenda(models.Model):
         for node in nodes:
             if(type(node) == list):
                 node = node[2]
-            path = "//*[name()='cfdi:" + \
-                node['nodes'].split('/')[-1] + "']"
+            path ="".join(["//*[name()='cfdi:",
+                node['nodes'].split('/')[-1],"']"])
             if(type(node['cfdi_attributes']) == int):
                 instance = self.env['addenda.cfdi.attributes'].browse(
                     node['cfdi_attributes'])
@@ -509,26 +508,25 @@ class AddendaAddenda(models.Model):
                 xpath.set("expr", path)
                 xpath.set("position", "attributes")
                 attr = etree.Element("attribute")
-                attr.set("name", "t-att-" + instance.name)
+                attr.set("name", "".join(["t-att-",instance.name]))
                 if(node['attribute_value']):
-                    attr.text = "format_string('" + node['attribute_value'] + \
-                        "') or " + instance.value
+                    attr.text = "".join([ "format_string('", node['attribute_value'],
+                        "') or ",instance.value])
                 elif(all_fields and not inner_field):
                     if(all_fields.model == 'account.move.line'):
-                        attr.text = "line." + \
-                            self.get_field_name(all_fields) + \
-                            " or (" + instance.value + ")"
+                        attr.text = "".join(["line.", 
+                            self.get_field_name(all_fields),
+                            " or (",instance.value,")"])
                     else:
-                        attr.text = "record." + \
-                            self.get_field_name(all_fields) + \
-                            " or (" + instance.value + ")"
+                        attr.text = "".join(["record.",
+                            self.get_field_name(all_fields) ,
+                            " or (", instance.value,")"])
                 elif(inner_field and all_fields):
                     if(all_fields.model == 'account.move.line'):
-                        attr.text = "line." + self.get_field_name(all_fields) + "." + self.get_field_name(
-                            inner_field) + " or (" + instance.value + ")"
+                        attr.text = "".join(["line.", self.get_field_name(all_fields), ".", self.get_field_name(                            inner_field), " or (", instance.value, ")"])
                     else:
-                        attr.text = "record." + self.get_field_name(all_fields) + "." + self.get_field_name(
-                            inner_field) + " or (" + instance.value + ")"
+                        attr.text = "".join(["record.",self.get_field_name(all_fields),"." ,self.get_field_name(
+                            inner_field), " or (",instance.value,")"])
                 xpath.append(attr)
                 path_extend.append(xpath)
         path_extend = etree.tostring(

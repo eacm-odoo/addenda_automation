@@ -36,7 +36,10 @@ class AddendaTag(models.Model):
 
     @api.depends('addenda_tag_childs_ids')
     def _compute_len_child_tags(self):
-        self.len_tag_childs = len(self.addenda_tag_childs_ids)
+        if(self.addenda_tag_childs_ids):
+            self.len_tag_childs = len(self.addenda_tag_childs_ids)
+        else:
+            self.len_tag_childs = False
 
     @api.depends('field')
     def _compute_field_type(self):
@@ -60,13 +63,12 @@ class AddendaTag(models.Model):
             if tags.attribute_ids:
                 for attr_record in tags.attribute_ids:
                     if attr_record.value:
-                        attrs['t-att-'+attr_record.attribute] = attr_record.value
+                        attrs["".join(['t-att-',attr_record.attribute])] = attr_record.value
                     elif attr_record.field and not attr_record.inner_field:
-                        attrs['t-att-'+attr_record.attribute] = 'record.' + \
-                            attr_record.field.name
+                        attrs["".join(['t-att-', attr_record.attribute])] = "".join(['record.', attr_record.field.name])
                     elif attr_record.inner_field and attr_record.field:
-                        attrs['t-att-'+attr_record.attribute] = 'record.' + \
-                            attr_record.field.name + '.' + attr_record.inner_field.name
+                        attrs["".join(['t-att-', attr_record.attribute])] = "".join(['record.',
+                            attr_record.field.name, '.', attr_record.inner_field.name])
 
             if tags.value:
                 body = tags.value
@@ -77,18 +79,18 @@ class AddendaTag(models.Model):
                     tag_node = ET.Element(tag)
                     t_foreach.append(tag_node)
                 else:
-                    body = 'record.' + tags.field.name
+                    body = "".join(['record.', tags.field.name])
             elif tags.field and tags.inner_field:
                 if tags.field.ttype in ('one2many', 'many2many'):
                     t_foreach = ET.Element(
                         't', {'t-foreach': tags.field.name, 't-as': 'l'})
                     tag_node = ET.Element(tag)
                     t = ET.Element(
-                        't', {'t-esc': 'l.' + tags.inner_field.name})
+                        't', {'t-esc': "".join(['l.', tags.inner_field.name])})
                     tag_node.append(t)
                     t_foreach.append(tag_node)
                 else:
-                    body = 'record.' + tags.field.name + '.' + tags.inner_field.name
+                    body = "".join(['record.', tags.field.name, '.' , tags.inner_field.name])
             if t_foreach:
                 tags.preview = ET.tostring(t_foreach, pretty_print=True)
 

@@ -46,8 +46,8 @@ class AddendaNode(models.Model):
     def _compute_path(self):
         for node in self:
             if(node.nodes):
-                node.path = ("{http://www.sat.gob.mx/cfd/3}" + node.nodes.replace(
-                    '/', '/{http://www.sat.gob.mx/cfd/3}')).replace('{http://www.sat.gob.mx/cfd/3}Comprobante', '.')
+                node.path = "".join([("{http://www.sat.gob.mx/cfd/3}", node.nodes.replace(
+                    '/', '/{http://www.sat.gob.mx/cfd/3}')).replace('{http://www.sat.gob.mx/cfd/3}Comprobante', '.')])
             else:
                 node.path = False
 
@@ -61,7 +61,7 @@ class AddendaNode(models.Model):
             node_path = ''
             if nodes.nodes:
                 node = nodes.nodes.split('/')[-1]
-                node_expr = "//*[name()='%s']" % ('cfdi:'+node)
+                node_expr = "//*[name()='%s']" % ("".join(['cfdi:', node]))
             if nodes.position and nodes.position == 'attributes':
                 if nodes.cfdi_attributes:
                     attribute_name = 't-att-%s' % nodes.cfdi_attributes.name or ''
@@ -73,7 +73,7 @@ class AddendaNode(models.Model):
                     attribute_value = ('line.%s' % nodes.all_fields.name) or '' if node == 'Concepto' and nodes.all_fields.model == 'account.move.line' else (
                         ('nodes.%s' % nodes.all_fields.name) if nodes.all_fields else '')
                     if nodes.inner_field:
-                        attribute_value += '.%s' % nodes.inner_field.name
+                        attribute_value = "".join([attribute_value, '.%s' % nodes.inner_field.name])
 
                 node_path = etree.Element(
                     "xpath", {'expr': node_expr, 'position': 'attributes'})
@@ -115,8 +115,8 @@ class AddendaNode(models.Model):
                             while(path_list[-1] != parent_map[child].tag.replace(
                                     "{http://www.sat.gob.mx/cfd/3}", "")):
                                 path_list.pop()
-                    option = "/".join(
-                        path_list) + "/" + (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))
+                    option = "".join(["/".join(
+                        path_list), "/", (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))])
                     selection_vals.append((option, option))
                     path_list.append(child.tag.replace(
                         "{http://www.sat.gob.mx/cfd/3}", ""))
