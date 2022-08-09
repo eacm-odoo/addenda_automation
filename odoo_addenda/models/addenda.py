@@ -93,7 +93,7 @@ class AddendaAddenda(models.Model):
 
     @api.model
     def create(self, vals_list):
-        print("-------------------------------------------------------")
+        print("-------------------------CREATEs-----------------------------")
         print(vals_list)
         res = super().create(vals_list)
         if not(vals_list['is_customed_addenda']):

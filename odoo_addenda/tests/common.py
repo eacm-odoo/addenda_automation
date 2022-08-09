@@ -94,7 +94,6 @@ class TestAddendaAutomation(TransactionCase):
         cls.tag_initial.addenda_tag_childs_ids = [
             cls.tag_orden_compra.id, cls.tag_partner.id, cls.attribute_tag.id]
 
-        print(cls.addenda_barry)
         # endregion
 
         # # region Create addenda inherit from CDFI Template
