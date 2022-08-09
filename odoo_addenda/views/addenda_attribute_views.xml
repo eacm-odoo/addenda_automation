@@ -6,11 +6,11 @@
         <field name="arch" type="xml">
             <form string="Addenda attribute Form">
                 <group>
-                    <field name="field_type" invisible='True' />
+                    <field name="field_type" invisible='1' />
                     <field name="attribute" />
                     <field name="value" />
                     <field name="field" attrs="{'invisible': [('value','not in',('',False))]}" />
-                    <field name='inner_field_domain' invisible='True' />
+                    <field name='inner_field_domain' invisible='1' />
                     <field name='inner_field' domain="[('model', '=', inner_field_domain)]" attrs="{'invisible': [('field_type','!=','many2one'),'|',('field','in',('',False))], 'required': [('field_type', 'in', ('many2one', 'one2many', 'many2many'))]}" />
                 </group>
             </form>

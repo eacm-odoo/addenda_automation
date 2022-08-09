@@ -6,14 +6,14 @@
         <field name="arch" type="xml">
             <form string="Addenda Form">
                 <group>
-                    <field name="field_type" invisible='True' />
-                    <field name="len_tag_childs" invisible='True' />
+                    <field name="field_type" invisible='1' />
+                    <field name="len_tag_childs" invisible='1' />
                     <field name="tag_name" />
                     <field name="addenda_tag_childs_ids" attrs="{'invisible': [('field_type','in',('one2many','many2many'))]}" />
                     <field name="attribute_ids" attrs="{'invisible': [('field_type','in',('one2many','many2many'))]}" />
                     <field name="value" attrs="{'invisible': [('len_tag_childs','>',0)]}" />
                     <field name="field" attrs="{'invisible': ['|',('value','not in',('',False)),('len_tag_childs','>',0)]}" />
-                    <field name='inner_field_domain' invisible='True' />
+                    <field name='inner_field_domain' invisible='1' />
                     <field name='inner_field' domain="[('model', '=', inner_field_domain),('ttype', 'not in', ('binary', 'html', 'many2one_reference','many2one','many2many','one2many'))]" attrs="{'invisible': [('field_type','not in',('many2one','one2many','many2many')),'|',('field','in',('',False))], 'required': [('field_type', 'in', ('many2one', 'one2many', 'many2many'))]}" />
                     <field name="preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" />
                 </group>
