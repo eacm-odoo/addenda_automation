@@ -36,8 +36,11 @@ class AddendaNode(models.Model):
 
     @api.depends('all_fields')
     def _compute_field_type(self):
-        for record in self:
-            record.field_type = record.all_fields.ttype
+        for node in self:
+            if node.all_fields:
+                node.field_type = node.all_fields.ttype
+            else:
+                node.field_type = False
 
     @api.depends('nodes')
     def _compute_path(self):
@@ -50,28 +53,27 @@ class AddendaNode(models.Model):
 
     @api.depends('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields', 'inner_field', 'position', 'addenda_tag_ids')
     def _compute_node_preview(self):
-        for record in self:
+        for nodes in self:
             node_expr = ''
             node = ''
             attribute_name = ''
             attribute_value = ''
             node_path = ''
-            if record.nodes:
-                node = record.nodes.split('/')[-1]
+            if nodes.nodes:
+                node = nodes.nodes.split('/')[-1]
                 node_expr = "//*[name()='%s']" % ('cfdi:'+node)
-            if record.position and record.position == 'attributes':
-                if record.cfdi_attributes:
-                    attribute_name = 't-att-%s' % record.cfdi_attributes.name or ''
+            if nodes.position and nodes.position == 'attributes':
+                if nodes.cfdi_attributes:
+                    attribute_name = 't-att-%s' % nodes.cfdi_attributes.name or ''
 
-                if record.attribute_value:
+                if nodes.attribute_value:
                     attribute_value = ('format_string(%s)' %
-                                       record.attribute_value)
+                                       nodes.attribute_value)
                 else:
-                    attribute_value = ('line.%s' % record.all_fields.name) or '' if node == 'Concepto' and record.all_fields.model == 'account.move.line' else (
-                        ('record.%s' % record.all_fields.name) if record.all_fields else '')
-                    if record.inner_field:
-                        print(record.inner_field.name)
-                        attribute_value += '.%s' % record.inner_field.name
+                    attribute_value = ('line.%s' % nodes.all_fields.name) or '' if node == 'Concepto' and nodes.all_fields.model == 'account.move.line' else (
+                        ('nodes.%s' % nodes.all_fields.name) if nodes.all_fields else '')
+                    if nodes.inner_field:
+                        attribute_value += '.%s' % nodes.inner_field.name
 
                 node_path = etree.Element(
                     "xpath", {'expr': node_expr, 'position': 'attributes'})
@@ -81,17 +83,17 @@ class AddendaNode(models.Model):
                 node_path.append(attribute)
 
                 node_path = etree.tostring(node_path, pretty_print=True)
-                record.node_preview = node_path
-            elif record.position:
+                nodes.node_preview = node_path
+            elif nodes.position:
                 node_path = etree.Element(
-                    "xpath", {'expr': node_expr, 'position': record.position})
-                if record.addenda_tag_ids:
-                    for tag in record.addenda_tag_ids:
+                    "xpath", {'expr': node_expr, 'position': nodes.position})
+                if nodes.addenda_tag_ids:
+                    for tag in nodes.addenda_tag_ids:
                         node_path.append(etree.fromstring(tag.preview))
-                record.node_preview = etree.tostring(
+                nodes.node_preview = etree.tostring(
                     node_path, pretty_print=True)
             else:
-                record.node_preview = False
+                nodes.node_preview = False
 
     def _selection_nodes(self):
         instance_cfdi = self.env.ref('l10n_mx_edi.cfdiv33')
@@ -128,23 +130,23 @@ class AddendaNode(models.Model):
 
     @api.onchange('all_fields')
     def _generate_inner_fields_domain(self):
-        for record in self:
-            if record.all_fields:
-                record.inner_field_domain = record.all_fields.relation
+        for node in self:
+            if node.all_fields:
+                node.inner_field_domain = node.all_fields.relation
 
     @api.onchange('nodes')
     def _generate_cfdi_attributes_domain(self):
-        for record in self:
-            if record.nodes:
-                record.cfdi_attributes_domain = record.nodes
+        for node in self:
+            if node.nodes:
+                node.cfdi_attributes_domain = node.nodes
 
     @ api.onchange('nodes')
     def _generate_all_fields_domain(self):
         domain = {'all_fields': []}
-        for record in self:
+        for node in self:
             # Clean attribute value
-            record.cfdi_attributes = False
-            if record.nodes == 'Comprobante/Conceptos/Concepto':
+            node.cfdi_attributes = False
+            if node.nodes == 'Comprobante/Conceptos/Concepto':
                 domain = {'all_fields': [
                     ('model', 'in', ('account.move', 'account.move.line')), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))]}
             else:
@@ -154,15 +156,15 @@ class AddendaNode(models.Model):
 
     @api.onchange('position')
     def _position_onchange(self):
-        for record in self:
-            if(record.position == 'attributes'):
-                record.addenda_tag_ids = False
+        for node in self:
+            if(node.position == 'attributes'):
+                node.addenda_tag_ids = False
 
             else:
-                record.attribute_value = False
-                record.cfdi_attributes = False
-                record.inner_field = False
-                record.all_fields = False
+                node.attribute_value = False
+                node.cfdi_attributes = False
+                node.inner_field = False
+                node.all_fields = False
 
     @api.onchange('attribute_value')
     def delete_field(self):

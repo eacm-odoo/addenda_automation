@@ -43,28 +43,28 @@ class AddendaAddenda(models.Model):
 
     @api.depends('tag_name', 'addenda_tag_id')
     def _compute_main_preview(self):
-        for record in self:
-            root_tag = record.tag_name.replace(' ', '_') or 'root'
+        for addenda in self:
+            root_tag = addenda.tag_name.replace(' ', '_') or 'root'
             root = etree.Element(root_tag)
 
-            for tag in record.addenda_tag_id:
+            for tag in addenda.addenda_tag_id:
                 root.append(etree.fromstring(tag.preview))
             etree.indent(root, '    ')
 
-            record.main_preview = etree.tostring(root, pretty_print=True)
+            addenda.main_preview = etree.tostring(root, pretty_print=True)
 
     @api.depends('nodes_ids')
     def _compute_nodes_preview(self):
-        for record in self:
-            if(record.nodes_ids):
+        for addenda in self:
+            if(addenda.nodes_ids):
                 main_preview = etree.Element("data")
-                for node in record.nodes_ids:
+                for node in addenda.nodes_ids:
                     main_preview.append(etree.fromstring(node.node_preview))
                 etree.indent(main_preview, '    ')
-                record.node_main_preview = etree.tostring(
+                addenda.node_main_preview = etree.tostring(
                     main_preview, pretty_print=True)
             else:
-                record.node_main_preview = False
+                addenda.node_main_preview = False
 
     @api.onchange('is_expression')
     def _is_expression_onchange(self):

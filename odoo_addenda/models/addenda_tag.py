@@ -40,22 +40,25 @@ class AddendaTag(models.Model):
 
     @api.depends('field')
     def _compute_field_type(self):
-        for record in self:
-            record.field_type = record.field.ttype
+        for tag in self:
+            if tag.field:
+                tag.field_type = tag.field.ttype
+            else:
+                tag.field_type = False
 
     @api.depends('tag_name', 'attribute_ids', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
-        for record in self:
-            if(record.tag_name):
-                tag = record.tag_name.replace(' ', '_')
+        for tags in self:
+            if(tags.tag_name):
+                tag = tags.tag_name.replace(' ', '_')
             else:
                 tag = 'TagName'
             body = ''
-            record.preview = ''
+            tags.preview = ''
             attrs = {}
             t_foreach = False
-            if record.attribute_ids:
-                for attr_record in record.attribute_ids:
+            if tags.attribute_ids:
+                for attr_record in tags.attribute_ids:
                     if attr_record.value:
                         attrs['t-att-'+attr_record.attribute] = attr_record.value
                     elif attr_record.field and not attr_record.inner_field:
@@ -65,29 +68,29 @@ class AddendaTag(models.Model):
                         attrs['t-att-'+attr_record.attribute] = 'record.' + \
                             attr_record.field.name + '.' + attr_record.inner_field.name
 
-            if record.value:
-                body = record.value
-            elif record.field and not record.inner_field:
-                if record.field.ttype in ('one2many', 'many2many'):
+            if tags.value:
+                body = tags.value
+            elif tags.field and not tags.inner_field:
+                if tags.field.ttype in ('one2many', 'many2many'):
                     t_foreach = ET.Element(
-                        't', {'t-foreach': record.field.name, 't-as': 'l'})
+                        't', {'t-foreach': tags.field.name, 't-as': 'l'})
                     tag_node = ET.Element(tag)
                     t_foreach.append(tag_node)
                 else:
-                    body = 'record.' + record.field.name
-            elif record.field and record.inner_field:
-                if record.field.ttype in ('one2many', 'many2many'):
+                    body = 'record.' + tags.field.name
+            elif tags.field and tags.inner_field:
+                if tags.field.ttype in ('one2many', 'many2many'):
                     t_foreach = ET.Element(
-                        't', {'t-foreach': record.field.name, 't-as': 'l'})
+                        't', {'t-foreach': tags.field.name, 't-as': 'l'})
                     tag_node = ET.Element(tag)
                     t = ET.Element(
-                        't', {'t-esc': 'l.' + record.inner_field.name})
+                        't', {'t-esc': 'l.' + tags.inner_field.name})
                     tag_node.append(t)
                     t_foreach.append(tag_node)
                 else:
-                    body = 'record.' + record.field.name + '.' + record.inner_field.name
+                    body = 'record.' + tags.field.name + '.' + tags.inner_field.name
             if t_foreach:
-                record.preview = ET.tostring(t_foreach, pretty_print=True)
+                tags.preview = ET.tostring(t_foreach, pretty_print=True)
 
             else:
                 root_node = ET.Element(tag, attrs)
@@ -96,30 +99,30 @@ class AddendaTag(models.Model):
                 if body != '':
                     root_node.append(ET.Element('t', {'t-esc': body}))
 
-                for tag_child in record.addenda_tag_childs_ids:
+                for tag_child in tags.addenda_tag_childs_ids:
                     root_node.append(ET.fromstring(tag_child.preview))
                 ET.indent(root_node, '    ')
 
-                record.preview = ET.tostring(
+                tags.preview = ET.tostring(
                     root_node, encoding='unicode', pretty_print=True)
 
     @api.onchange('field')
     def _compute_inner_fields_domain(self):
-        for record in self:
-            if record.field:
-                record.inner_field_domain = record.field.relation
+        for tag in self:
+            if tag.field:
+                tag.inner_field_domain = tag.field.relation
 
     @api.onchange('addenda_tag_childs_ids')
     def _child_ids_attribute_onchange(self):
-        for record in self:
-            if (len(record.addenda_tag_childs_ids) > 0):
-                record.field = False
-                record.inner_field = False
-                record.value = False
+        for tag in self:
+            if (len(tag.addenda_tag_childs_ids) > 0):
+                tag.field = False
+                tag.inner_field = False
+                tag.value = False
 
     @api.onchange('value')
     def _value_onchange(self):
-        for record in self:
-            if record.value:
-                record.field = False
-                record.inner_field = False
+        for tag in self:
+            if tag.value:
+                tag.field = False
+                tag.inner_field = False
