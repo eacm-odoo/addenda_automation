@@ -6,33 +6,33 @@ from odoo import models, fields, api, _
 
 class AddendaNode(models.Model):
     _name = 'addenda.node'
-    _description = 'Add nodes to addenda'
+    _description = 'Add nodes to addenda, override the cfdiv33 template'
 
     nodes = fields.Selection(
-        string='Reference Node', help=_('Xml element that will serve as a reference for the new element'), selection=lambda self: self._selection_nodes(), required=True)
-    position = fields.Selection(string='Position', help=_('Where the new element is placed, relative to the reference element'), selection=[
+        string='Reference Node', help=('Xml element that will serve as a reference for the new element'), selection=lambda self: self._selection_nodes(), required=True)
+    position = fields.Selection(string='Position', help=('Where the new element is placed, relative to the reference element'), selection=[
         ('before', 'Before'), ('after', 'After'), ('inside', 'Inside'), ('attributes', 'Attributes')], required=True)
     addenda_id = fields.Many2one(
         string="Addenda", comodel_name="addenda.addenda")
     all_fields = fields.Many2one(
-        string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
+        string='Field', help=('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
         domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'monetary', 'integer', 'boolean', 'date', 'datetime', 'many2one'))])
     inner_field = fields.Many2one(
-        string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
+        string='Inner field', help=('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     inner_field_domain = fields.Char(
-        string='Inner field domain', help=_('Domain to filter the inner field'))
+        string='Inner field domain', help=('Domain to filter the inner field'))
     field_type = fields.Char(compute='_compute_field_type', default='')
     path = fields.Text(string='Path', compute='_compute_path')
-    attribute_value = fields.Char(string='Value of attribute', help=_(
+    attribute_value = fields.Char(string='Value of attribute', help=(
         'Value of the attribute of the new element'))
     cfdi_attributes_domain = fields.Char(
-        string='cfdi_attributes domain', help=_('Domain to filter the cfdi_attributes'))
+        string='cfdi_attributes domain', help=('Domain to filter the cfdi_attributes'))
     cfdi_attributes = fields.Many2one(
         comodel_name='addenda.cfdi.attributes', string='Attribute of reference node to edit')
     node_preview = fields.Text(
         string="Preview", compute='_compute_node_preview')
     addenda_tag_ids = fields.One2many(
-        string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=_('New addenda tags added'))
+        string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=('New addenda tags added'))
 
     @api.depends('all_fields')
     def _compute_field_type(self):

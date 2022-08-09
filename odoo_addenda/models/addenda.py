@@ -11,31 +11,31 @@ class AddendaAddenda(models.Model):
     _name = 'addenda.addenda'
     _description = 'Automated addenda'
 
-    name = fields.Char(string='Name', required=True, help=_(
+    name = fields.Char(string='Name', required=True, help=(
         'The name of the new customed addenda'))
-    main_preview = fields.Text(string='Main Preview', help=_(
+    main_preview = fields.Text(string='Main Preview', help=(
         'Main Preview'), compute='_compute_main_preview')
-    node_main_preview = fields.Text(string='Main Preview of the nodes', help=_(
+    node_main_preview = fields.Text(string='Main Preview of the nodes', help=(
         'Main Preview'), compute='_compute_nodes_preview')
 
     nodes_ids = fields.One2many(
         comodel_name='addenda.node', string='Nodes', inverse_name='addenda_id')
-    is_customed_addenda = fields.Boolean(string='Inherit CFDI template', help=_(
+    is_customed_addenda = fields.Boolean(string='Inherit CFDI template', help=(
         'Inherit the CFDI template and override it'))
     is_expression = fields.Boolean(string='Is an expression', default=True)
     addenda_tag_id = fields.One2many(
-        string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_addenda_id', help=_('New addenda tags added'))
+        string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_addenda_id', help=('New addenda tags added'))
     tag_name = fields.Char(string='Root Tag Name', required=True,
-                           help=_('Name of the root tag tree'), default='Addenda')
+                           help=('Name of the root tag tree'), default='Addenda')
     state = fields.Selection(string="State", selection=[
         ('draft', "Draft"),
         ('done', "Done")
     ], default='draft')
-    addenda_xml = fields.Text(string='Addenda XML', help=_('Addenda XML'))
+    addenda_xml = fields.Text(string='Addenda XML', help=('Addenda XML'))
     addenda_expression = fields.Text(
-        string='Addenda Expression', help=_('Addenda Expression'))
+        string='Addenda Expression', help=('Addenda Expression'))
     addenda_fields_xml = fields.Text(
-        string='Addenda Fields XML', help=_('Addenda Fields XML'))
+        string='Addenda Fields XML', help=('Addenda Fields XML'))
     ir_ui_view_id = fields.Many2one(
         string='ir.ui.view view of the addenda', comodel_name='ir.ui.view')
     fields = fields.One2many(
@@ -93,6 +93,8 @@ class AddendaAddenda(models.Model):
 
     @api.model
     def create(self, vals_list):
+        print("-------------------------------------------------------")
+        print(vals_list)
         res = super().create(vals_list)
         if not(vals_list['is_customed_addenda']):
             if vals_list['is_expression'] and vals_list['addenda_expression'] not in [False, '']:
@@ -253,6 +255,11 @@ class AddendaAddenda(models.Model):
             addenda_tag = addenda_tag[2]
             parent_node = etree.Element(
                 addenda_tag['tag_name'].replace(' ', '_'))
+        elif type(addenda_tag) is int:
+            addenda_tag = self.env['addenda.tag'].search_read(
+                [('id', '=', addenda_tag)])[0]
+            parent_node = etree.Element(
+                addenda_tag['tag_name'].replace(' ', '_'))
         else:
             parent_node = etree.Element(
                 addenda_tag['tag_name'].replace(' ', '_'))
@@ -266,6 +273,9 @@ class AddendaAddenda(models.Model):
             for attribute in addenda_tag['attribute_ids']:
                 if(type(attribute) is list):
                     attribute = attribute[2]
+                elif(type(attribute) is int):
+                    attribute = self.env['addenda.attribute'].search_read(
+                        [('id', '=', attribute)])[0]
                 if(attribute['value']):
                     parent_node.set(attribute['attribute'], attribute['value'])
                 elif(attribute['field'] and not attribute['value'] and not attribute['inner_field']):
@@ -300,12 +310,16 @@ class AddendaAddenda(models.Model):
     def get_field_name(self, field_id):
         if type(field_id) is int:
             return self.env['ir.model.fields'].browse(field_id).name
+        elif type(field_id) is tuple:
+            return self.env['ir.model.fields'].browse(field_id[0]).name
         else:
             return field_id.name
 
     def get_field_type(self, field_id):
         if type(field_id) is int:
             return self.env['ir.model.fields'].browse(field_id).ttype
+        elif type(field_id) is tuple:
+            return self.env['ir.model.fields'].browse(field_id[0]).ttype
         else:
             return field_id.ttype
 
@@ -395,7 +409,10 @@ class AddendaAddenda(models.Model):
         root = etree.Element('odoo')
         for field in fields:
             if type(field) != list:
-                field = [0, 2, field]
+                if type(field) == int:
+                    field = [0, 2, self.env['ir.model.fields'].browse(field)]
+                else:
+                    field = [0, 2, field]
                 model_name = field[2].model
             elif write:
                 if(type(field[1]) == int):

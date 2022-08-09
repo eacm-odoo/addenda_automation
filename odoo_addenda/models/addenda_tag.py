@@ -5,31 +5,31 @@ from odoo import models, fields, api, _
 
 class AddendaTag(models.Model):
     _name = 'addenda.tag'
-    _description = 'Add tag to node in addenda'
+    _description = 'Add many tags to node or anorther tag in addenda'
 
     addenda_node_id = fields.Many2one(
         string='Addenda Node', comodel_name='addenda.node')
     addenda_addenda_id = fields.Many2one(
         string='Addenda Addenda', comodel_name='addenda.addenda')
     addenda_tag_childs_ids = fields.One2many(
-        comodel_name='addenda.tag', string='Addenda Tag Childs', inverse_name='addenda_tag_id', help=_('New elements added inside this tag/element'))
+        comodel_name='addenda.tag', string='Addenda Tag Childs', inverse_name='addenda_tag_id', help=('New elements added inside this tag/element'))
     addenda_tag_id = fields.Many2one(
         string='Addenda tag', comodel_name='addenda.tag')
     tag_name = fields.Char(string='Tag Name', required=True,
-                           help=_('Name of the new tag/element'))
+                           help=('Name of the new tag/element'))
     attribute_ids = fields.One2many(
-        comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_tag_id', help=_('Attributes of the new tag/element'))
-    value = fields.Char(string='Value', help=_(
+        comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_tag_id', help=('Attributes of the new tag/element'))
+    value = fields.Char(string='Value', help=(
         'Value of the attribute of the new element'))
     field = fields.Many2one(
-        string='Field', help=_('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
+        string='Field', help=('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
         domain=[('model', '=', 'account.move'), ('ttype', 'not in', ('binary', 'html', 'many2one_reference'))])
     inner_field = fields.Many2one(
-        string='Inner field', help=_('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
+        string='Inner field', help=('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     inner_field_domain = fields.Char(
-        string='Inner field domain', help=_('Domain to filter the inner field'))
+        string='Inner field domain', help=('Domain to filter the inner field'))
     preview = fields.Text(store=False, string='Preview',
-                          readonly=True, compute='_compute_preview', help=_('A preview to hel the user to create the xml'))
+                          readonly=True, compute='_compute_preview', help=('A preview to hel the user to create the xml'))
 
     field_type = fields.Char(compute='_compute_field_type', default='')
     len_tag_childs = fields.Integer(compute='_compute_len_child_tags')
@@ -54,7 +54,7 @@ class AddendaTag(models.Model):
             record.preview = ''
             attrs = {}
             t_foreach = False
-            if len(record.attribute_ids) > 0:
+            if record.attribute_ids:
                 for attr_record in record.attribute_ids:
                     if attr_record.value:
                         attrs['t-att-'+attr_record.attribute] = attr_record.value
