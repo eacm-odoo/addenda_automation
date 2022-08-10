@@ -105,9 +105,16 @@ class AddendaAddenda(models.Model):
             elif vals_list['is_expression'] and vals_list['addenda_expression'] in [False, '']:
                 return res
             elif not(vals_list['is_expression']):
-                root = etree.Element(vals_list['tag_name'].replace(' ', '_'))
+                if(vals_list['namespace']):
+                    etree.register_namespace(
+                        vals_list['namespace'], vals_list['namespace_value'])
+                    root = etree.Element(etree.QName(
+                        vals_list['namespace_value'], vals_list['tag_name'].replace(' ', '_')))
+                else:
+                    root = etree.Element(vals_list['tag_name'].replace(' ', '_'))
                 for tag in vals_list['addenda_tag_id']:
-                    xml_tree_tag = self.generate_tree_view(tag[2])
+                    xml_tree_tag = self.generate_tree_view(
+                        tag, vals_list['namespace_value'])
                     root.append(xml_tree_tag)
             full_xml = self.get_xml(vals_list['name'], root)
             root_string = etree.tostring(root, pretty_print=True)
@@ -175,9 +182,16 @@ class AddendaAddenda(models.Model):
                 res = super().write(vals)
                 return res
             elif not(is_expression):
-                root = etree.Element(instance.tag_name.replace(' ', '_'))
+                if(instance.namespace):
+                    etree.register_namespace(
+                        instance.namespace, instance.namespace_value)
+                    root = etree.Element(etree.QName(
+                        instance.namespace_value, instance.tag_name.replace(' ', '_')))
+                else:
+                    root = etree.Element(instance.tag_name.replace(' ', '_'))
                 for tag in instance.addenda_tag_id:
-                    xml_tree_tag = self.generate_tree_view(tag)
+                    xml_tree_tag = self.generate_tree_view(
+                        tag, instance.namespace_value)
                     root.append(xml_tree_tag)
             full_xml = self.get_xml(instance.name, root)
             root_string = etree.tostring(root, pretty_print=True)
@@ -253,22 +267,34 @@ class AddendaAddenda(models.Model):
         }
 
     # Function to create the xml tree, given  tag_name and addenda_tag_id
-    def generate_tree_view(self, addenda_tag):
+    def generate_tree_view(self, addenda_tag, prefix):
         if type(addenda_tag) is list:
             addenda_tag = addenda_tag[2]
-            parent_node = etree.Element(
-                addenda_tag['tag_name'].replace(' ', '_'))
+            if(prefix):
+                parent_node = etree.Element(
+                    etree.QName(prefix, addenda_tag['tag_name'].replace(' ', '_')))
+            else:
+                parent_node = etree.Element(
+                    addenda_tag['tag_name'].replace(' ', '_'))
         elif type(addenda_tag) is int:
             addenda_tag = self.env['addenda.tag'].search_read(
                 [('id', '=', addenda_tag)])[0]
-            parent_node = etree.Element(
-                addenda_tag['tag_name'].replace(' ', '_'))
+            if(prefix):
+                parent_node = etree.Element(
+                    etree.QName(prefix, addenda_tag['tag_name'].replace(' ', '_')))
+            else:
+                parent_node = etree.Element(
+                    addenda_tag['tag_name'].replace(' ', '_'))
         else:
-            parent_node = etree.Element(
-                addenda_tag['tag_name'].replace(' ', '_'))
+            if(prefix):
+                parent_node = etree.Element(
+                    etree.QName(prefix, addenda_tag['tag_name'].replace(' ', '_')))
+            else:
+                parent_node = etree.Element(
+                    addenda_tag['tag_name'].replace(' ', '_'))
         if addenda_tag['addenda_tag_childs_ids']:
             for child in addenda_tag['addenda_tag_childs_ids']:
-                child_node = self.generate_tree_view(child)
+                child_node = self.generate_tree_view(child, prefix)
                 parent_node.append(child_node)
         if(addenda_tag['value']):
             parent_node.text = addenda_tag['value']
@@ -473,6 +499,13 @@ class AddendaAddenda(models.Model):
             xml_field.text = str(field[2]['copied'])
             record.append(xml_field)
             xml_field = etree.Element("field")
+            xml_field.set("name", 'depends')
+            xml_field.text = str(field[2]['depends'])
+            record.append(xml_field)
+            xml_field = etree.Element("field")
+            xml_field.set("name", 'compute')
+            xml_field.text = "".join(["<![CDATA[", str(field[2]['compute']),"]]>"])
+            record.append(xml_field)
             root.append(record)
         return root
 
