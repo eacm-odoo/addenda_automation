@@ -94,36 +94,29 @@ class TestAddendaAutomation(TransactionCase):
         cls.tag_initial.addenda_tag_childs_ids = [
             cls.tag_orden_compra.id, cls.tag_partner.id, cls.attribute_tag.id]
 
+        print(cls.addenda_barry)
         # endregion
 
         # region Create addenda inherit from CDFI Template 
 
-        cls.addenda_inherit = cls.env['addenda.addenda'].create({
-            'name': 'Addenda Inherit',
-            'is_expression': False,
-            'main_preview': False,
-            'is_customed_addenda': True,
-            'fields': [],
-            'nodes_ids': [],
-            'tag_name': 'Root'})
-
         cls.addenda_node_1 = cls.env['addenda.node'].create({
             'nodes': 'Comprobante/Emisor',
             'position': 'after',
-            'addenda_id':cls.addenda_inherit.id,
+            'addenda_id':'',
             'addenda_tag_ids': [(6, 0, cls.tag_initial.id)],
         })
         cls.addenda_node_2 = cls.env['addenda.node'].create({
             'nodes': 'Comprobante/Receptor',
             'position': 'before',
-            'addenda_id':cls.addenda_inherit.id,
+            'addenda_id':'',
             'addenda_tag_ids': [(6, 0, cls.tag_orden_compra.id)],
+            'all_fields':3960
         })
         
         cls.addenda_node_3 = cls.env['addenda.node'].create({
             'nodes': 'Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion',
             'position': 'attributes',
-            'addenda_id':cls.addenda_inherit.id,
+            'addenda_id':'',
             'addenda_tag_ids': [(6, 0, cls.tag_partner.id)],
             'cfdi_attributes': 33,
             'attribute_value': 'Exento',
@@ -132,12 +125,22 @@ class TestAddendaAutomation(TransactionCase):
         cls.addenda_node_4 = cls.env['addenda.node'].create({
             'nodes': 'Comprobante/Impuestos/Retenciones/Retencion',
             'position': 'attributes',
-            'addenda_id':cls.addenda_inherit.id,
+            'addenda_id':'',
             'addenda_tag_ids': [(6, 0, cls.tag_partner.id)],
             'cfdi_attributes': 32,
-            'attribute_value': 'Exento',
+            'all_fields':3960
         })
-        cls.addenda_inherit.nodes_ids = [cls.addenda_node_1.id,cls.addenda_node_2.id,cls.addenda_node_3.id,cls.addenda_node_4.id]
+        cls.addenda_node_5=cls.env['addenda.node'].create({
+            'nodes': 'Comprobante/Impuestos/Retenciones/Retencion',
+            'position': 'attributes',
+            'addenda_id':'',
+            'addenda_tag_ids': [(6, 0, cls.tag_partner.id)],
+            'cfdi_attributes': 34,
+            'all_fields':3936,
+            'inner_field':932,
+        })
+          
+        
 
         # endregion
         
