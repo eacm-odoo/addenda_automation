@@ -10,7 +10,7 @@ class TestAddendaAutomation(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        print("Prepare testing Data!-----------")
+        #print("Prepare testing Data!-----------")
 
         # region Create Field
         cls.addenda_field_test = cls.env['ir.model.fields'].create({
