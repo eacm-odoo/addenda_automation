@@ -1,11 +1,11 @@
 from lxml import etree as ET
 
-from odoo import models, fields, api, _
+from odoo import api, fields, models
 
 
 class AddendaTag(models.Model):
     _name = 'addenda.tag'
-    _description = 'Add many tags to node or anorther tag in addenda'
+    _description = 'Add many tags to a node or tags to an addenda'
 
     addenda_node_id = fields.Many2one(
         string='Addenda Node', comodel_name='addenda.node')
@@ -36,10 +36,11 @@ class AddendaTag(models.Model):
 
     @api.depends('addenda_tag_childs_ids')
     def _compute_len_child_tags(self):
-        if(self.addenda_tag_childs_ids):
-            self.len_tag_childs = len(self.addenda_tag_childs_ids)
-        else:
-            self.len_tag_childs = False
+        for tag in self:
+            if tag.addenda_tag_childs_ids:
+                tag.len_tag_childs = len(tag.addenda_tag_childs_ids)
+            else:
+                tag.len_tag_childs = False
 
     @api.depends('field')
     def _compute_field_type(self):
@@ -52,7 +53,7 @@ class AddendaTag(models.Model):
     @api.depends('tag_name', 'attribute_ids', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
         for tags in self:
-            if(tags.tag_name):
+            if tags.tag_name:
                 tag = tags.tag_name.replace(' ', '_')
             else:
                 tag = 'TagName'
@@ -63,12 +64,14 @@ class AddendaTag(models.Model):
             if tags.attribute_ids:
                 for attr_record in tags.attribute_ids:
                     if attr_record.value:
-                        attrs["".join(['t-att-',attr_record.attribute])] = attr_record.value
+                        attrs["".join(['t-att-', attr_record.attribute])
+                              ] = attr_record.value
                     elif attr_record.field and not attr_record.inner_field:
-                        attrs["".join(['t-att-', attr_record.attribute])] = "".join(['record.', attr_record.field.name])
+                        attrs["".join(['t-att-', attr_record.attribute])
+                              ] = "".join(['record.', attr_record.field.name])
                     elif attr_record.inner_field and attr_record.field:
                         attrs["".join(['t-att-', attr_record.attribute])] = "".join(['record.',
-                            attr_record.field.name, '.', attr_record.inner_field.name])
+                                                                                     attr_record.field.name, '.', attr_record.inner_field.name])
 
             if tags.value:
                 body = tags.value
@@ -90,7 +93,8 @@ class AddendaTag(models.Model):
                     tag_node.append(t)
                     t_foreach.append(tag_node)
                 else:
-                    body = "".join(['record.', tags.field.name, '.' , tags.inner_field.name])
+                    body = "".join(['record.', tags.field.name,
+                                   '.', tags.inner_field.name])
             if t_foreach:
                 tags.preview = ET.tostring(t_foreach, pretty_print=True)
 

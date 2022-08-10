@@ -1,9 +1,9 @@
-from odoo import models, fields, api, _
+from odoo import api, fields, models
 
 
 class AddendaAttribute(models.Model):
     _name = 'addenda.attribute'
-    _description = 'This module allows the user add many attributes to one tag in the addenda'
+    _description = 'This model allows the user to add many attributes to one tag in the addenda'
 
     addenda_tag_id = fields.Many2one(
         comodel_name='addenda.tag', string='Addenda tag')
