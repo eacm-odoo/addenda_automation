@@ -97,6 +97,30 @@ class TestAddendaAutomation(TransactionCase):
 
         # endregion
 
+        # region Create addenda with tree tag and a created field
+        cls.tree_tag_with_created_field = cls.env['addenda.tag'].create({
+            'tag_name': 'TreeTagWithCreatedField',
+        })
+
+        cls.tag_created_field = cls.env['addenda.tag'].create({
+            'tag_name': 'CreatedField',
+            'field':  cls.addenda_field_test.id,
+            'addenda_tag_id': cls.tree_tag_with_created_field.id,
+        })
+        cls.tree_tag_with_created_field.addenda_tag_childs_ids = [
+            cls.tag_created_field.id]
+
+        cls.addenda_field = cls.env['addenda.addenda'].create({
+            'name': 'Addenda for Barry',
+            'is_expression': False,
+            'main_preview': False,
+            'is_customed_addenda': False,
+            'tag_name': 'Initial',
+            'fields': [],
+            'addenda_tag_id': [(6, 0, cls.tree_tag_with_created_field.id)]
+        })
+        # end region
+
         # region Create addenda inherit from CDFI Template
 
         cls.addenda_inherit = cls.env['addenda.addenda'].create({
