@@ -12,24 +12,16 @@ class TestAddendaAutomation(TransactionCase):
         super().setUpClass()
         print("Prepare testing Data!-----------")
 
-        # region Create Addenda from expression
+        # region Create Field
         cls.addenda_field_test = cls.env['ir.model.fields'].create({
             'name': 'x_addendaTestField',
-            'model_id': 409,
+            'model_id': cls.env.ref('account.model_account_move').id,
             'field_description': 'Addenda Expression Test Field',
             'ttype': 'text',
             'copied': True,
             'store': True,
         }
         )
-        cls.addenda_from_expression = cls.env['addenda.addenda'].create({
-            'name': 'Addenda_from_expression_Test',
-            'is_expression': True,
-            'is_customed_addenda': False,
-            'addenda_expression': '<Addenda > <asdfasf > <asdfasdf > <xcvxcvxc > <vxcvxc/> </xcvxcvxc > </asdfasdf > </asdfasf ></Addenda >',
-            'fields': [cls.addenda_field_test.id],
-        })
-
         # endregion
 
         # region Create Addenda for barry
@@ -38,17 +30,26 @@ class TestAddendaAutomation(TransactionCase):
         cls.tag_initial = cls.env['addenda.tag'].create({
             'tag_name': 'Initial',
         })
+
+        # search for fields
+        account_move_name = cls.env['ir.model.fields'].search(
+            [('model', '=', 'account.move'), ('name', '=', 'name')]).id
+        account_move_partner_id = cls.env['ir.model.fields'].search(
+            [('model', '=', 'account.move'), ('name', '=', 'partner_id')]).id
+        account_move_partner_id_name = cls.env['ir.model.fields'].search(
+            [('model', '=', 'res.partner'), ('name', '=', 'name')]).id
+
         # create tag for addenda
         cls.tag_orden_compra = cls.env['addenda.tag'].create({
             'tag_name': 'OrdenCompra',
-            'field': 3919,
+            'field': account_move_name,
             'addenda_tag_id': cls.tag_initial.id,
         })
 
         cls.tag_partner = cls.env['addenda.tag'].create({
             'tag_name': 'Partner',
-            'field': 3936,
-            'inner_field': 906,
+            'field': account_move_partner_id,
+            'inner_field': account_move_partner_id_name,
             'addenda_tag_id': cls.tag_initial.id,
         })
 
@@ -65,15 +66,15 @@ class TestAddendaAutomation(TransactionCase):
         # create atribute with field
         cls.addenda_barry_field_test_2 = cls.env['addenda.attribute'].create({
             'attribute': 'addendaTestField',
-            'field': 3919,
+            'field': account_move_name,
             'addenda_tag_id': cls.attribute_tag.id,
         })
 
         # create attribute with inner field
         cls.addenda_barry_field_test_3 = cls.env['addenda.attribute'].create({
             'attribute': 'addendaTestInnerField',
-            'field': 3936,
-            'inner_field': 906,
+            'field': account_move_partner_id,
+            'inner_field': account_move_partner_id_name,
             'addenda_tag_id': cls.attribute_tag.id,
         })
         # update tag_initial with tag_orden_compra
@@ -96,7 +97,7 @@ class TestAddendaAutomation(TransactionCase):
 
         # endregion
 
-        # region Create addenda inherit from CDFI Template 
+        # region Create addenda inherit from CDFI Template
 
         cls.addenda_inherit = cls.env['addenda.addenda'].create({
             'name': 'Addenda Inherit',
@@ -110,36 +111,34 @@ class TestAddendaAutomation(TransactionCase):
         cls.addenda_node_1 = cls.env['addenda.node'].create({
             'nodes': 'Comprobante/Emisor',
             'position': 'after',
-            'addenda_id':cls.addenda_inherit.id,
+            'addenda_id': cls.addenda_inherit.id,
             'addenda_tag_ids': [(6, 0, cls.tag_initial.id)],
         })
         cls.addenda_node_2 = cls.env['addenda.node'].create({
             'nodes': 'Comprobante/Receptor',
             'position': 'before',
-            'addenda_id':cls.addenda_inherit.id,
+            'addenda_id': cls.addenda_inherit.id,
             'addenda_tag_ids': [(6, 0, cls.tag_orden_compra.id)],
         })
-        
+
         cls.addenda_node_3 = cls.env['addenda.node'].create({
             'nodes': 'Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion',
             'position': 'attributes',
-            'addenda_id':cls.addenda_inherit.id,
+            'addenda_id': cls.addenda_inherit.id,
             'addenda_tag_ids': [(6, 0, cls.tag_partner.id)],
             'cfdi_attributes': 33,
             'attribute_value': 'Exento',
         })
-        
+
         cls.addenda_node_4 = cls.env['addenda.node'].create({
             'nodes': 'Comprobante/Impuestos/Retenciones/Retencion',
             'position': 'attributes',
-            'addenda_id':cls.addenda_inherit.id,
+            'addenda_id': cls.addenda_inherit.id,
             'addenda_tag_ids': [(6, 0, cls.tag_partner.id)],
             'cfdi_attributes': 32,
             'attribute_value': 'Exento',
         })
-        cls.addenda_inherit.nodes_ids = [cls.addenda_node_1.id,cls.addenda_node_2.id,cls.addenda_node_3.id,cls.addenda_node_4.id]
+        cls.addenda_inherit.nodes_ids = [
+            cls.addenda_node_1.id, cls.addenda_node_2.id, cls.addenda_node_3.id, cls.addenda_node_4.id]
 
         # endregion
-        
-       
-            
