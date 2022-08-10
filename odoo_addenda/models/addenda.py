@@ -27,6 +27,11 @@ class AddendaAddenda(models.Model):
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_addenda_id', help=('New addenda tags added'))
     tag_name = fields.Char(string='Root Tag Name', required=True,
                            help=('Name of the root tag tree'), default='Addenda')
+    namespace = fields.Char(
+        string='Namespace Prefix', help=('Namespace Prefix of the Addenda, helps to identify the nodes'))
+    namespace_value = fields.Char(
+        string='Namespace Value', help=('Namespace Value of the Addenda, helps to identify the nodes'))
+
     state = fields.Selection(string="State", selection=[
         ('draft', "Draft"),
         ('done', "Done")
