@@ -504,7 +504,7 @@ class AddendaAddenda(models.Model):
             record.append(xml_field)
             xml_field = etree.Element("field")
             xml_field.set("name", 'compute')
-            xml_field.text = "".join(["<![CDATA[", str(field[2]['compute']),"]]>"])
+            xml_field.text = str(field[2]['compute'])
             record.append(xml_field)
             root.append(record)
         return root
