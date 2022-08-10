@@ -1,3 +1,5 @@
+from logging import root
+from xml.etree.ElementTree import QName
 from lxml import etree as ET
 
 from odoo import models, fields, api, _
@@ -30,6 +32,10 @@ class AddendaTag(models.Model):
         string='Inner field domain', help=('Domain to filter the inner field'))
     preview = fields.Text(store=False, string='Preview',
                           readonly=True, compute='_compute_preview', help=('A preview to hel the user to create the xml'))
+    namespace = fields.Char(
+        string='Namespace Prefix', help=('Namespace Prefix of the Addenda, helps to identify the nodes'))
+    namespace_value = fields.Char(
+        string='Namespace Value', help=('Namespace Value of the Addenda, helps to identify the nodes'))
 
     field_type = fields.Char(compute='_compute_field_type', default='')
     len_tag_childs = fields.Integer(compute='_compute_len_child_tags')
@@ -51,6 +57,7 @@ class AddendaTag(models.Model):
 
     @api.depends('tag_name', 'attribute_ids', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
+        
         for tags in self:
             if(tags.tag_name):
                 tag = tags.tag_name.replace(' ', '_')
@@ -95,7 +102,8 @@ class AddendaTag(models.Model):
                 tags.preview = ET.tostring(t_foreach, pretty_print=True)
 
             else:
-                root_node = ET.Element(tag, attrs)
+               
+                root_node=ET.Element(tag,attrs)
 
                 # call generate_node ->tag tree
                 if body != '':

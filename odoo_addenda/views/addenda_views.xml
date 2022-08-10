@@ -29,10 +29,11 @@
                             <group>
                                 <field name="is_expression" />
                                 <field name="tag_name" attrs="{'invisible': [('is_expression', '=', True)]}" />
+                                <field name="namespace" attrs="{'invisible': [('is_expression', '=', True)]}" />
+                                <field name="namespace_value" attrs="{'invisible': [('is_expression', '=', True)]}" />
                                 <field name="addenda_tag_id" attrs="{'invisible': [('is_expression', '=', True)]}" />
                                 <field name="addenda_expression" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': [('is_expression', '=', False)]}" />
                                 <field name="main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': [('is_expression', '=', True)]}" />
-
                             </group>
                         </page>
                         <page string="Create Fields">
