@@ -95,7 +95,6 @@ class TestAddendaAutomation(TransactionCase):
         cls.tag_initial.addenda_tag_childs_ids = [
             cls.tag_orden_compra.id, cls.tag_partner.id, cls.attribute_tag.id]
 
-        print(cls.addenda_barry)
         # endregion
 
         # region Create addenda with tree tag and a created field
@@ -125,6 +124,14 @@ class TestAddendaAutomation(TransactionCase):
         # end region
 
         # region Create addenda inherit from CDFI Template
+        cls.addenda_inherit = cls.env['addenda.addenda'].create({
+            'name': 'Addenda Inherit',
+            'is_expression': False,
+            'main_preview': False,
+            'is_customed_addenda': True,
+            'fields': [],
+            'nodes_ids': [],
+            'tag_name': 'Root'})
 
         cls.addenda_node_1 = cls.env['addenda.node'].create({
             'nodes': 'Comprobante/Emisor',
@@ -137,7 +144,7 @@ class TestAddendaAutomation(TransactionCase):
             'position': 'before',
             'addenda_id': cls.addenda_inherit.id,
             'addenda_tag_ids': [(6, 0, cls.tag_orden_compra.id)],
-            'all_fields':3960
+            'all_fields': 3960
         })
 
         cls.addenda_node_3 = cls.env['addenda.node'].create({
@@ -154,7 +161,7 @@ class TestAddendaAutomation(TransactionCase):
             'position': 'attributes',
             'addenda_id': cls.addenda_inherit.id,
             'cfdi_attributes': 32,
-            'all_fields':3960
+            'all_fields': 3960
         })
 
         cls.addenda_node_5 = cls.env['addenda.node'].create({

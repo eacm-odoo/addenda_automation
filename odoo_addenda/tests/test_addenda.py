@@ -8,11 +8,6 @@ from odoo.tests import tagged
 class TestAddendaAutomationResults(TestAddendaAutomation):
 
     def test_computed_fields(self):
-        # print("Result of Testing!!")
-        # print(
-        #     self.addenda_barry.addenda_tag_id[0].addenda_tag_childs_ids[2].attribute_ids[1].field_type)
-        # print("-----------------------FINISHHHHHHHHHHHHHHHHH---------------------------")
-        # print(repr(self.addenda_barry.main_preview))
         self.assertEqual(self.addenda_barry.main_preview,
                          '<Initial>\n    <Initial>\n        <OrdenCompra>\n            <t t-esc="record.name"/>\n        </OrdenCompra>\n        <Partner>\n            <t t-esc="record.partner_id.name"/>\n        </Partner>\n        <Attribute t-att-addendaTestValue="testValue" t-att-addendaTestField="record.name" t-att-addendaTestInnerField="record.partner_id.name"/>\n    </Initial>\n</Initial>\n')
         self.assertEqual(self.addenda_barry.addenda_tag_id[0].preview,
@@ -156,13 +151,10 @@ class TestAddendaAutomationResults(TestAddendaAutomation):
                             '<field name="x_addendaTestField"/>')
 
     def test_node_methods(self):
-        print("------------------------------")
         self.assertTrue(self.addenda_inherit)
         self.assertEqual(
             self.addenda_inherit.nodes_ids[0].addenda_tag_ids.addenda_tag_childs_ids[0].field_type, 'char')
         self.assertEqual(
             self.addenda_inherit.nodes_ids[4].field_type, 'many2one')
-        # print(
-        #     repr(self.addenda_inherit.nodes_ids[4].node_preview))
         self.assertEqual(
             self.addenda_inherit.nodes_ids[4].node_preview, '<xpath expr="//*[name()=\'cfdi:Retencion\']" position="attributes">\n  <attribute name="t-att-Impuesto">nodes.partner_id.name</attribute>\n</xpath>\n')
