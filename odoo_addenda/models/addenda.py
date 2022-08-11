@@ -181,6 +181,8 @@ class AddendaAddenda(models.Model):
         instance = self.env['addenda.addenda'].browse(self.id)
         is_customed_addenda = instance.is_customed_addenda
         fields = instance.fields
+        # remove fields from vals
+        vals.pop('fields', None)
         if not(is_customed_addenda):
             is_expression = instance.is_expression
             addenda_expression = instance.addenda_expression
@@ -217,8 +219,6 @@ class AddendaAddenda(models.Model):
                 vals['addenda_fields_xml'] = etree.tostring(
                     new_fields_xml, pretty_print=True)
             vals['addenda_xml'] = etree.tostring(full_xml, pretty_print=True)
-            # remove fields from vals
-            vals.pop('fields', None)
             vals.pop('addenda_tag_id', None)
             vals['state'] = 'done'
             res = super().write(vals)
@@ -250,8 +250,6 @@ class AddendaAddenda(models.Model):
                 new_fields_xml = self.generate_xml_fields(fields, True)
                 vals['addenda_fields_xml'] = etree.tostring(
                     new_fields_xml, pretty_print=True)
-            # remove fields from vals
-            vals.pop('fields', None)
             vals.pop('nodes_ids', None)
             vals['state'] = 'done'
             res = super().write(vals)
@@ -445,7 +443,7 @@ class AddendaAddenda(models.Model):
 
     def generate_xml_fields(self, fields, write=False):
         root = etree.Element('odoo')
-        for field in fields:
+        for field in fields.sorted(key=lambda r: r.id):
             if type(field) != list:
                 if type(field) == int:
                     field = [0, 2, self.env['ir.model.fields'].browse(field)]
