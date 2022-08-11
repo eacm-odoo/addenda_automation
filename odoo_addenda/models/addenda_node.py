@@ -22,7 +22,7 @@ class AddendaNode(models.Model):
     inner_field_domain = fields.Char(
         string='Inner field domain', help=('Domain to filter the inner field'))
     field_type = fields.Char(compute='_compute_field_type', default='')
-    path = fields.Text(string='Path', compute='_compute_path')
+
     attribute_value = fields.Char(string='Value of attribute', help=(
         'Value of the attribute of the new element'))
     cfdi_attributes_domain = fields.Char(
@@ -41,15 +41,6 @@ class AddendaNode(models.Model):
                 node.field_type = node.all_fields.ttype
             else:
                 node.field_type = False
-
-    @api.depends('nodes')
-    def _compute_path(self):
-        for node in self:
-            if node.nodes:
-                node.path = "".join([("{http://www.sat.gob.mx/cfd/3}", node.nodes.replace(
-                    '/', '/{http://www.sat.gob.mx/cfd/3}')).replace('{http://www.sat.gob.mx/cfd/3}Comprobante', '.')])
-            else:
-                node.path = False
 
     @api.depends('nodes', 'attribute_value', 'cfdi_attributes', 'all_fields', 'inner_field', 'position', 'addenda_tag_ids')
     def _compute_node_preview(self):

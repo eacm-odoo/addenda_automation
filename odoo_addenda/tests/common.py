@@ -9,7 +9,6 @@ class TestAddendaAutomation(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        #print("Prepare testing Data!-----------")
 
         # region Create Field
         cls.addenda_field_test = cls.env['ir.model.fields'].create({
@@ -85,6 +84,8 @@ class TestAddendaAutomation(TransactionCase):
             'is_customed_addenda': False,
             'tag_name': 'Initial',
             'fields': [],
+            'namespace': False,
+            'namespace_value': False,
             'addenda_tag_id': [(6, 0, cls.tag_initial.id)]
         })
         cls.attribute_tag.attribute_ids = [cls.addenda_barry_field_test.id,
@@ -116,6 +117,8 @@ class TestAddendaAutomation(TransactionCase):
             'main_preview': False,
             'is_customed_addenda': False,
             'tag_name': 'Initial',
+            'namespace': False,
+            'namespace_value': False,
             'fields': [],
             'addenda_tag_id': [(6, 0, cls.tree_tag_with_created_field.id)]
         })
@@ -150,11 +153,19 @@ class TestAddendaAutomation(TransactionCase):
             'nodes': 'Comprobante/Impuestos/Retenciones/Retencion',
             'position': 'attributes',
             'addenda_id': cls.addenda_inherit.id,
-            'addenda_tag_ids': [(6, 0, cls.tag_partner.id)],
             'cfdi_attributes': 32,
             'all_fields':3960
         })
+
+        cls.addenda_node_5 = cls.env['addenda.node'].create({
+            'nodes': 'Comprobante/Impuestos/Retenciones/Retencion',
+            'position': 'attributes',
+            'addenda_id': cls.addenda_inherit.id,
+            'cfdi_attributes': 32,
+            'all_fields': account_move_partner_id,
+            'inner_field': account_move_partner_id_name,
+        })
         cls.addenda_inherit.nodes_ids = [
-            cls.addenda_node_1.id, cls.addenda_node_2.id, cls.addenda_node_3.id, cls.addenda_node_4.id]
+            cls.addenda_node_1.id, cls.addenda_node_2.id, cls.addenda_node_3.id, cls.addenda_node_4.id, cls.addenda_node_5.id]
 
         # endregion

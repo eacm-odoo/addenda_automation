@@ -12,6 +12,7 @@ class TestAddendaAutomationResults(TestAddendaAutomation):
         # print(
         #     self.addenda_barry.addenda_tag_id[0].addenda_tag_childs_ids[2].attribute_ids[1].field_type)
         # print("-----------------------FINISHHHHHHHHHHHHHHHHH---------------------------")
+        # print(repr(self.addenda_barry.main_preview))
         self.assertEqual(self.addenda_barry.main_preview,
                          '<Initial>\n    <Initial>\n        <OrdenCompra>\n            <t t-esc="record.name"/>\n        </OrdenCompra>\n        <Partner>\n            <t t-esc="record.partner_id.name"/>\n        </Partner>\n        <Attribute t-att-addendaTestValue="testValue" t-att-addendaTestField="record.name" t-att-addendaTestInnerField="record.partner_id.name"/>\n    </Initial>\n</Initial>\n')
         self.assertEqual(self.addenda_barry.addenda_tag_id[0].preview,
@@ -24,11 +25,10 @@ class TestAddendaAutomationResults(TestAddendaAutomation):
             self.addenda_barry.addenda_tag_id[0].addenda_tag_childs_ids[2].attribute_ids[1].field_type, 'char')
 
     def test_methods_addenda_addenda(self):
-        #print("RESULT OF TESTING METHODS")
         generate_tree_view = self.addenda_barry.generate_tree_view(
             self.addenda_barry.addenda_tag_id[0])
         self.assertEqual(etree.tostring(generate_tree_view, pretty_print=True),
-                         b'<Initial>\n  <OrdenCompra>\n    <t t-esc="record.name"/>\n  </OrdenCompra>\n  <Partner>\n    <t t-esc="record.partner_id.name"/>\n  </Partner>\n  <Attribute addendaTestValue="testValue" t-att-addendaTestField="record.name" t-att-addendaTestInnerField="record.partner_id.name"/>\n</Initial>\n')
+                         b'<Initial>\n  <OrdenCompra>\n    <t t-esc="record.name"/>\n  </OrdenCompra>\n  <Partner>\n    <t t-esc="record.partner_id.name"/>\n  </Partner>\n  <Attribute t-att-addendaTestValue="testValue" t-att-addendaTestField="record.name" t-att-addendaTestInnerField="record.partner_id.name"/>\n</Initial>\n')
 
         field_name = self.addenda_barry.get_field_name(
             self.addenda_barry.addenda_tag_id[0].addenda_tag_childs_ids[0].field.id)
@@ -41,7 +41,6 @@ class TestAddendaAutomationResults(TestAddendaAutomation):
         root = etree.Element(self.addenda_barry.tag_name.replace(' ', '_'))
         root.append(generate_tree_view)
         get_xml = self.addenda_barry.get_xml(self.addenda_barry.name, root)
-        #print(etree.tostring(get_xml, pretty_print=True))
 
     def test_addenda_expression(self):
         addenda_from_expression = self.env['addenda.addenda'].create({
@@ -83,7 +82,7 @@ class TestAddendaAutomationResults(TestAddendaAutomation):
         })
         self.assertTrue(addenda_from_expression_with_new_fields)
         self.assertEqual(addenda_from_expression_with_new_fields.addenda_fields_xml,
-                         '<odoo>\n  <record id="Addenda_Expression_Test_Field" model="ir.model.fields">\n    <field name="name">x_addendaTestField</field>\n    <field name="field_description">Addenda Expression Test Field</field>\n    <field name="model_id" ref="account.model_account_move"/>\n    <field name="ttype">text</field>\n    <field name="required">False</field>\n    <field name="readonly">False</field>\n    <field name="store">True</field>\n    <field name="index">False</field>\n    <field name="copied">True</field>\n  </record>\n</odoo>\n')
+                         '<odoo>\n  <record id="Addenda_Expression_Test_Field" model="ir.model.fields">\n    <field name="name">x_addendaTestField</field>\n    <field name="field_description">Addenda Expression Test Field</field>\n    <field name="model_id" ref="account.model_account_move"/>\n    <field name="ttype">text</field>\n    <field name="required">False</field>\n    <field name="readonly">False</field>\n    <field name="store">True</field>\n    <field name="index">False</field>\n    <field name="copied">True</field>\n    <field name="depends">False</field>\n    <field name="compute">False</field>\n  </record>\n</odoo>\n')
         self.assertNotEqual(
             addenda_from_expression_with_new_fields.addenda_fields_xml, '<odoo/>\n')
 
@@ -95,6 +94,8 @@ class TestAddendaAutomationResults(TestAddendaAutomation):
             'is_customed_addenda': False,
             'tag_name': 'Initial',
             'fields': [],
+            'namespace': False,
+            'namespace_value': False,
             'addenda_tag_id': [(6, 0, self.tag_initial.id)]
         })
         self.assertTrue(addenda)
@@ -104,7 +105,7 @@ class TestAddendaAutomationResults(TestAddendaAutomation):
                          '<Initial>\n    <Initial>\n        <OrdenCompra>\n            <t t-esc="record.name"/>\n        </OrdenCompra>\n        <Partner>\n            <t t-esc="record.partner_id.name"/>\n        </Partner>\n        <Attribute t-att-addendaTestValue="testValue" t-att-addendaTestField="record.name" t-att-addendaTestInnerField="record.partner_id.name"/>\n    </Initial>\n</Initial>\n')
         self.assertNotEqual(addenda.main_preview,
                             '<Initial>\n    <Initial>\n        <OrdenCompra>\n            <t t-esc="record.number"/>\n        </OrdenCompra>\n        <Partner>\n            <t t-esc="record.parner.name"/>\n        </Partner>\n        <Attribute t-att-addendaTestValue="testValue" t-att-addendaTestField="record.name" t-att-addendaTestInnerField="record.partner_id.name"/>\n    </Initial>\n</Initial>\n')
-        
+
         self.assertEqual(addenda.addenda_tag_id[0].preview,
                          '<Initial>\n    <OrdenCompra>\n        <t t-esc="record.name"/>\n    </OrdenCompra>\n    <Partner>\n        <t t-esc="record.partner_id.name"/>\n    </Partner>\n    <Attribute t-att-addendaTestValue="testValue" t-att-addendaTestField="record.name" t-att-addendaTestInnerField="record.partner_id.name"/>\n</Initial>\n')
         self.assertNotEqual(addenda.addenda_tag_id[0].preview,
@@ -123,11 +124,11 @@ class TestAddendaAutomationResults(TestAddendaAutomation):
         self.assertNotEqual(
             addenda.addenda_tag_id[0].addenda_tag_childs_ids[2].attribute_ids[1].field_type, 'string')
 
-        #test method from the addenda model
+        # test method from the addenda model
         generate_tree_view = addenda.generate_tree_view(
             addenda.addenda_tag_id[0])
         self.assertEqual(etree.tostring(generate_tree_view, pretty_print=True),
-                         b'<Initial>\n  <OrdenCompra>\n    <t t-esc="record.name"/>\n  </OrdenCompra>\n  <Partner>\n    <t t-esc="record.partner_id.name"/>\n  </Partner>\n  <Attribute addendaTestValue="testValue" t-att-addendaTestField="record.name" t-att-addendaTestInnerField="record.partner_id.name"/>\n</Initial>\n')
+                         b'<Initial>\n  <OrdenCompra>\n    <t t-esc="record.name"/>\n  </OrdenCompra>\n  <Partner>\n    <t t-esc="record.partner_id.name"/>\n  </Partner>\n  <Attribute t-att-addendaTestValue="testValue" t-att-addendaTestField="record.name" t-att-addendaTestInnerField="record.partner_id.name"/>\n</Initial>\n')
         self.assertNotEqual(etree.tostring(generate_tree_view, pretty_print=True),
                             b'<Initial>\n  <OrdenCompra>\n    <t t-esc="record.number"/>\n  </OrdenCompra>\n  <Partner>\n    <t t-esc="record.parner.name"/>\n  </Partner>\n  <Attribute addendaTestValue="testValue" t-att-addendaTestField="record.name" t-att-addendaTestInnerField="record.partner_id.name"/>\n</Initial>\n')
 
@@ -138,16 +139,30 @@ class TestAddendaAutomationResults(TestAddendaAutomation):
             'main_preview': False,
             'is_customed_addenda': False,
             'tag_name': 'Initial',
+            'namespace': False,
+            'namespace_value': False,
             'fields': [self.addenda_field_test.id],
             'addenda_tag_id': [(6, 0, self.tree_tag_with_created_field.id)]
         })
-
         self.assertTrue(addenda)
         generate_tree_view = addenda.generate_tree_view(
             addenda.addenda_tag_id[0])
         self.assertEqual(etree.tostring(generate_tree_view, pretty_print=True),
-                        b'<TreeTagWithCreatedField>\n  <CreatedField>\n    <t t-esc="record.x_addendaTestField"/>\n  </CreatedField>\n</TreeTagWithCreatedField>\n')
+                         b'<TreeTagWithCreatedField>\n  <CreatedField>\n    <t t-esc="record.x_addendaTestField"/>\n  </CreatedField>\n</TreeTagWithCreatedField>\n')
         self.assertNotEqual(etree.tostring(generate_tree_view, pretty_print=True),
-                            b'<t t-esc="record.x_addendaTestField"/>\n')    
-        self.assertEqual(addenda.addenda_fields_xml, '<odoo>\n  <record id="Addenda_Expression_Test_Field" model="ir.model.fields">\n    <field name="name">x_addendaTestField</field>\n    <field name="field_description">Addenda Expression Test Field</field>\n    <field name="model_id" ref="account.model_account_move"/>\n    <field name="ttype">text</field>\n    <field name="required">False</field>\n    <field name="readonly">False</field>\n    <field name="store">True</field>\n    <field name="index">False</field>\n    <field name="copied">True</field>\n  </record>\n</odoo>\n')
-        self.assertNotEqual(addenda.addenda_fields_xml, '<field name="x_addendaTestField"/>')
+                            b'<t t-esc="record.x_addendaTestField"/>\n')
+        self.assertEqual(addenda.addenda_fields_xml, '<odoo>\n  <record id="Addenda_Expression_Test_Field" model="ir.model.fields">\n    <field name="name">x_addendaTestField</field>\n    <field name="field_description">Addenda Expression Test Field</field>\n    <field name="model_id" ref="account.model_account_move"/>\n    <field name="ttype">text</field>\n    <field name="required">False</field>\n    <field name="readonly">False</field>\n    <field name="store">True</field>\n    <field name="index">False</field>\n    <field name="copied">True</field>\n    <field name="depends">False</field>\n    <field name="compute">False</field>\n  </record>\n</odoo>\n')
+        self.assertNotEqual(addenda.addenda_fields_xml,
+                            '<field name="x_addendaTestField"/>')
+
+    def test_node_methods(self):
+        print("------------------------------")
+        self.assertTrue(self.addenda_inherit)
+        self.assertEqual(
+            self.addenda_inherit.nodes_ids[0].addenda_tag_ids.addenda_tag_childs_ids[0].field_type, 'char')
+        self.assertEqual(
+            self.addenda_inherit.nodes_ids[4].field_type, 'many2one')
+        # print(
+        #     repr(self.addenda_inherit.nodes_ids[4].node_preview))
+        self.assertEqual(
+            self.addenda_inherit.nodes_ids[4].node_preview, '<xpath expr="//*[name()=\'cfdi:Retencion\']" position="attributes">\n  <attribute name="t-att-Impuesto">nodes.partner_id.name</attribute>\n</xpath>\n')
