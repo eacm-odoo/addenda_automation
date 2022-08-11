@@ -46,14 +46,22 @@ class AddendaAddenda(models.Model):
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
 
-    @api.depends('tag_name', 'addenda_tag_id')
+    @api.depends('tag_name', 'addenda_tag_id', 'namespace', 'namespace_value')
     def _compute_main_preview(self):
         for addenda in self:
             root_tag = addenda.tag_name.replace(' ', '_') or 'root'
-            root = etree.Element(root_tag)
+            if addenda.namespace and addenda.namespace_value:
+                etree.register_namespace(
+                    addenda.namespace, addenda.namespace_value)
+                root = etree.Element(
+                    etree.QName(addenda.namespace_value, root_tag))
+            else:
+                root = etree.Element(root_tag)
 
             for tag in addenda.addenda_tag_id:
-                root.append(etree.fromstring(tag.preview))
+                xml_tree_tag = self.generate_tree_view(
+                    tag, addenda.namespace_value)
+                root.append(xml_tree_tag)
             etree.indent(root, '    ')
 
             addenda.main_preview = etree.tostring(root, pretty_print=True)
@@ -61,7 +69,7 @@ class AddendaAddenda(models.Model):
     @api.depends('nodes_ids')
     def _compute_nodes_preview(self):
         for addenda in self:
-            if(addenda.nodes_ids):
+            if addenda.nodes_ids:
                 main_preview = etree.Element("data")
                 for node in addenda.nodes_ids:
                     main_preview.append(etree.fromstring(node.node_preview))
@@ -271,7 +279,7 @@ class AddendaAddenda(models.Model):
     def generate_tree_view(self, addenda_tag, prefix):
         if type(addenda_tag) is list:
             addenda_tag = addenda_tag[2]
-            if(prefix):
+            if prefix:
                 parent_node = etree.Element(
                     etree.QName(prefix, addenda_tag['tag_name'].replace(' ', '_')))
             else:
@@ -280,14 +288,14 @@ class AddendaAddenda(models.Model):
         elif type(addenda_tag) is int:
             addenda_tag = self.env['addenda.tag'].search_read(
                 [('id', '=', addenda_tag)])[0]
-            if(prefix):
+            if prefix:
                 parent_node = etree.Element(
                     etree.QName(prefix, addenda_tag['tag_name'].replace(' ', '_')))
             else:
                 parent_node = etree.Element(
                     addenda_tag['tag_name'].replace(' ', '_'))
         else:
-            if(prefix):
+            if prefix:
                 parent_node = etree.Element(
                     etree.QName(prefix, addenda_tag['tag_name'].replace(' ', '_')))
             else:
