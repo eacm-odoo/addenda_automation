@@ -78,7 +78,6 @@ class AddendaTag(models.Model):
                 tags.preview = ET.tostring(t_foreach, pretty_print=True)
             else:
                 root_node=ET.Element(tag,attrs)
-
                 # call generate_node ->tag tree
                 if body != '':
                     root_node.append(ET.Element('t', {'t-esc': body}))
@@ -94,7 +93,7 @@ class AddendaTag(models.Model):
         if tags.field.ttype in ('one2many', 'many2many'):
             t_foreach = ET.Element(
                 't', {'t-foreach': tags.field.name, 't-as': 'l'})
-            tag_node = ET.Element(tag)
+            tag_node = ET.Element(tags)
             t = ET.Element(
                 't', {'t-esc': "".join(['l.', tags.inner_field.name])})
             tag_node.append(t)
@@ -107,7 +106,7 @@ class AddendaTag(models.Model):
         if tags.field.ttype in ('one2many', 'many2many'):
             t_foreach = ET.Element(
                 't', {'t-foreach': tags.field.name, 't-as': 'l'})
-            tag_node = ET.Element(tag)
+            tag_node = ET.Element(tags)
             t_foreach.append(tag_node)
         else:
             body = "".join(['record.', tags.field.name])
