@@ -85,6 +85,8 @@ class TestAddendaAutomation(TransactionCase):
             'is_customed_addenda': False,
             'tag_name': 'Initial',
             'fields': [],
+            'namespace': False,
+            'namespace_value': False,
             'addenda_tag_id': [(6, 0, cls.tag_initial.id)]
         })
         cls.attribute_tag.attribute_ids = [cls.addenda_barry_field_test.id,
@@ -115,6 +117,8 @@ class TestAddendaAutomation(TransactionCase):
             'main_preview': False,
             'is_customed_addenda': False,
             'tag_name': 'Initial',
+            'namespace': False,
+            'namespace_value': False,
             'fields': [],
             'addenda_tag_id': [(6, 0, cls.tree_tag_with_created_field.id)]
         })

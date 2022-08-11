@@ -292,6 +292,14 @@ class AddendaAddenda(models.Model):
             else:
                 parent_node = etree.Element(
                     addenda_tag['tag_name'].replace(' ', '_'))
+        elif type(addenda_tag) is tuple:
+            addenda_tag = self.env['addenda.tag'].browse(addenda_tag[2])
+            if prefix:
+                parent_node = etree.Element(
+                    etree.QName(prefix, addenda_tag.tag_name.replace(' ', '_')))
+            else:
+                parent_node = etree.Element(
+                    addenda_tag.tag_name.replace(' ', '_'))
         else:
             if prefix:
                 parent_node = etree.Element(
@@ -313,7 +321,7 @@ class AddendaAddenda(models.Model):
                     attribute = self.env['addenda.attribute'].search_read(
                         [('id', '=', attribute)])[0]
                 if(attribute['value']):
-                    parent_node.set(attribute['attribute'], attribute['value'])
+                    parent_node.set("".join(["t-att-", attribute['attribute']]), attribute['value'])
                 elif(attribute['field'] and not attribute['value'] and not attribute['inner_field']):
                     parent_node.set("t-att-{}".format(attribute['attribute']),
                                     "record.{}".format(self.get_field_name(attribute['field'])))
@@ -443,7 +451,11 @@ class AddendaAddenda(models.Model):
 
     def generate_xml_fields(self, fields, write=False):
         root = etree.Element('odoo')
-        for field in fields.sorted(key=lambda r: r.id):
+        if type(fields) is list:
+            fields = sorted(fields)
+        else:
+            fields.sorted(key=lambda r: r.id)
+        for field in fields:
             if type(field) != list:
                 if type(field) == int:
                     field = [0, 2, self.env['ir.model.fields'].browse(field)]
