@@ -276,7 +276,7 @@ class AddendaAddenda(models.Model):
         }
 
     # Function to create the xml tree, given  tag_name and addenda_tag_id
-    def generate_tree_view(self, addenda_tag, prefix):
+    def generate_tree_view(self, addenda_tag, prefix=False):
         if type(addenda_tag) is list:
             addenda_tag = addenda_tag[2]
             if prefix:
