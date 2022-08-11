@@ -57,7 +57,6 @@ class AddendaTag(models.Model):
 
     @api.depends('tag_name', 'attribute_ids', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
-        
         for tags in self:
             if(tags.tag_name):
                 tag = tags.tag_name.replace(' ', '_')
@@ -68,41 +67,16 @@ class AddendaTag(models.Model):
             attrs = {}
             t_foreach = False
             if tags.attribute_ids:
-                for attr_record in tags.attribute_ids:
-                    if attr_record.value:
-                        attrs["".join(['t-att-',attr_record.attribute])] = attr_record.value
-                    elif attr_record.field and not attr_record.inner_field:
-                        attrs["".join(['t-att-', attr_record.attribute])] = "".join(['record.', attr_record.field.name])
-                    elif attr_record.inner_field and attr_record.field:
-                        attrs["".join(['t-att-', attr_record.attribute])] = "".join(['record.',
-                            attr_record.field.name, '.', attr_record.inner_field.name])
-
+                attrs = tags._set_tag_preview_attrs(tags,attrs)
             if tags.value:
                 body = tags.value
             elif tags.field and not tags.inner_field:
-                if tags.field.ttype in ('one2many', 'many2many'):
-                    t_foreach = ET.Element(
-                        't', {'t-foreach': tags.field.name, 't-as': 'l'})
-                    tag_node = ET.Element(tag)
-                    t_foreach.append(tag_node)
-                else:
-                    body = "".join(['record.', tags.field.name])
+                t_foreach,body=tags._set_preview_fields_no_inner(tags,t_foreach,body)
             elif tags.field and tags.inner_field:
-                if tags.field.ttype in ('one2many', 'many2many'):
-                    t_foreach = ET.Element(
-                        't', {'t-foreach': tags.field.name, 't-as': 'l'})
-                    tag_node = ET.Element(tag)
-                    t = ET.Element(
-                        't', {'t-esc': "".join(['l.', tags.inner_field.name])})
-                    tag_node.append(t)
-                    t_foreach.append(tag_node)
-                else:
-                    body = "".join(['record.', tags.field.name, '.' , tags.inner_field.name])
+                t_foreach,body=tags._set_preview_fields_inner(tags,t_foreach,body)
             if t_foreach:
                 tags.preview = ET.tostring(t_foreach, pretty_print=True)
-
             else:
-               
                 root_node=ET.Element(tag,attrs)
 
                 # call generate_node ->tag tree
@@ -116,6 +90,40 @@ class AddendaTag(models.Model):
                 tags.preview = ET.tostring(
                     root_node, encoding='unicode', pretty_print=True)
 
+    def _set_preview_fields_inner(self,tags,t_foreach,body):
+        if tags.field.ttype in ('one2many', 'many2many'):
+            t_foreach = ET.Element(
+                't', {'t-foreach': tags.field.name, 't-as': 'l'})
+            tag_node = ET.Element(tag)
+            t = ET.Element(
+                't', {'t-esc': "".join(['l.', tags.inner_field.name])})
+            tag_node.append(t)
+            t_foreach.append(tag_node)
+        else:
+            body = "".join(['record.', tags.field.name, '.' , tags.inner_field.name])
+        return t_foreach,body
+    
+    def _set_preview_fields_no_inner(self,tags,t_foreach,body):
+        if tags.field.ttype in ('one2many', 'many2many'):
+            t_foreach = ET.Element(
+                't', {'t-foreach': tags.field.name, 't-as': 'l'})
+            tag_node = ET.Element(tag)
+            t_foreach.append(tag_node)
+        else:
+            body = "".join(['record.', tags.field.name])
+        return t_foreach,body
+    
+    def _set_tag_preview_attrs(self,tags,attrs):
+        for attr_record in tags.attribute_ids:
+            if attr_record.value:
+                attrs["".join(['t-att-',attr_record.attribute])] = attr_record.value
+            elif attr_record.field and not attr_record.inner_field:
+                attrs["".join(['t-att-', attr_record.attribute])] = "".join(['record.', attr_record.field.name])
+            elif attr_record.inner_field and attr_record.field:
+                attrs["".join(['t-att-', attr_record.attribute])] = "".join(['record.',
+                    attr_record.field.name, '.', attr_record.inner_field.name])
+        return attrs
+    
     @api.onchange('field')
     def _compute_inner_fields_domain(self):
         for tag in self:
