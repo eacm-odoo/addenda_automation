@@ -1,4 +1,3 @@
-from odoo.addons.l10n_mx_edi_40.tests.common import TestMxEdiCommon
 from odoo.tests.common import TransactionCase
 from odoo.tests import tagged
 

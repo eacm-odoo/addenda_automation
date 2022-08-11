@@ -1,8 +1,8 @@
 {
     'name': 'Automated Addendas',
-    'sumary': '',
+    'sumary': 'Module to create addendas automatically',
     'description': """
-        This new module helps anyone with some knowedge to create it's own custum addenda, whether is an expression addenda, is build with tags or whats to edit the invoice xml
+        This new module helps anyone with some knowedge to create it's own custum addenda, whether is an expression addenda, or is build with tags or wants to edit the invoice xml
 
         FEATURES:
         -expression addenda

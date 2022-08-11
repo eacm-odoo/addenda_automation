@@ -2,12 +2,12 @@ from logging import root
 from xml.etree.ElementTree import QName
 from lxml import etree as ET
 
-from odoo import models, fields, api, _
+from odoo import api, fields, models
 
 
 class AddendaTag(models.Model):
     _name = 'addenda.tag'
-    _description = 'Add many tags to node or anorther tag in addenda'
+    _description = 'Add many tags to a node or tags to an addenda'
 
     addenda_node_id = fields.Many2one(
         string='Addenda Node', comodel_name='addenda.node')
@@ -32,20 +32,16 @@ class AddendaTag(models.Model):
         string='Inner field domain', help=('Domain to filter the inner field'))
     preview = fields.Text(store=False, string='Preview',
                           readonly=True, compute='_compute_preview', help=('A preview to hel the user to create the xml'))
-    namespace = fields.Char(
-        string='Namespace Prefix', help=('Namespace Prefix of the Addenda, helps to identify the nodes'))
-    namespace_value = fields.Char(
-        string='Namespace Value', help=('Namespace Value of the Addenda, helps to identify the nodes'))
-
     field_type = fields.Char(compute='_compute_field_type', default='')
     len_tag_childs = fields.Integer(compute='_compute_len_child_tags')
 
     @api.depends('addenda_tag_childs_ids')
     def _compute_len_child_tags(self):
-        if(self.addenda_tag_childs_ids):
-            self.len_tag_childs = len(self.addenda_tag_childs_ids)
-        else:
-            self.len_tag_childs = False
+        for tag in self:
+            if tag.addenda_tag_childs_ids:
+                tag.len_tag_childs = len(tag.addenda_tag_childs_ids)
+            else:
+                tag.len_tag_childs = False
 
     @api.depends('field')
     def _compute_field_type(self):
@@ -58,7 +54,7 @@ class AddendaTag(models.Model):
     @api.depends('tag_name', 'attribute_ids', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
     def _compute_preview(self):
         for tags in self:
-            if(tags.tag_name):
+            if tags.tag_name:
                 tag = tags.tag_name.replace(' ', '_')
             else:
                 tag = 'TagName'

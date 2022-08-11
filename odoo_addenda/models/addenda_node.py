@@ -1,12 +1,12 @@
 import xml.etree.ElementTree as ET
 from lxml import etree
 
-from odoo import models, fields, api, _
+from odoo import api, fields, models
 
 
 class AddendaNode(models.Model):
     _name = 'addenda.node'
-    _description = 'Add nodes to addenda, override the cfdiv33 template'
+    _description = 'Override the cfdiv33 template and add new nodes'
 
     nodes = fields.Selection(
         string='Reference Node', help=('Xml element that will serve as a reference for the new element'), selection=lambda self: self._selection_nodes(), required=True)
@@ -45,7 +45,7 @@ class AddendaNode(models.Model):
     @api.depends('nodes')
     def _compute_path(self):
         for node in self:
-            if(node.nodes):
+            if node.nodes:
                 node.path = "".join([("{http://www.sat.gob.mx/cfd/3}", node.nodes.replace(
                     '/', '/{http://www.sat.gob.mx/cfd/3}')).replace('{http://www.sat.gob.mx/cfd/3}Comprobante', '.')])
             else:
@@ -73,7 +73,8 @@ class AddendaNode(models.Model):
                     attribute_value = ('line.%s' % nodes.all_fields.name) or '' if node == 'Concepto' and nodes.all_fields.model == 'account.move.line' else (
                         ('nodes.%s' % nodes.all_fields.name) if nodes.all_fields else '')
                     if nodes.inner_field:
-                        attribute_value = "".join([attribute_value, '.%s' % nodes.inner_field.name])
+                        attribute_value = "".join(
+                            [attribute_value, '.%s' % nodes.inner_field.name])
 
                 node_path = etree.Element(
                     "xpath", {'expr': node_expr, 'position': 'attributes'})

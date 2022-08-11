@@ -3,7 +3,7 @@ import base64
 from shutil import make_archive, rmtree
 from lxml import etree
 
-from odoo import models, fields, api, _
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
 
@@ -111,7 +111,8 @@ class AddendaAddenda(models.Model):
                     root = etree.Element(etree.QName(
                         vals_list['namespace_value'], vals_list['tag_name'].replace(' ', '_')))
                 else:
-                    root = etree.Element(vals_list['tag_name'].replace(' ', '_'))
+                    root = etree.Element(
+                        vals_list['tag_name'].replace(' ', '_'))
                 for tag in vals_list['addenda_tag_id']:
                     xml_tree_tag = self.generate_tree_view(
                         tag, vals_list['namespace_value'])
