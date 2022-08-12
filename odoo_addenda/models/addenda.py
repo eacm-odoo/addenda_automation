@@ -1,5 +1,6 @@
 import os
 import base64
+import html
 from shutil import make_archive, rmtree
 from lxml import etree
 
@@ -321,7 +322,8 @@ class AddendaAddenda(models.Model):
                     attribute = self.env['addenda.attribute'].search_read(
                         [('id', '=', attribute)])[0]
                 if(attribute['value']):
-                    parent_node.set("".join(["t-att-", attribute['attribute']]), attribute['value'])
+                    parent_node.set(
+                        "".join(["t-att-", attribute['attribute']]), attribute['value'])
                 elif(attribute['field'] and not attribute['value'] and not attribute['inner_field']):
                     parent_node.set("t-att-{}".format(attribute['attribute']),
                                     "record.{}".format(self.get_field_name(attribute['field'])))
@@ -419,9 +421,10 @@ class AddendaAddenda(models.Model):
         os.makedirs("".join([name, "/", name, "/views"]))
         if(len(fields) > 0):
             os.mkdir("".join([name, "/", name, "/data"]))
-            tree = etree.ElementTree(fields)
-            tree.write("".join([name, "/", name, "/data/addenda_fields.xml"]),
-                       pretty_print=True, xml_declaration=True, encoding='utf-8')
+            field_xml_content = html.unescape(str(etree.tostring(fields,  pretty_print=True,
+                                                                 xml_declaration=True, encoding='utf-8').decode('utf-8')))
+            with open("".join([name, "/", name, "/data/addenda_fields.xml"]), "w") as f:
+                f.writelines(field_xml_content)
             template['data'].append('data/addenda_fields.xml')
         f = open("".join([name, "/", name, "/__manifest__.py"]), "w")
         f.write('{\n')
@@ -523,7 +526,7 @@ class AddendaAddenda(models.Model):
             record.append(xml_field)
             xml_field = etree.Element("field")
             xml_field.set("name", 'compute')
-            xml_field.text = str(field[2]['compute'])
+            xml_field.text = "<![CDATA[" + str(field[2]['compute']) + "]]>"
             record.append(xml_field)
             root.append(record)
         return root
