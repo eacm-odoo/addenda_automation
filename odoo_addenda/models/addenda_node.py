@@ -88,37 +88,14 @@ class AddendaNode(models.Model):
                 nodes.node_preview = False
 
     def _selection_nodes(self):
-        instance_cfdi = self.env.ref('l10n_mx_edi.cfdiv33')
-        root = ET.fromstring(instance_cfdi.arch)
-        parent_map = {c: p for p in root.iter()
-                      for c in p}
-        selection_vals = []
-        path_list = []  # list of element's parents
-        previous_child = None
-        for child in root.iter():
-            try:
-                if child.tag == 't':
-                    child.tag = parent_map[child].tag
-                if(child.tag != parent_map[child].tag):
-                    # if the parent is different from the previous one
-                    if parent_map[child].tag != previous_child:
-                        if path_list:
-                            # remove the last element of the list
-                            while(path_list[-1] != parent_map[child].tag.replace(
-                                    "{http://www.sat.gob.mx/cfd/3}", "")):
-                                path_list.pop()
-                    option = "".join(["/".join(
-                        path_list), "/", (child.tag.replace("{http://www.sat.gob.mx/cfd/3}", ""))])
-                    selection_vals.append((option, option))
-                    path_list.append(child.tag.replace(
-                        "{http://www.sat.gob.mx/cfd/3}", ""))
-                    previous_child = child.tag
+        is_l10n_mx_edi_40_install = self.env['ir.module.module'].search(
+            [('name', '=', 'l10n_mx_edi_40')]).state == 'installed'
+        if is_l10n_mx_edi_40_install:
+            list_selection = self.get_nodes_cfdi('l10n_mx_edi_40.cfdiv40')
+        else:
+            list_selection = self.get_nodes_cfdi('l10n_mx_edi.cfdiv33')
 
-            except:
-                pass
-        selection_vals = list(set(selection_vals))
-        selection_vals.remove(('/Comprobante', '/Comprobante'))
-        return selection_vals
+        return list_selection
 
     @api.onchange('all_fields')
     def _generate_inner_fields_domain(self):
@@ -163,3 +140,40 @@ class AddendaNode(models.Model):
         for node in self:
             if(node.attribute_value):
                 node.all_fields = False
+
+    def get_nodes_cfdi(self, cfdi_name):
+        instance_cfdi = self.env.ref(cfdi_name)
+        if cfdi_name == 'l10n_mx_edi_40.cfdiv40':
+            version = '{http://www.sat.gob.mx/cfd/4}'
+        else:
+            version = '{http://www.sat.gob.mx/cfd/3}'
+        root = ET.fromstring(instance_cfdi.arch)
+        parent_map = {c: p for p in root.iter()
+                      for c in p}
+        selection_vals = []
+        path_list = []  # list of element's parents
+        previous_child = None
+        for child in root.iter():
+            try:
+                if child.tag == 't':
+                    child.tag = parent_map[child].tag
+                if(child.tag != parent_map[child].tag):
+                    # if the parent is different from the previous one
+                    if parent_map[child].tag != previous_child:
+                        if path_list:
+                            # remove the last element of the list
+                            while(path_list[-1] != parent_map[child].tag.replace(
+                                    version, "")):
+                                path_list.pop()
+                    option = "".join(["/".join(
+                        path_list), "/", (child.tag.replace(version, ""))])
+                    selection_vals.append((option, option))
+                    path_list.append(child.tag.replace(
+                        version, ""))
+                    previous_child = child.tag
+
+            except:
+                pass
+        selection_vals = list(set(selection_vals))
+        selection_vals.remove(('/Comprobante', '/Comprobante'))
+        return selection_vals

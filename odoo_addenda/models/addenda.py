@@ -154,14 +154,17 @@ class AddendaAddenda(models.Model):
                 vals_list['nodes_ids'])
             full_xml = self.get_inherit_xml(
                 vals_list['name'], etree.fromstring(string_cfdi_xml))
-            cfdiv33 = self.env.ref(
-                'l10n_mx_edi.cfdiv33')
+            if self._is_cfdi40_installed():
+                cfdiv = self.env.ref(
+                    'l10n_mx_edi_40.cfdiv40')
+            else:
+                cfdiv = self.env.ref('l10n_mx_edi.cfdiv33')
             ir_ui_view = self.env['ir.ui.view'].create({
                 'name': vals_list['name'],
                 'type': 'qweb',
                 'arch': string_cfdi_xml,
                 'active': True,
-                'inherit_id': cfdiv33.id,
+                'inherit_id': cfdiv.id,
                 'model': False,
                 'priority': 16,
                 'arch_base': string_cfdi_xml,
@@ -237,10 +240,13 @@ class AddendaAddenda(models.Model):
                     name, etree.fromstring(string_cfdi_xml))
                 vals['addenda_xml'] = etree.tostring(
                     full_xml, pretty_print=True)
-                cfdiv33 = self.env.ref(
-                    'l10n_mx_edi.cfdiv33')
+                if self._is_cfdi40_installed():
+                    cfdiv = self.env.ref(
+                        'l10n_mx_edi_40.cfdiv40')
+                else:
+                    cfdiv = self.env.ref('l10n_mx_edi.cfdiv33')
                 instance.ir_ui_view_id.write({
-                    'inherit_id': cfdiv33.id,
+                    'inherit_id': cfdiv.id,
                     'mode': 'extension',
                     'l10n_mx_edi_addenda_flag': False,
                     'arch': string_cfdi_xml,
@@ -393,9 +399,15 @@ class AddendaAddenda(models.Model):
         xml = etree.Element("odoo")
         xml.set("noupdate", "0")
         template = etree.Element("template")
-        template.set("id", "cfdiv33_inherit_{}".format(
-            name.lower().replace(' ', '_')))
-        template.set('inherit_id', "l10n_mx_edi.cfdiv33")
+        if self._is_cfdi40_installed():
+            template.set("id", "cfdiv40_inherit_{}".format(
+                name.lower().replace(' ', '_')))
+            template.set('inherit_id', "l10n_mx_edi_40.cfdiv40")
+
+        else:
+            template.set("id", "cfdiv33_inherit_{}".format(
+                name.lower().replace(' ', '_')))
+            template.set('inherit_id', "l10n_mx_edi.cfdiv33")
         for element in list(root):
             template.append(element)
         xml.append(template)
@@ -403,7 +415,13 @@ class AddendaAddenda(models.Model):
 
     def create_directory(self, name, xml, fields, is_customed_addenda):
         name = name.replace(' ', '_').replace('.', '')
-        name_view_file = "addenda" if not is_customed_addenda else "cfdiv33_inherit"
+        if self._is_cfdi40_installed():
+            cfdi_name = 'cfdi40_inherit'
+            depends_value = 'l10n_mx_edi_40'
+        else:
+            cfdi_name = 'cfdi33_inherit'
+            depends_value = 'l10n_mx_edi'
+        name_view_file = "addenda" if not is_customed_addenda else cfdi_name
         template = {
             'name': name,
             'sumary': 'Addenda created using addenda.addenda',
@@ -411,7 +429,7 @@ class AddendaAddenda(models.Model):
             'author': 'Odoo PS',
             'category': 'Sales',
             'version': '15.0.1.0.0',
-            'depends': ['l10n_mx_edi'],
+            'depends': [depends_value],
             'license': 'OPL-1',
             'data': [
                 "".join(['views/', name_view_file, '.xml']),
@@ -576,7 +594,10 @@ class AddendaAddenda(models.Model):
 
     def _generate_and_extend_cfdi(self, nodes):
         path_extend = etree.Element("data")
-        path_extend.set("inherit_id", "l10n_mx_edi.cfdiv33")
+        if self._is_cfdi40_installed():
+            path_extend.set("inherit_id", "l10n_mx_edi_40.cfdiv40")
+        else:
+            path_extend.set("inherit_id", "l10n_mx_edi.cfdiv33")
         for node in nodes:
             if(type(node) == list):
                 node = node[2]
@@ -635,3 +656,8 @@ class AddendaAddenda(models.Model):
         path_extend = etree.tostring(
             path_extend, pretty_print=True, encoding='utf-8')
         return path_extend
+
+    def _is_cfdi40_installed(self):
+        is_installed = self.env['ir.module.module'].search(
+            [('name', '=', 'l10n_mx_edi_40')]).state == 'installed'
+        return is_installed
