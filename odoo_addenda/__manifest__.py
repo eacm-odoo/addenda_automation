@@ -15,7 +15,10 @@
     'author': 'Odoo PS',
     'category': 'Accounting/Localizations/EDI',
     'version': '15.0.1.0.0',
-    'depends': ['l10n_mx_edi'],
+    'depends': [
+        'l10n_mx_edi',
+        'web',
+    ],
     'license': 'OPL-1',
     'data': [
         # views
@@ -32,4 +35,10 @@
         # demo
         'demo/data.xml',
     ],
+    'assets': {
+        'web.assets_common': [
+            'odoo_addenda/static/src/scss/addenda_preview.scss'
+        ]
+    }
+    
 }

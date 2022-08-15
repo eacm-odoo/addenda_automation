@@ -4,12 +4,13 @@
         <field name="name">addenda.addenda.form</field>
         <field name="model">addenda.addenda</field>
         <field name="arch" type="xml">
-            <form string="Addenda Form">
-                <header>
-                    <button string="Export" type="object" name="action_export_zip" class="oe_highlight" states="done" />
-                    <field name="state" widget="statusbar" />
-                </header>
-                <sheet>
+            <header>
+                <button string="Export" type="object" name="action_export_zip" class="oe_highlight" states="done" />
+                <field name="state" widget="statusbar" />
+            </header>
+            <form string="Addenda Form" class="o_form_sheet addenda_form">
+               
+                <sheet class="addenda_sheet">
                     <h1>
                         <group>
                             <field name="name" />
@@ -33,7 +34,6 @@
                                 <field name="namespace_value" attrs="{'invisible': [('is_expression','=',True)], 'required': [('namespace', 'not in', ('', False))]}" />
                                 <field name="addenda_tag_id" attrs="{'invisible': [('is_expression', '=', True)]}" />
                                 <field name="addenda_expression" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': [('is_expression', '=', False)]}" />
-                                <field name="main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': [('is_expression', '=', True)]}" />
                             </group>
                         </page>
                         <page string="Create Fields">
@@ -43,7 +43,16 @@
                         </page>
                     </notebook>
                 </sheet>
+
+
+                
             </form>
+            <div class="o_form_sheet addenda_preview">
+                <h2> Preview </h2>
+                <field name="main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': [('is_expression', '=', True)]}" />
+
+            </div>
+
         </field>
     </record>
     <record id="addenda_view_tree" model="ir.ui.view">
