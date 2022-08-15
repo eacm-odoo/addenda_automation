@@ -21,6 +21,9 @@ class AddendaTag(models.Model):
                            help=('Name of the new tag/element'))
     attribute_ids = fields.One2many(
         comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_tag_id', help=('Attributes of the new tag/element'))
+    is_condition = fields.Boolean(string='Is Condition', default=False)
+    condition_ids = fields.One2many(
+        comodel_name='addenda.conditional', string='Conditions', inverse_name='addenda_tag_id', help=('Conditions of the new tag/element'))
     value = fields.Char(string='Value', help=(
         'Value of the attribute of the new element'))
     field = fields.Many2one(

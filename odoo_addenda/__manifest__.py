@@ -25,7 +25,8 @@
         'views/addenda_nodes_views.xml',
         'views/addenda_tag_views.xml',
         'views/ir_model_fields_form_views_inherit.xml',
-
+        'views/addenda_conditional_views.xml',
+        
         # security
         'security/ir.model.access.csv',
 
