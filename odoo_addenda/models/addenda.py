@@ -520,14 +520,57 @@ class AddendaAddenda(models.Model):
             xml_field.set("name", 'copied')
             xml_field.text = str(field[2]['copied'])
             record.append(xml_field)
-            xml_field = etree.Element("field")
-            xml_field.set("name", 'depends')
-            xml_field.text = str(field[2]['depends'])
-            record.append(xml_field)
-            xml_field = etree.Element("field")
-            xml_field.set("name", 'compute')
-            xml_field.text = "<![CDATA[" + str(field[2]['compute']) + "]]>"
-            record.append(xml_field)
+
+            if(field[2]['compute']):
+                xml_field = etree.Element("field")
+                xml_field.set("name", 'depends')
+                xml_field.text = str(field[2]['depends'])
+                record.append(xml_field)
+                xml_field = etree.Element("field")
+                xml_field.set("name", 'compute')
+                xml_field.text = "<![CDATA[" + str(field[2]['compute']) + "]]>"
+                record.append(xml_field)
+
+            if(field[2]['ttype'] in ('one2many', 'many2many', 'many2one')):
+                xml_field = etree.Element("field")
+                xml_field.set("name", 'relation')
+                xml_field.text = str(field[2]['relation'])
+                record.append(xml_field)
+                xml_field = etree.Element("field")
+                xml_field.set("name", 'domain')
+                xml_field.text = str(field[2]['domain'])
+                record.append(xml_field)
+
+            if(field[2]['ttype'] == 'many2many'):
+                xml_field = etree.Element("field")
+                xml_field.set("name", 'relation_table')
+                xml_field.text = str(field[2]['relation_table'])
+                record.append(xml_field)
+                xml_field = etree.Element("field")
+                xml_field.set("name", 'column1')
+                xml_field.text = str(field[2]['column1'])
+                record.append(xml_field)
+                xml_field = etree.Element("field")
+                xml_field.set("name", 'column2')
+                xml_field.text = str(field[2]['column2'])
+                record.append(xml_field)
+
+            if(field[2]['ttype'] == 'one2many'):
+                xml_field = etree.Element("field")
+                xml_field.set("name", 'relation_field')
+                xml_field.text = str(field[2]['relation_field'])
+                record.append(xml_field)
+
+            if(field[2]['ttype'] == 'many2one'):
+                xml_field = etree.Element("field")
+                xml_field.set("name", 'on_delete')
+                xml_field.text = str(field[2]['on_delete'])
+                record.append(xml_field)
+                xml_field = etree.Element("field")
+                xml_field.set("name", 'group_expand')
+                xml_field.text = str(field[2]['group_expand'])
+                record.append(xml_field)
+
             root.append(record)
         return root
 
