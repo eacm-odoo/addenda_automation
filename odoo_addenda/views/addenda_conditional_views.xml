@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="addenda_conditional_view_form" model="ir.ui.view">
+        <field name="name">addenda.conditional.form</field>
+        <field name="model">addenda.conditional</field>
+        <field name="arch" type="xml">
+            <form string="Addenda conditional Form">
+                <group>
+                    <strong>Conditional</strong>
+                    <field name="field_type_condition" invisible='1' />
+                    <field name="value_condition" />
+                    <field name="field_condition" attrs="{'invisible': [('value_condition','not in',('',False))]}" />
+                    <field name='inner_field_condition_domain'  invisible='1'/>
+                    <field name='inner_field_condition' domain="[('model', '=', inner_field_condition_domain)]" attrs="{'invisible': [('field_type_condition','!=','many2one'),'|',('field','in',('',False))], 'required': [('field_type_condition', 'in', ('many2one', 'one2many', 'many2many'))]}" />
+                    <field name="condition" />
+                    <field name="field_type_equal" invisible='1' />
+                    <field name="value_equal" />
+                    <field name="field_equal" attrs="{'invisible': [('value','not in',('',False))]}" />
+                    <field name='inner_field_equal_domain'  invisible='1' />
+                    <field name='inner_field_equal' domain="[('model', '=', inner_field_equal_domain)]" attrs="{'invisible': [('field_type_equal','!=','many2one'),'|',('field','in',('',False))], 'required': [('field_type_equal', 'in', ('many2one', 'one2many', 'many2many'))]}" />
+
+                    <strong>Value</strong>
+                    <field name="field_type" invisible='1' />
+                    <field name="value" />
+                    <field name="field" attrs="{'invisible': [('value','not in',('',False))]}" />
+                    <field name='inner_field_domain' invisible='1' />
+                    <field name='inner_field' domain="[('model', '=', inner_field_domain)]" attrs="{'invisible': [('field_type','!=','many2one'),'|',('field','in',('',False))], 'required': [('field_type', 'in', ('many2one', 'one2many', 'many2many'))]}" />
+                
+                    <strong>Preview</strong>
+                    <field name="preview"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="addenda_conditional_view_list" model="ir.ui.view">
+        <field name="name">addenda.conditional.list</field>
+        <field name="model">addenda.conditional</field>
+        <field name="arch" type="xml">
+            <tree string="Addenda attribute Form">
+                <field name="value_condition" />
+                <field name="field_condition" />
+                <field name='inner_field_condition' />
+            </tree>
+        </field>
+    </record>
+</odoo>

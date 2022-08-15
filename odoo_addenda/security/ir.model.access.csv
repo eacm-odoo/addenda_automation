@@ -3,4 +3,5 @@ addenda_admin,addenda admin,model_addenda_addenda,base.group_system,1,1,1,1
 node_admin,node admin,model_addenda_node,base.group_system,1,1,1,1
 tag_admin,tag admin,model_addenda_tag,base.group_system,1,1,1,1
 addenda_attribute_admin,addenda attribute admin,model_addenda_attribute,base.group_system,1,1,1,1
+addenda_condition_admin,addenda condition admin,model_addenda_conditional,base.group_system,1,1,1,1
 addenda_cfdi_attribute_admin,addenda cfdi attribute admin,model_addenda_cfdi_attributes,base.group_system,1,1,1,1
