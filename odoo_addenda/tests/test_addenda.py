@@ -77,7 +77,7 @@ class TestAddendaAutomationResults(TestAddendaAutomation):
         })
         self.assertTrue(addenda_from_expression_with_new_fields)
         self.assertEqual(addenda_from_expression_with_new_fields.addenda_fields_xml,
-                         '<odoo>\n  <record id="Addenda_Expression_Test_Field" model="ir.model.fields">\n    <field name="name">x_addendaTestField</field>\n    <field name="field_description">Addenda Expression Test Field</field>\n    <field name="model_id" ref="account.model_account_move"/>\n    <field name="ttype">text</field>\n    <field name="required">False</field>\n    <field name="readonly">False</field>\n    <field name="store">True</field>\n    <field name="index">False</field>\n    <field name="copied">True</field>\n    <field name="depends">False</field>\n    <field name="compute">False</field>\n  </record>\n</odoo>\n')
+                         '<odoo>\n  <record id="Addenda_Expression_Test_Field" model="ir.model.fields">\n    <field name="name">x_addendaTestField</field>\n    <field name="field_description">Addenda Expression Test Field</field>\n    <field name="model_id" ref="account.model_account_move"/>\n    <field name="ttype">text</field>\n    <field name="required">False</field>\n    <field name="readonly">False</field>\n    <field name="store">True</field>\n    <field name="index">False</field>\n    <field name="copied">True</field>\n  </record>\n</odoo>\n')
         self.assertNotEqual(
             addenda_from_expression_with_new_fields.addenda_fields_xml, '<odoo/>\n')
 
@@ -146,7 +146,7 @@ class TestAddendaAutomationResults(TestAddendaAutomation):
                          b'<TreeTagWithCreatedField>\n  <CreatedField>\n    <t t-esc="record.x_addendaTestField"/>\n  </CreatedField>\n</TreeTagWithCreatedField>\n')
         self.assertNotEqual(etree.tostring(generate_tree_view, pretty_print=True),
                             b'<t t-esc="record.x_addendaTestField"/>\n')
-        self.assertEqual(addenda.addenda_fields_xml, '<odoo>\n  <record id="Addenda_Expression_Test_Field" model="ir.model.fields">\n    <field name="name">x_addendaTestField</field>\n    <field name="field_description">Addenda Expression Test Field</field>\n    <field name="model_id" ref="account.model_account_move"/>\n    <field name="ttype">text</field>\n    <field name="required">False</field>\n    <field name="readonly">False</field>\n    <field name="store">True</field>\n    <field name="index">False</field>\n    <field name="copied">True</field>\n    <field name="depends">False</field>\n    <field name="compute">False</field>\n  </record>\n</odoo>\n')
+        self.assertEqual(addenda.addenda_fields_xml, '<odoo>\n  <record id="Addenda_Expression_Test_Field" model="ir.model.fields">\n    <field name="name">x_addendaTestField</field>\n    <field name="field_description">Addenda Expression Test Field</field>\n    <field name="model_id" ref="account.model_account_move"/>\n    <field name="ttype">text</field>\n    <field name="required">False</field>\n    <field name="readonly">False</field>\n    <field name="store">True</field>\n    <field name="index">False</field>\n    <field name="copied">True</field>\n  </record>\n</odoo>\n')
         self.assertNotEqual(addenda.addenda_fields_xml,
                             '<field name="x_addendaTestField"/>')
 
