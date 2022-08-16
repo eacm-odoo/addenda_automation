@@ -54,7 +54,7 @@ class AddendaTag(models.Model):
             else:
                 tag.field_type = False
 
-    @api.depends('tag_name', 'attribute_ids', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field')
+    @api.depends('tag_name', 'attribute_ids', 'value', 'field', 'addenda_tag_childs_ids', 'inner_field', 'condition_ids')
     def _compute_preview(self):
         for tags in self:
             if tags.tag_name:
@@ -84,11 +84,22 @@ class AddendaTag(models.Model):
                     root_node.append(ET.Element('t', {'t-esc': body}))
 
                 for tag_child in tags.addenda_tag_childs_ids:
-                    root_node.append(ET.fromstring(tag_child.preview))
+                    if tag_child.is_condition:
+                        for condition in tag_child.condition_ids:
+                            t_if = ET.fromstring(condition.preview)
+                            root_node.append(t_if)
+                    else:
+                        root_node.append(ET.fromstring(tag_child.preview))
                 ET.indent(root_node, '    ')
 
-                tags.preview = ET.tostring(
-                    root_node, encoding='unicode', pretty_print=True)
+                if tags.condition_ids:
+                    for condition in tags.condition_ids:
+                        tags.preview = "".join(
+                            [tags.preview, condition.preview])
+
+                else:
+                    tags.preview = ET.tostring(
+                        root_node, encoding='unicode', pretty_print=True)
 
     def _set_preview_fields_inner(self, tags, t_foreach, body):
         if tags.field.ttype in ('one2many', 'many2many'):

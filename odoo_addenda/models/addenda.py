@@ -15,7 +15,7 @@ class AddendaAddenda(models.Model):
     name = fields.Char(string='Name', required=True, help=(
         'The name of the new customed addenda'))
     main_preview = fields.Text(string='Main Preview', help=(
-        'Main Preview'), compute='_compute_main_preview')
+        'Main Preview'), compute='_compute_main_preview', store=True)
     node_main_preview = fields.Text(string='Main Preview of the nodes', help=(
         'Main Preview'), compute='_compute_nodes_preview')
 
@@ -60,9 +60,16 @@ class AddendaAddenda(models.Model):
                 root = etree.Element(root_tag)
 
             for tag in addenda.addenda_tag_id:
-                xml_tree_tag = self.generate_tree_view(
-                    tag, addenda.namespace_value)
-                root.append(xml_tree_tag)
+                tag = self.get_tag_values(tag)
+                if tag['is_condition']:
+                    for condition in tag['condition_ids']:
+                        condition = self.get_conditional_values(condition)
+                        t_if = etree.fromstring(condition['preview'])
+                        root.append(t_if)
+                else:
+                    xml_tree_tag = self.generate_tree_view(
+                        tag, addenda.namespace_value)
+                    root.append(xml_tree_tag)
             etree.indent(root, '    ')
 
             addenda.main_preview = etree.tostring(root, pretty_print=True)
@@ -107,7 +114,9 @@ class AddendaAddenda(models.Model):
 
     @api.model
     def create(self, vals_list):
+        print("-----------------------------------------------------")
         res = super().create(vals_list)
+        print(res.main_preview)
         if not(vals_list['is_customed_addenda']):
             if vals_list['is_expression'] and vals_list['addenda_expression'] not in [False, '']:
                 root = etree.fromstring(vals_list['addenda_expression'])
@@ -122,10 +131,18 @@ class AddendaAddenda(models.Model):
                 else:
                     root = etree.Element(
                         vals_list['tag_name'].replace(' ', '_'))
-                for tag in vals_list['addenda_tag_id']:
-                    xml_tree_tag = self.generate_tree_view(
-                        tag, vals_list['namespace_value'])
-                    root.append(xml_tree_tag)
+                # for tag in vals_list['addenda_tag_id']:
+                #     tag = self.get_tag_values(tag)
+                #     if tag['is_condition']:
+                #         for condition in tag['condition_ids']:
+                #             condition = self.get_conditional_values(condition)
+                #             t_if = etree.fromstring(condition['preview'])
+                #             root.append(t_if)
+                #     else:
+                #         xml_tree_tag = self.generate_tree_view(
+                #             tag, vals_list['namespace_value'])
+                #         root.append(xml_tree_tag)
+            root = etree.fromstring(res.main_preview)
             full_xml = self.get_xml(vals_list['name'], root)
             root_string = etree.tostring(root, pretty_print=True)
             ir_ui_view = self.env['ir.ui.view'].create({
@@ -204,10 +221,19 @@ class AddendaAddenda(models.Model):
                         instance.namespace_value, instance.tag_name.replace(' ', '_')))
                 else:
                     root = etree.Element(instance.tag_name.replace(' ', '_'))
-                for tag in instance.addenda_tag_id:
-                    xml_tree_tag = self.generate_tree_view(
-                        tag, instance.namespace_value)
-                    root.append(xml_tree_tag)
+                # for tag in instance.addenda_tag_id:
+                #     tag = self.get_tag_values(tag)
+                #     if tag['is_condition']:
+                #         for condition in tag['condition_ids']:
+                #             condition = self.get_conditional_values(
+                #                 condition)
+                #             t_if = etree.fromstring(condition['preview'])
+                #             root.append(t_if)
+                #     else:
+                #         xml_tree_tag = self.generate_tree_view(
+                #             tag, instance.namespace_value)
+                #         root.append(xml_tree_tag)
+            root = etree.fromstring(instance.main_preview)
             full_xml = self.get_xml(instance.name, root)
             root_string = etree.tostring(root, pretty_print=True)
             instance.ir_ui_view_id.write({
@@ -357,6 +383,7 @@ class AddendaAddenda(models.Model):
             t.set(
                 "t-esc", "record.{}.{}".format(self.get_field_name(addenda_tag['field']), self.get_field_name(addenda_tag['inner_field'])))
             parent_node.append(t)
+
         return parent_node
 
     def get_field_name(self, field_id):
@@ -623,8 +650,16 @@ class AddendaAddenda(models.Model):
                 xpath.set("expr", path)
                 xpath.set("position", node['position'])
                 for tag in node['addenda_tag_ids']:
-                    xml = self.generate_tree_view(tag)
-                    xpath.append(xml)
+                    tag = self.get_tag_values(tag)
+                    if tag['is_condition']:
+                        for condition in tag['condition_ids']:
+                            condition = self.get_conditional_values(
+                                condition)
+                            t_if = etree.fromstring(condition['preview'])
+                            xpath.append(t_if)
+                    else:
+                        xml = self.generate_tree_view(tag)
+                        xpath.append(xml)
                 path_extend.append(xpath)
             else:
                 xpath = etree.Element("xpath")
@@ -661,3 +696,21 @@ class AddendaAddenda(models.Model):
         is_installed = self.env['ir.module.module'].search(
             [('name', '=', 'l10n_mx_edi_40')]).state == 'installed'
         return is_installed
+
+    def get_tag_values(self, tag):
+        if type(tag) == int:
+            tag = self.env['addenda.tag'].browse(tag)
+        elif type(tag) == list:
+            tag = tag[2]
+        elif type(tag) == tuple:
+            tag = tag[0]
+        return tag
+
+    def get_conditional_values(self, condition):
+        if type(condition) == int:
+            condition = self.env['addenda.conditional'].browse(condition)
+        elif type(condition) == list:
+            condition = condition[2]
+        elif type(condition) == tuple:
+            condition = condition[0]
+        return condition
