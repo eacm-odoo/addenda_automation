@@ -118,9 +118,7 @@ class AddendaAddenda(models.Model):
 
     @api.model
     def create(self, vals_list):
-        print("-----------------------------------------------------")
         res = super().create(vals_list)
-        print(res.main_preview)
         if not(vals_list['is_customed_addenda']):
             if vals_list['is_expression'] and vals_list['addenda_expression'] not in [False, '']:
                 root = etree.fromstring(vals_list['addenda_expression'])

@@ -2,7 +2,8 @@ from logging import root
 from xml.etree.ElementTree import QName
 from lxml import etree as ET
 
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class AddendaTag(models.Model):
@@ -78,7 +79,11 @@ class AddendaTag(models.Model):
             if t_foreach:
                 tags.preview = ET.tostring(t_foreach, pretty_print=True)
             else:
-                root_node = ET.Element(tag, attrs)
+                try:
+                    root_node = ET.Element(tag, attrs)
+                except Exception as e:
+                    raise ValidationError(
+                        _('Tag name can not contain special characters'))
                 # call generate_node ->tag tree
                 if body != '':
                     root_node.append(ET.Element('t', {'t-esc': body}))
@@ -164,3 +169,15 @@ class AddendaTag(models.Model):
             if tag.value:
                 tag.field = False
                 tag.inner_field = False
+
+    @api.onchange('is_condition')
+    def _is_condition_onchange(self):
+        for tag in self:
+            if tag.is_condition:
+                tag.addenda_tag_childs_ids = False
+                tag.attribute_ids = False
+                tag.field = False
+                tag.inner_field = False
+                tag.value = False
+            else:
+                tag.condition_ids = False

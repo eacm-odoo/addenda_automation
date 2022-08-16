@@ -27,7 +27,7 @@
                     <field name='inner_field' domain="[('model', '=', inner_field_domain)]" attrs="{'invisible': [('field_type','!=','many2one'),'|',('field','in',('',False))], 'required': [('field_type', 'in', ('many2one', 'one2many', 'many2many'))]}" />
 
                     <strong>Preview</strong>
-                    <field name="preview" />
+                    <field name="preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" />
                 </group>
             </form>
         </field>
