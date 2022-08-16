@@ -296,13 +296,13 @@
         <field name="node">Comprobante/Receptor</field>
         <field name="version">4.0</field>
     </record>
-    <record model="addenda.cfdi.attributes" id="receptor_NumRegIdTrib40">
+    <record model="addenda.cfdi.attributes" id="receptor_DomicilioFiscalReceptor40">
         <field name="name">DomicilioFiscalReceptor</field>
         <field name="value">customer.zip if customer.country_id.code == 'MX' else issued_address.zip or supplier.zip</field>
         <field name="node">Comprobante/Receptor</field>
         <field name="version">4.0</field>
     </record>
-    <record model="addenda.cfdi.attributes" id="receptor_NumRegIdTrib40">
+    <record model="addenda.cfdi.attributes" id="receptor_RegimenFiscalReceptor40">
         <field name="name">RegimenFiscalReceptor</field>
         <field name="value">fiscal_regime</field>
         <field name="node">Comprobante/Receptor</field>
@@ -446,6 +446,7 @@
         <field name="name">TotalImpuestosTrasladados</field>
         <field name="value">format_float(total_tax_details_transferred, currency_precision) if tax_details_transferred_not_exento else None</field>
         <field name="node">Comprobante/Impuestos</field>
+        <field name="version">4.0</field>
     </record>
     <record model="addenda.cfdi.attributes" id="impuestos_retenidos40">
         <field name="name">TotalImpuestosRetenidos</field>

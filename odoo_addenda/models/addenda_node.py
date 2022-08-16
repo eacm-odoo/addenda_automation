@@ -33,6 +33,16 @@ class AddendaNode(models.Model):
         string="Preview", compute='_compute_node_preview')
     addenda_tag_ids = fields.One2many(
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=('New addenda tags added'))
+    version = fields.Char(
+        string='Version', default=lambda self: self._get_version())
+
+    def _get_version(self):
+        is_l10n_mx_edi_40_install = self.env['ir.module.module'].search(
+            [('name', '=', 'l10n_mx_edi_40')]).state == 'installed'
+        if is_l10n_mx_edi_40_install:
+            return '4.0'
+        else:
+            return '3.3'
 
     @api.depends('all_fields')
     def _compute_field_type(self):
