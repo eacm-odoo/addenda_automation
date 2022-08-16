@@ -92,15 +92,19 @@ class AddendaAddenda(models.Model):
         if self.is_expression:
             self.tag_name = 'Addenda'
             self.addenda_tag_id = False
+            self.namespace = False
+            self.namespace_value = False
         else:
             self.nodes_ids = False
 
     @api.onchange('is_customed_addenda')
-    def _is_expression_onchange(self):
+    def _is_customed_addenda_onchange(self):
         if self.is_customed_addenda:
             self.tag_name = 'Addenda'
             self.addenda_tag_id = False
             self.addenda_expression = False
+            self.namespace = False
+            self.namespace_value = False
         else:
             self.nodes_ids = False
 
