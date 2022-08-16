@@ -344,8 +344,14 @@ class AddendaAddenda(models.Model):
                     addenda_tag['tag_name'].replace(' ', '_'))
         if addenda_tag['addenda_tag_childs_ids']:
             for child in addenda_tag['addenda_tag_childs_ids']:
-                child_node = self.generate_tree_view(child, prefix)
-                parent_node.append(child_node)
+                if child['is_condition']:
+                    for condition in child['condition_ids']:
+                        condition = self.get_conditional_values(condition)
+                        t_if = etree.fromstring(condition['preview'])
+                        parent_node.append(t_if)
+                else:
+                    child_node = self.generate_tree_view(child, prefix)
+                    parent_node.append(child_node)
         if(addenda_tag['value']):
             parent_node.text = addenda_tag['value']
         if(addenda_tag['attribute_ids']):
@@ -617,7 +623,7 @@ class AddendaAddenda(models.Model):
                 xml_field.set("name", 'group_expand')
                 xml_field.text = str(field[2]['group_expand'])
                 record.append(xml_field)
-            
+
             if(field[2]['ttype'] == 'selection'):
                 xml_field = etree.Element("field")
                 xml_field.set("name", 'selection')

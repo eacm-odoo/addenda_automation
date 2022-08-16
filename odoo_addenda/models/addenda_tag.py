@@ -86,7 +86,10 @@ class AddendaTag(models.Model):
                         _('Tag name can not contain special characters'))
                 # call generate_node ->tag tree
                 if body != '':
-                    root_node.append(ET.Element('t', {'t-esc': body}))
+                    if tags.value:
+                        root_node.text = body
+                    else:
+                        root_node.append(ET.Element('t', {'t-esc': body}))
 
                 for tag_child in tags.addenda_tag_childs_ids:
                     if tag_child.is_condition:
