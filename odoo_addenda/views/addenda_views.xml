@@ -23,7 +23,6 @@
                         <page string="Addenda Nodes" attrs="{'invisible': [('is_customed_addenda', '=', False)]}">
                             <field name="is_customed_addenda" invisible='1'></field>
                             <field name="nodes_ids" />
-                            <field name="node_main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" />
                         </page>
                         <page string="Addenda xml" attrs="{'invisible': [('is_customed_addenda', '=', True)]}">
                             <field name="is_customed_addenda" invisible='1'></field>
@@ -49,7 +48,8 @@
             </form>
             <div class="o_form_sheet addenda_preview">
                 <h2> Preview </h2>
-                <field name="main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': [('is_expression', '=', True)]}" />
+                <field name="main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': ['|',('is_expression', '=', True),('is_customed_addenda','=',True)]}" />
+                <field name="node_main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': ['|',('is_expression', '=', True),('is_customed_addenda','=',False)]}"/>
 
             </div>
 
