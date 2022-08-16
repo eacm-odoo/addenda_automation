@@ -5,16 +5,19 @@
         <field name="name">Rfc</field>
         <field name="value">supplier.vat</field>
         <field name="node">Comprobante/Emisor</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="emisor_nombre">
         <field name="name">Nombre</field>
         <field name="value">format_string(supplier.name, 254)</field>
         <field name="node">Comprobante/Emisor</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="emisor_regimen_fiscal">
         <field name="name">RegimenFiscal</field>
         <field name="value">record.company_id.l10n_mx_edi_fiscal_regime</field>
         <field name="node">Comprobante/Emisor</field>
+        <field name="version">3.3</field>
     </record>
 
     <!-- Comprobante/Receptor -->
@@ -22,26 +25,31 @@
         <field name="name">Rfc</field>
         <field name="value">customer_rfc</field>
         <field name="node">Comprobante/Receptor</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="receptor_nombre">
         <field name="name">Nombre</field>
         <field name="value">format_string(customer.commercial_partner_id.name, 254)</field>
         <field name="node">Comprobante/Receptor</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="receptor_residencia">
         <field name="name">ResidenciaFiscal</field>
         <field name="value">customer_fiscal_residence</field>
         <field name="node">Comprobante/Receptor</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="receptor_NumRegIdTrib">
         <field name="name">NumRegIdTrib</field>
         <field name="value"></field>
         <field name="node">Comprobante/Receptor</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="receptor_uso_cfdi">
         <field name="name">UsoCFDI</field>
         <field name="value">record.l10n_mx_edi_usage</field>
         <field name="node">Comprobante/Receptor</field>
+        <field name="version">3.3</field>
     </record>
 
     <!-- Comprobante/Impuestos -->
@@ -49,11 +57,13 @@
         <field name="name">TotalImpuestosTrasladados</field>
         <field name="value">format_float(balance_multiplicator * tax_details_transferred['tax_amount_currency'], currency_precision) if tax_details_transferred['tax_details'] else None</field>
         <field name="node">Comprobante/Impuestos</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="impuestos_retenidos">
         <field name="name">TotalImpuestosRetenidos</field>
         <field name="value">format_float(-balance_multiplicator * tax_details_withholding['tax_amount_currency'], currency_precision) if tax_details_withholding['tax_details'] else None</field>
         <field name="node">Comprobante/Impuestos</field>
+        <field name="version">3.3</field>
     </record>
 
     <!--Comprobante/Impuestos/Retenciones/Retencion-->
@@ -61,11 +71,13 @@
         <field name="name">Importe</field>
         <field name="value">format_float(-balance_multiplicator * tax_detail_vals['tax_amount_currency'], currency_precision)</field>
         <field name="node">Comprobante/Impuestos/Retenciones/Retencion</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="retencion_trasladados_Impuesto">
         <field name="name">Impuesto</field>
         <field name="value">get_tax_cfdi_name(tax_detail_vals)</field>
         <field name="node">Comprobante/Impuestos/Retenciones/Retencion</field>
+        <field name="version">3.3</field>
     </record>
 
     <!--Comprobante/Impuestos/Traslados/Traslado-->
@@ -73,21 +85,25 @@
         <field name="name">Importe</field>
         <field name="value">format_float(balance_multiplicator * tax_detail_vals['tax_amount_currency'], currency_precision)</field>
         <field name="node">Comprobante/Impuestos/Traslados/Traslado</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="traslado_Impuesto">
         <field name="name">Impuesto</field>
         <field name="value">get_tax_cfdi_name(tax_detail_vals)</field>
         <field name="node">Comprobante/Impuestos/Traslados/Traslado</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="traslado_TipoFactor">
         <field name="name">TipoFactor</field>
         <field name="value">tax.l10n_mx_tax_type</field>
         <field name="node">Comprobante/Impuestos/Traslados/Traslado</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="traslado_TasaOCuota">
         <field name="name">TasaOCuota</field>
         <field name="value">format_float(tax_detail_vals['tax_rate_transferred'], 6)</field>
         <field name="node">Comprobante/Impuestos/Traslados/Traslado</field>
+        <field name="version">3.3</field>
     </record>
 
     <!--Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion-->
@@ -95,26 +111,31 @@
         <field name="name">Base</field>
         <field name="value">format_float(balance_multiplicator * tax_detail_vals['base_amount_currency'], currency_precision)</field>
         <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="conceptos_retencion_Impuesto">
         <field name="name">Impuesto</field>
         <field name="value">get_tax_cfdi_name(tax_detail_vals)</field>
         <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="conceptos_retencion_TipoFactor">
         <field name="name">TipoFactor</field>
         <field name="value">tax.l10n_mx_tax_type</field>
         <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="conceptos_retencion_TasaOCuota">
         <field name="name">TasaOCuota</field>
         <field name="value">format_float(-tax.amount / 100.0, 6)</field>
         <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="conceptos_retencion_Importe">
         <field name="name">Importe</field>
         <field name="value">format_float(-balance_multiplicator * tax_detail_vals['tax_amount_currency'], 2)</field>
         <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion</field>
+        <field name="version">3.3</field>
     </record>
 
     <!--Comprobante/Conceptos/Concepto-->
@@ -122,46 +143,55 @@
         <field name="name">ClaveProdServ</field>
         <field name="value">line.product_id.unspsc_code_id.code</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_NoIdentificacion">
         <field name="name">NoIdentificacion</field>
         <field name="value">format_string(line.product_id.default_code)</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_Cantidad">
         <field name="name">Cantidad</field>
         <field name="value">format_float(line.quantity, 6)</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_ClaveUnidad">
         <field name="name">ClaveUnidad</field>
         <field name="value">line.product_uom_id.unspsc_code_id.code</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_Unidad">
         <field name="name">Unidad</field>
         <field name="value">format_string(line.product_uom_id.name, 20)</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_Descripcion">
         <field name="name">Descripcion</field>
         <field name="value">format_string(line.name, 1000)</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_ValorUnitario">
         <field name="name">ValorUnitario</field>
         <field name="value">format_float(line_vals['gross_price_total_unit'], currency_precision)</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_Importe">
         <field name="name">Importe</field>
         <field name="value">format_float(line_vals['price_subtotal_before_discount'], currency_precision)</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_Descuento">
         <field name="name">Descuento</field>
         <field name="value">format_float(line_vals['price_discount'], currency_precision) if not record.currency_id.is_zero(line_vals['price_discount']) else None</field>
         <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">3.3</field>
     </record>
 
     <!--Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado-->
@@ -169,37 +199,304 @@
         <field name="name">Base</field>
         <field name="value">format_float(balance_multiplicator * tax_detail_vals['base_amount_currency'], currency_precision)</field>
         <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_traslado_Impuesto">
         <field name="name">Impuesto</field>
         <field name="value">get_tax_cfdi_name(tax_detail_vals)</field>
         <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_traslado_TipoFactor">
         <field name="name">TipoFactor</field>
         <field name="value">tax.l10n_mx_tax_type</field>
         <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_traslado_TasaOCuota">
         <field name="name">TasaOCuota</field>
         <field name="value">format_float(tax_detail_vals['tax_rate_transferred'], 6)</field>
         <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado</field>
+        <field name="version">3.3</field>
     </record>
     <record model="addenda.cfdi.attributes" id="concepto_traslado_Importe">
         <field name="name">Importe</field>
         <field name="value">format_float(balance_multiplicator * tax_detail_vals['tax_amount_currency'], 2) if tax.l10n_mx_tax_type != 'Exento' else False"</field>
         <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado</field>
+        <field name="version">3.3</field>
     </record>
     <!-- Comprobante/CfdiRelacionados -->
     <record model="addenda.cfdi.attributes" id="CfdiRelacionados_TipoRelacion">
         <field name="name">TipoRelacion</field>
         <field name="value">origin_type</field>
         <field name="node">Comprobante/CfdiRelacionados</field>
+        <field name="version">3.3</field>
     </record>
     <!-- Comprobante/CfdiRelacionados/CfdiRelacionado -->
     <record model="addenda.cfdi.attributes" id="CfdiRelacionado_UUID">
         <field name="name">UUID</field>
         <field name="value">uuid</field>
         <field name="node">Comprobante/CfdiRelacionados/CfdiRelacionado</field>
+        <field name="version">3.3</field>
+    </record>
+
+    <!-- CFDI4.0 -->
+    <!-- Comprobante/CfdiRelacionados -->
+    <record model="addenda.cfdi.attributes" id="CfdiRelacionados_TipoRelacion40">
+        <field name="name">TipoRelacion</field>
+        <field name="value">origin_type</field>
+        <field name="node">Comprobante/CfdiRelacionados</field>
+        <field name="version">4.0</field>
+    </record>
+
+    <!-- Comprobante/CfdiRelacionados/CfdiRelacionado -->
+    <record model="addenda.cfdi.attributes" id="CfdiRelacionado_UUID40">
+        <field name="name">UUID</field>
+        <field name="value">uuid</field>
+        <field name="node">Comprobante/CfdiRelacionados/CfdiRelacionado</field>
+        <field name="version">4.0</field>
+    </record>
+
+    <!-- Comprobante/Emisor -->
+    <record model="addenda.cfdi.attributes" id="emisor_rfc40">
+        <field name="name">Rfc</field>
+        <field name="value">supplier.vat</field>
+        <field name="node">Comprobante/Emisor</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="emisor_nombre40">
+        <field name="name">Nombre</field>
+        <field name="value">format_string(supplier.name, 254).upper()</field>
+        <field name="node">Comprobante/Emisor</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="emisor_regimen_fiscal40">
+        <field name="name">RegimenFiscal</field>
+        <field name="value">record.company_id.l10n_mx_edi_fiscal_regime</field>
+        <field name="node">Comprobante/Emisor</field>
+        <field name="version">4.0</field>
+    </record>
+
+    <!-- Comprobante/Receptor -->
+    <record model="addenda.cfdi.attributes" id="receptor_rfc40">
+        <field name="name">Rfc</field>
+        <field name="value">customer_rfc</field>
+        <field name="node">Comprobante/Receptor</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="receptor_nombre40">
+        <field name="name">Nombre</field>
+        <field name="value">format_string(customer.commercial_partner_id.name, 254).upper()</field>
+        <field name="node">Comprobante/Receptor</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="receptor_residencia40">
+        <field name="name">ResidenciaFiscal</field>
+        <field name="value">customer_fiscal_residence</field>
+        <field name="node">Comprobante/Receptor</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="receptor_NumRegIdTrib40">
+        <field name="name">DomicilioFiscalReceptor</field>
+        <field name="value">customer.zip if customer.country_id.code == 'MX' else issued_address.zip or supplier.zip</field>
+        <field name="node">Comprobante/Receptor</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="receptor_NumRegIdTrib40">
+        <field name="name">RegimenFiscalReceptor</field>
+        <field name="value">fiscal_regime</field>
+        <field name="node">Comprobante/Receptor</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="receptor_uso_cfdi40">
+        <field name="name">UsoCFDI</field>
+        <field name="value">record.l10n_mx_edi_usage if record.l10n_mx_edi_usage != 'P01' else 'S01'</field>
+        <field name="node">Comprobante/Receptor</field>
+        <field name="version">4.0</field>
+    </record>
+
+    <!--Comprobante/Conceptos/Concepto-->
+    <record model="addenda.cfdi.attributes" id="concepto_ClaveProdServ40">
+        <field name="name">ClaveProdServ</field>
+        <field name="value">line.product_id.unspsc_code_id.code</field>
+        <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_NoIdentificacion40">
+        <field name="name">NoIdentificacion</field>
+        <field name="value">format_string(line.product_id.default_code)</field>
+        <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_Cantidad40">
+        <field name="name">Cantidad</field>
+        <field name="value">format_float(line.quantity, 6)</field>
+        <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_ClaveUnidad40">
+        <field name="name">ClaveUnidad</field>
+        <field name="value">line.product_uom_id.unspsc_code_id.code</field>
+        <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_Unidad40">
+        <field name="name">Unidad</field>
+        <field name="value">format_string(line.product_uom_id.name, 20).upper() if line.product_uom_id.name else None</field>
+        <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_Descripcion40">
+        <field name="name">Descripcion</field>
+        <field name="value">format_string(line.name, 1000)</field>
+        <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_ValorUnitario40">
+        <field name="name">ValorUnitario</field>
+        <field name="value">format_float(line_values['gross_price_total_unit'] if tax_objected == '02' else (line.price_total + line_values['price_discount']) / line.quantity, currency_precision)</field>
+        <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_Importe40">
+        <field name="name">Importe</field>
+        <field name="value">format_float(line_values['price_subtotal_before_discount'] if tax_objected == '02' else line.price_total + line_values['price_discount'], currency_precision)</field>
+        <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_ObjetoImp40">
+        <field name="name">ObjetoImp</field>
+        <field name="value">tax_objected</field>
+        <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_Descuento40">
+        <field name="name">Descuento</field>
+        <field name="value">format_float(line_values['price_discount'], currency_precision) if not record.currency_id.is_zero(line_values['price_discount']) else None</field>
+        <field name="node">Comprobante/Conceptos/Concepto</field>
+        <field name="version">4.0</field>
+    </record>
+
+    <!--Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado-->
+    <record model="addenda.cfdi.attributes" id="concepto_traslado_Base40">
+        <field name="name">Base</field>
+        <field name="value">format_float(tax_res['base'], currency_precision)</field>
+        <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_traslado_Impuesto40">
+        <field name="name">Impuesto</field>
+        <field name="value">ax_res['tax_name'] or ('002' if tax_res['tax_type'] == 'Exento' else False)</field>
+        <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_traslado_TipoFacto40r">
+        <field name="name">TipoFactor</field>
+        <field name="value">tax_res['tax_type']</field>
+        <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_traslado_TasaOCuota40">
+        <field name="name">TasaOCuota</field>
+        <field name="value">format_float(tax_res['tax_amount'], 6) if tax_res['tax_type'] != 'Exento' else False</field>
+        <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="concepto_traslado_Importe40">
+        <field name="name">Importe</field>
+        <field name="value">format_float(tax_res['total'], 2) if tax_res['tax_type'] != 'Exento' else False</field>
+        <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Traslados/Traslado</field>
+        <field name="version">4.0</field>
+    </record>
+
+    <!--Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion-->
+    <record model="addenda.cfdi.attributes" id="conceptos_retencion_Base40">
+        <field name="name">Base</field>
+        <field name="value">format_float(tax_res['base'], currency_precision)</field>
+        <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="conceptos_retencion_Impuesto40">
+        <field name="name">Impuesto</field>
+        <field name="value">tax_res['tax_name']</field>
+        <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="conceptos_retencion_TipoFactor40">
+        <field name="name">TipoFactor</field>
+        <field name="value">tax_res['tax_type']</field>
+        <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="conceptos_retencion_TasaOCuota40">
+        <field name="name">TasaOCuota</field>
+        <field name="value">format_float(-tax_res['tax_amount'], 6)</field>
+        <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="conceptos_retencion_Importe40">
+        <field name="name">Importe</field>
+        <field name="value">format_float(-tax_res['total'], 2)</field>
+        <field name="node">Comprobante/Conceptos/Concepto/Impuestos/Retenciones/Retencion</field>
+        <field name="version">4.0</field>
+    </record>
+
+    <!-- Comprobante/Impuestos40 -->
+    <record model="addenda.cfdi.attributes" id="impuestos_trasladados40">
+        <field name="name">TotalImpuestosTrasladados</field>
+        <field name="value">format_float(total_tax_details_transferred, currency_precision) if tax_details_transferred_not_exento else None</field>
+        <field name="node">Comprobante/Impuestos</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="impuestos_retenidos40">
+        <field name="name">TotalImpuestosRetenidos</field>
+        <field name="value">format_float(-total_tax_details_withholding, currency_precision) if tax_details_withholding else None</field>
+        <field name="node">Comprobante/Impuestos</field>
+        <field name="version">4.0</field>
+    </record>
+
+    <!--Comprobante/Impuestos/Retenciones/Retencion-->
+    <record model="addenda.cfdi.attributes" id="retencion_Importe40">
+        <field name="name">Importe</field>
+        <field name="value">format_float(-tax_res['total'], currency_precision)</field>
+        <field name="node">Comprobante/Impuestos/Retenciones/Retencion</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="retencion_trasladados_Impuesto40">
+        <field name="name">Impuesto</field>
+        <field name="value">tax_res['tax_name']</field>
+        <field name="node">Comprobante/Impuestos/Retenciones/Retencion</field>
+        <field name="version">4.0</field>
+    </record>
+
+    <!--Comprobante/Impuestos/Traslados/Traslado-->
+    <record model="addenda.cfdi.attributes" id="traslado_Base40">
+        <field name="name">Base</field>
+        <field name="value">format_float(tax_res['base'], currency_precision)</field>
+        <field name="node">Comprobante/Impuestos/Traslados/Traslado</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="traslado_Importe40">
+        <field name="name">Importe</field>
+        <field name="value">format_float(tax_res['total'], currency_precision) if tax_res['tax_type'] != 'Exento' else False</field>
+        <field name="node">Comprobante/Impuestos/Traslados/Traslado</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="traslado_Impuesto40">
+        <field name="name">Impuesto</field>
+        <field name="value">tax_res['tax_name'] or ('002' if tax_res['tax_type'] == 'Exento' else False)</field>
+        <field name="node">Comprobante/Impuestos/Traslados/Traslado</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="traslado_TipoFactor40">
+        <field name="name">TipoFactor</field>
+        <field name="value">tax_res['tax_type']</field>
+        <field name="node">Comprobante/Impuestos/Traslados/Traslado</field>
+        <field name="version">4.0</field>
+    </record>
+    <record model="addenda.cfdi.attributes" id="traslado_TasaOCuota40">
+        <field name="name">TasaOCuota</field>
+        <field name="value">format_float(tax_res['tax_amount'], 6) if tax_res['tax_type'] != 'Exento' else False</field>
+        <field name="node">Comprobante/Impuestos/Traslados/Traslado</field>
+        <field name="version">4.0</field>
     </record>
 </odoo>
