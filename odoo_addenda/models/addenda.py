@@ -617,6 +617,12 @@ class AddendaAddenda(models.Model):
                 xml_field.set("name", 'group_expand')
                 xml_field.text = str(field[2]['group_expand'])
                 record.append(xml_field)
+            
+            if(field[2]['ttype'] == 'selection'):
+                xml_field = etree.Element("field")
+                xml_field.set("name", 'selection')
+                xml_field.text = str(field[2]['selection'])
+                record.append(xml_field)
 
             root.append(record)
         return root
