@@ -144,7 +144,8 @@ class AddendaAddenda(models.Model):
                 #         xml_tree_tag = self.generate_tree_view(
                 #             tag, vals_list['namespace_value'])
                 #         root.append(xml_tree_tag)
-            root = etree.fromstring(res.main_preview)
+            if not vals_list['is_expression']:
+                root = etree.fromstring(res.main_preview)
             full_xml = self.get_xml(vals_list['name'], root)
             root_string = etree.tostring(root, pretty_print=True)
             ir_ui_view = self.env['ir.ui.view'].create({
@@ -235,7 +236,8 @@ class AddendaAddenda(models.Model):
                 #         xml_tree_tag = self.generate_tree_view(
                 #             tag, instance.namespace_value)
                 #         root.append(xml_tree_tag)
-            root = etree.fromstring(instance.main_preview)
+            if not instance.is_expression:
+                root = etree.fromstring(instance.main_preview)
             full_xml = self.get_xml(instance.name, root)
             root_string = etree.tostring(root, pretty_print=True)
             instance.ir_ui_view_id.write({
