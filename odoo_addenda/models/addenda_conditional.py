@@ -1,6 +1,6 @@
-from email.policy import default
-from odoo import fields, models, api, _
 from lxml import etree
+
+from odoo import api, fields, models
 
 
 class AddendaConditional(models.Model):
