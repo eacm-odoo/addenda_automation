@@ -4,13 +4,13 @@
         <field name="name">addenda.addenda.form</field>
         <field name="model">addenda.addenda</field>
         <field name="arch" type="xml">
-            <header>
-                <button string="Export" type="object" name="action_export_zip" class="oe_highlight" states="done" />
-                <field name="state" widget="statusbar" />
-            </header>
-            <form string="Addenda Form" class="o_form_sheet addenda_form">
-               
-                <sheet class="addenda_sheet">
+
+            <form string="Addenda Form" class="addenda_form o_form_view_bg">
+                <header class="">
+                    <button string="Export" type="object" name="action_export_zip" class="oe_highlight" states="done" />
+                    <field name="state" widget="statusbar" />
+                </header>
+                <div class="addenda_sheet">
                     <h1>
                         <group>
                             <field name="name" />
@@ -41,17 +41,18 @@
                             </group>
                         </page>
                     </notebook>
-                </sheet>
-
+                    
+                </div>
+                <div class="addenda_preview">
+                    <h2> Preview </h2>
+                    <field name="main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': ['|',('is_expression', '=', True),('is_customed_addenda','=',True)]}" />
+                    <field name="node_main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': ['|',('is_expression', '=', True),('is_customed_addenda','=',False)]}"/>
+    
+                </div>
 
                 
             </form>
-            <div class="o_form_sheet addenda_preview">
-                <h2> Preview </h2>
-                <field name="main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': ['|',('is_expression', '=', True),('is_customed_addenda','=',True)]}" />
-                <field name="node_main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': ['|',('is_expression', '=', True),('is_customed_addenda','=',False)]}"/>
-
-            </div>
+            
 
         </field>
     </record>
