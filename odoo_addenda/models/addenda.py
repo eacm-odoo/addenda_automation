@@ -32,6 +32,12 @@ class AddendaAddenda(models.Model):
         string='Namespace Prefix', help=('Namespace Prefix of the Addenda, helps to identify the nodes'))
     namespace_value = fields.Char(
         string='Namespace Value', help=('Namespace Value of the Addenda, helps to identify the nodes'))
+    attribute_ids = fields.One2many(
+        comodel_name='addenda.attribute', string='Attributes', inverse_name='addenda_id', help=('Attributes of the root tag'))
+    has_schema = fields.Boolean(string="Has Schema location", default=False)
+    schemaLocation = fields.Char(
+        string='Schema location', help=("Add a schema location to validate the xml")
+    )
 
     state = fields.Selection(string="State", selection=[
         ('draft', "Draft"),
@@ -47,7 +53,7 @@ class AddendaAddenda(models.Model):
     fields = fields.One2many(
         comodel_name='ir.model.fields', string="Fields", inverse_name='addenda_id')
 
-    @api.depends('tag_name', 'addenda_tag_id', 'namespace', 'namespace_value')
+    @api.depends('tag_name', 'addenda_tag_id', 'namespace', 'namespace_value', 'attribute_ids', 'has_schema', 'schemaLocation')
     def _compute_main_preview(self):
         for addenda in self:
             root_tag = addenda.tag_name.replace(' ', '_') or 'root'
@@ -58,6 +64,12 @@ class AddendaAddenda(models.Model):
                     etree.QName(addenda.namespace_value, root_tag))
             else:
                 root = etree.Element(root_tag)
+
+            if addenda.has_schema and addenda.schemaLocation:
+                schema_qname = etree.QName(
+                    "http://www.w3.org/2001/XMLSchema-instance", "schemaLocation")
+                root.set(schema_qname, addenda.schemaLocation)
+            self._set_root_preview_attrs(root, addenda.attribute_ids)
 
             for tag in addenda.addenda_tag_id:
                 tag = self.get_tag_values(tag)
@@ -356,7 +368,7 @@ class AddendaAddenda(models.Model):
                     parent_node.append(child_node)
         if(addenda_tag['value']):
             parent_node.text = addenda_tag['value']
-        if(addenda_tag['attribute_ids']):
+        if(addenda_tag['attribute_ids'] and not addenda_tag['is_field_domain_for_attributes']):
             for attribute in addenda_tag['attribute_ids']:
                 if(type(attribute) is list):
                     attribute = attribute[2]
@@ -372,12 +384,36 @@ class AddendaAddenda(models.Model):
                 elif(attribute['field'] and attribute['inner_field']):
                     parent_node.set("t-att-{}".format(attribute['attribute']),
                                     "record.{}.{}".format(self.get_field_name(attribute['field']), self.get_field_name(attribute['inner_field'])))
-        if(not addenda_tag['value'] and addenda_tag['field'] and not addenda_tag['inner_field']):
+        if(not addenda_tag['value'] and addenda_tag['field'] and not addenda_tag['inner_field'] and not addenda_tag['is_field_domain_for_attributes']):
             t = etree.Element('t')
             t.set(
                 "t-esc", "record.{}".format(self.get_field_name(addenda_tag['field'])))
             parent_node.append(t)
-        if(not addenda_tag['value'] and addenda_tag['field'] and self.get_field_type(addenda_tag['field']) in ('many2many', 'one2many') and addenda_tag['inner_field']):
+        if(addenda_tag['field'] and self.get_field_type(addenda_tag['field']) in ('many2many', 'one2many') and addenda_tag['is_field_domain_for_attributes']):
+            t = etree.Element('t')
+            t.set(
+                "t-foreach", "record.{}".format(self.get_field_name(addenda_tag['field'])))
+            t.set("t-as", "l")
+            for attribute in addenda_tag['attribute_ids']:
+                if(type(attribute) is list):
+                    attribute = attribute[2]
+                elif(type(attribute) is int):
+                    attribute = self.env['addenda.attribute'].search_read(
+                        [('id', '=', attribute)])[0]
+                if(attribute['value']):
+                    parent_node.set(
+                        "".join(["t-att-", attribute['attribute']]), attribute['value'])
+                elif(attribute['field'] and not attribute['value'] and not attribute['inner_field']):
+                    parent_node.set("t-att-{}".format(attribute['attribute']),
+                          "l.{}".format(self.get_field_name(attribute['field'])))
+                elif(attribute['field'] and attribute['inner_field']):
+                    parent_node.set("t-att-{}".format(attribute['attribute']),
+                          "l.{}.{}".format(self.get_field_name(attribute['field']), self.get_field_name(attribute['inner_field'])))
+            t.append(parent_node)
+            parent_node = t
+
+
+        if(not addenda_tag['value'] and addenda_tag['field'] and self.get_field_type(addenda_tag['field']) in ('many2many', 'one2many') and addenda_tag['inner_field'] and not addenda_tag['is_field_domain_for_attributes']):
             t = etree.Element('t')
             t.set(
                 "t-foreach", "record.{}".format(self.get_field_name(addenda_tag['field'])))
@@ -730,3 +766,14 @@ class AddendaAddenda(models.Model):
         elif type(condition) == tuple:
             condition = condition[0]
         return condition
+
+    def _set_root_preview_attrs(self, root, attribute_ids):
+        for attribute in attribute_ids:
+            if attribute.value:
+                root.set(attribute.attribute, attribute.value)
+            elif attribute.field and not attribute.inner_field:
+                root.set(
+                    "".join(['t-att-', attribute.attribute]), "".join(['record.', attribute.field.name]))
+            elif attribute.inner_field and attribute.field:
+                root.set(
+                    "".join(['t-att-', attribute.attribute]), "".join(['record.', attribute.field.name, '.', attribute.inner_field.name]))

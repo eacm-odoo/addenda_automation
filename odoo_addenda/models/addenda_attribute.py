@@ -5,6 +5,8 @@ class AddendaAttribute(models.Model):
     _name = 'addenda.attribute'
     _description = 'This model allows the user to add many attributes to one tag in the addenda'
 
+    addenda_id = fields.Many2one(
+        comodel_name='addenda.addenda', string='Addenda')
     addenda_tag_id = fields.Many2one(
         comodel_name='addenda.tag', string='Addenda tag')
     addenda_node_id = fields.Many2one(
@@ -15,7 +17,8 @@ class AddendaAttribute(models.Model):
         'Value of the attribute of the new tag'))
     field = fields.Many2one(
         string='Field', help=('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
-        domain=[('model', '=', 'account.move'), ('ttype', 'in', ('char', 'text', 'selection', 'many2one', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
+        domain=[('ttype', 'in', ('char', 'text', 'selection', 'many2one', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
+    field_domain = fields.Char( string='Field Domain', compute='_compute_field_domain')
     inner_field = fields.Many2one(
         string='Inner field', help=('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     field_type = fields.Char(compute='_compute_field_type', default='')
@@ -29,6 +32,15 @@ class AddendaAttribute(models.Model):
                 attribute.field_type = attribute.field.ttype
             else:
                 attribute.field_type = False
+
+    #compute the field_domain to get the domain of the field base on the field of the parent tag
+    @api.depends('addenda_tag_id')
+    def _compute_field_domain(self):
+        for attribute in self:
+            if attribute.addenda_tag_id.is_field_domain_for_attributes:
+                attribute.field_domain = attribute.addenda_tag_id.field.relation
+            else:
+                attribute.field_domain = "account.move"
 
     @api.onchange('field')
     def _generate_inner_fields_domain(self):

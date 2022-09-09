@@ -31,7 +31,10 @@
                                 <field name="tag_name" attrs="{'invisible': [('is_expression', '=', True)]}" />
                                 <field name="namespace" attrs="{'invisible': [('is_expression','=',True)], 'required': [('namespace_value', 'not in', ('',False))]}" />
                                 <field name="namespace_value" attrs="{'invisible': [('is_expression','=',True)], 'required': [('namespace', 'not in', ('', False))]}" />
+                                <field name="has_schema" attrs="{'invisible': [('is_expression', '=', True)]}" />
+                                <field name="schemaLocation" attrs="{'invisible': [('has_schema', '=', False)]}" />
                                 <field name="addenda_tag_id" attrs="{'invisible': [('is_expression', '=', True)]}" />
+                                <field name="attribute_ids" attrs="{'invisible': [('is_expression', '=', True)]}" />
                                 <field name="addenda_expression" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': [('is_expression', '=', False)]}" />
                                 <field name="main_preview" widget="ace" class="oe-bordered-editor" options="{'style-inline': true, 'codeview': true }" attrs="{'invisible': [('is_expression', '=', True)]}" />
                             </group>
