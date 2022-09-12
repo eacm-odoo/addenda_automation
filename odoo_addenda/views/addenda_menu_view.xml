@@ -11,7 +11,7 @@
         </field>
     </record>
 
-    <menuitem name="Odoo Addenda" id="menu_addenda" sequence="1" />
+    <menuitem name="Odoo Addenda" id="menu_addenda" sequence="1" web_icon="odoo_addenda,static/description/icon.png"/>
 
     <menuitem id="menu_addenda_addenda" name="Addenda" parent="menu_addenda" sequence="2" action="addenda_list_action" />
 </odoo>
