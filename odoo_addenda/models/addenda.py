@@ -82,7 +82,7 @@ class AddendaAddenda(models.Model):
                     xml_tree_tag = self.generate_tree_view(
                         tag, addenda.namespace_value)
                     root.append(xml_tree_tag)
-            etree.indent(root, '    ')
+            # etree.indent(root, '    ')
 
             addenda.main_preview = etree.tostring(root, pretty_print=True)
 
@@ -93,7 +93,7 @@ class AddendaAddenda(models.Model):
                 main_preview = etree.Element("data")
                 for node in addenda.nodes_ids:
                     main_preview.append(etree.fromstring(node.node_preview))
-                etree.indent(main_preview, '    ')
+                # etree.indent(main_preview, '    ')
                 addenda.node_main_preview = etree.tostring(
                     main_preview, pretty_print=True)
             else:
@@ -493,7 +493,7 @@ class AddendaAddenda(models.Model):
         os.makedirs("".join([name, "/", name, "/views"]))
         if(len(fields) > 0):
             os.mkdir("".join([name, "/", name, "/data"]))
-            etree.indent(fields, '    ')
+            # etree.indent(fields, '    ')
             field_xml_content = html.unescape(str(etree.tostring(fields,  pretty_print=True,
                                                                  xml_declaration=True, encoding='utf-8').decode('utf-8')))
             with open("".join([name, "/", name, "/data/addenda_fields.xml"]), "w") as f:
@@ -512,7 +512,7 @@ class AddendaAddenda(models.Model):
         f = open("".join([name, "/", name, "/__init__.py"]), "w")
         f.close()
         tree = etree.ElementTree(xml)
-        etree.indent(tree, '    ')
+        # etree.indent(tree, '    ')
         tree.write("".join([name, "/", name, "/views/", name_view_file, ".xml"]),
                    pretty_print=True, xml_declaration=True, encoding='utf-8')
         make_archive(
