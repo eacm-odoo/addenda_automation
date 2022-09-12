@@ -1,7 +1,8 @@
 import xml.etree.ElementTree as ET
 from lxml import etree
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class AddendaNode(models.Model):
@@ -35,6 +36,14 @@ class AddendaNode(models.Model):
         string='Addenda Tags', comodel_name='addenda.tag', inverse_name='addenda_node_id', help=('New addenda tags added'))
     version = fields.Char(
         string='Version', default=lambda self: self._get_version())
+
+    @api.constrains('addenda_tag_ids', 'position')
+    def _check_addenda_tag_ids(self):
+        for node in self:
+            if node.position != 'attributes' and not node.addenda_tag_ids:
+                raise ValidationError(
+                    _('The node must have at least one addenda tag if position is not attributes'))
+
 
     def _get_version(self):
         is_l10n_mx_edi_40_install = self.env['ir.module.module'].search(
