@@ -83,7 +83,6 @@ class AddendaAddenda(models.Model):
                         tag, addenda.namespace_value)
                     root.append(xml_tree_tag)
             # etree.indent(root, '    ')
-
             addenda.main_preview = etree.tostring(root, pretty_print=True)
 
     @api.depends('nodes_ids')
@@ -200,7 +199,6 @@ class AddendaAddenda(models.Model):
 
         return res
 
-    # override write function
     def write(self, vals):
         res = super().write(vals)
         instance = self.env['addenda.addenda'].browse(self.id)
@@ -515,16 +513,12 @@ class AddendaAddenda(models.Model):
         # etree.indent(tree, '    ')
         tree.write("".join([name, "/", name, "/views/", name_view_file, ".xml"]),
                    pretty_print=True, xml_declaration=True, encoding='utf-8')
-        make_archive(
-            'addenda',
-            'zip',           # the archive format - or tar, bztar, gztar
-            name)
+        make_archive('addenda','zip', name)
 
         f = open("addenda.zip", "rb")
         bytes_content = f.read()
 
         bytes_content = base64.encodebytes(bytes_content)
-        # rmtree("name")
         return bytes_content
 
     def generate_xml_fields(self, fields, write=False):

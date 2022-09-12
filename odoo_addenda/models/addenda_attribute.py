@@ -34,7 +34,6 @@ class AddendaAttribute(models.Model):
             else:
                 attribute.field_type = False
 
-    # compute the field_domain to get the domain of the field base on the field of the parent tag
     @api.depends('addenda_tag_id', 'addenda_id')
     def _compute_field_domain(self):
         for attribute in self:
