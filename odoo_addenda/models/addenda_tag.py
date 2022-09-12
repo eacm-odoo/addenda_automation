@@ -85,7 +85,6 @@ class AddendaTag(models.Model):
                 except Exception as e:
                     raise ValidationError(
                         _('Tag name can not contain special characters'))
-                # call generate_node ->tag tree
                 if body != '':
                     if tags.value:
                         root_node.text = body
@@ -100,7 +99,6 @@ class AddendaTag(models.Model):
                     else:
                         root_node.append(ET.fromstring(tag_child.preview))
                 # ET.indent(root_node, '    ')
-
                 if tags.condition_ids:
                     for condition in tags.condition_ids:
                         tags.preview = "".join(
