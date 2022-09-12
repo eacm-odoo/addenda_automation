@@ -10,7 +10,7 @@
                     <field name="attribute" />
                     <field name="value" />
                     <field name='field_domain' invisible='1' />
-                    <field name="field" domain="[('model', '=', field_domain)]" attrs="{'invisible': [('value','not in',('',False))]}" />
+                    <field name="field" domain="[('model', '=', field_domain), ('ttype', 'not in', ('many2many','one2many'))]" attrs="{'invisible': [('value','not in',('',False))]}" />
                     <field name='inner_field_domain' invisible='1' />
                     <field name='inner_field' domain="[('model', '=', inner_field_domain)]" attrs="{'invisible': [('field_type','!=','many2one'),'|',('field','in',('',False))], 'required': [('field_type', 'in', ('many2one', 'one2many', 'many2many'))]}" />
                 </group>

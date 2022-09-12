@@ -18,7 +18,8 @@ class AddendaAttribute(models.Model):
     field = fields.Many2one(
         string='Field', help=('The value that will appear on the invoice once generated'), comodel_name='ir.model.fields',
         domain=[('ttype', 'in', ('char', 'text', 'selection', 'many2one', 'monetary', 'integer', 'boolean', 'date', 'datetime'))])
-    field_domain = fields.Char( string='Field Domain', compute='_compute_field_domain')
+    field_domain = fields.Char(
+        string='Field Domain', compute='_compute_field_domain')
     inner_field = fields.Many2one(
         string='Inner field', help=('To select one fild, it only will appear if the user select one one2many field in the field fields'), comodel_name='ir.model.fields')
     field_type = fields.Char(compute='_compute_field_type', default='')
@@ -33,11 +34,11 @@ class AddendaAttribute(models.Model):
             else:
                 attribute.field_type = False
 
-    #compute the field_domain to get the domain of the field base on the field of the parent tag
-    @api.depends('addenda_tag_id')
+    # compute the field_domain to get the domain of the field base on the field of the parent tag
+    @api.depends('addenda_tag_id', 'addenda_id')
     def _compute_field_domain(self):
         for attribute in self:
-            if attribute.addenda_tag_id.is_field_domain_for_attributes:
+            if attribute.addenda_tag_id.is_field_domain_for_attributes and not attribute.addenda_id:
                 attribute.field_domain = attribute.addenda_tag_id.field.relation
             else:
                 attribute.field_domain = "account.move"
