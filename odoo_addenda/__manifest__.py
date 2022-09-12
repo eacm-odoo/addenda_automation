@@ -29,6 +29,7 @@
         
         # security
         'security/ir.model.access.csv',
+        'security/group.xml',
 
         # demo
         'demo/data.xml',

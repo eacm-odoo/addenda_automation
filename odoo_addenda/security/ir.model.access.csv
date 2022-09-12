@@ -1,7 +1,13 @@
 id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
-addenda_admin,addenda admin,model_addenda_addenda,base.group_system,1,1,1,1
-node_admin,node admin,model_addenda_node,base.group_system,1,1,1,1
-tag_admin,tag admin,model_addenda_tag,base.group_system,1,1,1,1
-addenda_attribute_admin,addenda attribute admin,model_addenda_attribute,base.group_system,1,1,1,1
-addenda_condition_admin,addenda condition admin,model_addenda_conditional,base.group_system,1,1,1,1
-addenda_cfdi_attribute_admin,addenda cfdi attribute admin,model_addenda_cfdi_attributes,base.group_system,1,1,1,1
+addenda_admin,addenda admin,model_addenda_addenda,odoo_addenda.group_automated_addenda,1,1,1,1
+node_admin,node admin,model_addenda_node,odoo_addenda.group_automated_addenda,1,1,1,1
+tag_admin,tag admin,model_addenda_tag,odoo_addenda.group_automated_addenda,1,1,1,1
+addenda_attribute_admin,addenda attribute admin,model_addenda_attribute,odoo_addenda.group_automated_addenda,1,1,1,1
+addenda_condition_admin,addenda condition admin,model_addenda_conditional,odoo_addenda.group_automated_addenda,1,1,1,1
+addenda_cfdi_attribute_admin,addenda cfdi attribute admin,model_addenda_cfdi_attributes,odoo_addenda.group_automated_addenda,1,1,1,1
+addenda_reader,addenda reader,model_addenda_addenda,odoo_addenda.group_automated_addenda_only_read,1,0,0,0
+node_reader,node reader,model_addenda_node,odoo_addenda.group_automated_addenda_only_read,1,0,0,0
+tag_reader,tag reader,model_addenda_tag,odoo_addenda.group_automated_addenda_only_read,1,0,0,0
+addenda_attribute_reader,addenda attribute reader,model_addenda_attribute,odoo_addenda.group_automated_addenda_only_read,1,0,0,0
+addenda_condition_reader,addenda condition reader,model_addenda_conditional,odoo_addenda.group_automated_addenda_only_read,1,0,0,0
+addenda_cfdi_attribute_reader,addenda cfdi attribute reader,model_addenda_cfdi_attributes,odoo_addenda.group_automated_addenda_only_read,1,0,0,0
