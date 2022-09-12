@@ -99,7 +99,7 @@ class AddendaTag(models.Model):
                             root_node.append(t_if)
                     else:
                         root_node.append(ET.fromstring(tag_child.preview))
-                ET.indent(root_node, '    ')
+                # ET.indent(root_node, '    ')
 
                 if tags.condition_ids:
                     for condition in tags.condition_ids:
