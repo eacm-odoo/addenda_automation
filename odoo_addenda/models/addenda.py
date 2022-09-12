@@ -145,17 +145,6 @@ class AddendaAddenda(models.Model):
                 else:
                     root = etree.Element(
                         vals_list['tag_name'].replace(' ', '_'))
-                # for tag in vals_list['addenda_tag_id']:
-                #     tag = self.get_tag_values(tag)
-                #     if tag['is_condition']:
-                #         for condition in tag['condition_ids']:
-                #             condition = self.get_conditional_values(condition)
-                #             t_if = etree.fromstring(condition['preview'])
-                #             root.append(t_if)
-                #     else:
-                #         xml_tree_tag = self.generate_tree_view(
-                #             tag, vals_list['namespace_value'])
-                #         root.append(xml_tree_tag)
             if not vals_list['is_expression']:
                 root = etree.fromstring(res.main_preview)
             full_xml = self.get_xml(vals_list['name'], root)
@@ -236,18 +225,6 @@ class AddendaAddenda(models.Model):
                         instance.namespace_value, instance.tag_name.replace(' ', '_')))
                 else:
                     root = etree.Element(instance.tag_name.replace(' ', '_'))
-                # for tag in instance.addenda_tag_id:
-                #     tag = self.get_tag_values(tag)
-                #     if tag['is_condition']:
-                #         for condition in tag['condition_ids']:
-                #             condition = self.get_conditional_values(
-                #                 condition)
-                #             t_if = etree.fromstring(condition['preview'])
-                #             root.append(t_if)
-                #     else:
-                #         xml_tree_tag = self.generate_tree_view(
-                #             tag, instance.namespace_value)
-                #         root.append(xml_tree_tag)
             if not instance.is_expression:
                 root = etree.fromstring(instance.main_preview)
             full_xml = self.get_xml(instance.name, root)
@@ -393,7 +370,8 @@ class AddendaAddenda(models.Model):
             t = etree.Element('t')
             t.set(
                 "t-foreach", "record.{}".format(self.get_field_name(addenda_tag['field'])))
-            t.set("t-as", "l")
+            model = self.get_field_name(addenda_tag['field']).split('_')[-2]
+            t.set("t-as", model)
             for attribute in addenda_tag['attribute_ids']:
                 if(type(attribute) is list):
                     attribute = attribute[2]
@@ -405,10 +383,10 @@ class AddendaAddenda(models.Model):
                         "".join(["t-att-", attribute['attribute']]), attribute['value'])
                 elif(attribute['field'] and not attribute['value'] and not attribute['inner_field']):
                     parent_node.set("t-att-{}".format(attribute['attribute']),
-                          "l.{}".format(self.get_field_name(attribute['field'])))
+                          "{}.{}".format(model,self.get_field_name(attribute['field'])))
                 elif(attribute['field'] and attribute['inner_field']):
                     parent_node.set("t-att-{}".format(attribute['attribute']),
-                          "l.{}.{}".format(self.get_field_name(attribute['field']), self.get_field_name(attribute['inner_field'])))
+                          "{}.{}.{}".format(model,self.get_field_name(attribute['field']), self.get_field_name(attribute['inner_field'])))
             t.append(parent_node)
             parent_node = t
 
@@ -417,10 +395,11 @@ class AddendaAddenda(models.Model):
             t = etree.Element('t')
             t.set(
                 "t-foreach", "record.{}".format(self.get_field_name(addenda_tag['field'])))
-            t.set("t-as", "l")
+            model = self.get_field_name(addenda_tag['field']).split('_')[-2]
+            t.set("t-as", model)
             t2 = etree.Element('t')
             t2.set(
-                "t-esc", "l.{}".format(self.get_field_name(addenda_tag['inner_field'])))
+                "t-esc", "{}.{}".format(model,self.get_field_name(addenda_tag['inner_field'])))
             parent_node.append(t2)
             t.append(parent_node)
             parent_node = t
@@ -429,7 +408,6 @@ class AddendaAddenda(models.Model):
             t.set(
                 "t-esc", "record.{}.{}".format(self.get_field_name(addenda_tag['field']), self.get_field_name(addenda_tag['inner_field'])))
             parent_node.append(t)
-
         return parent_node
 
     def get_field_name(self, field_id):
@@ -500,22 +478,27 @@ class AddendaAddenda(models.Model):
             'sumary': 'Addenda created using addenda.addenda',
             'description': "",
             'author': 'Odoo PS',
-            'category': 'Sales',
+            'category': 'Custom Development',
             'version': '15.0.1.0.0',
             'depends': [depends_value],
             'license': 'OPL-1',
             'data': [
                 "".join(['views/', name_view_file, '.xml']),
             ],
+            'instalable': False,
+            'auto-install': False,
+            'application': False,
         }
 
         os.makedirs("".join([name, "/", name, "/views"]))
         if(len(fields) > 0):
             os.mkdir("".join([name, "/", name, "/data"]))
+            etree.indent(fields, '    ')
             field_xml_content = html.unescape(str(etree.tostring(fields,  pretty_print=True,
                                                                  xml_declaration=True, encoding='utf-8').decode('utf-8')))
             with open("".join([name, "/", name, "/data/addenda_fields.xml"]), "w") as f:
                 f.writelines(field_xml_content)
+                f.write("")
             template['data'].append('data/addenda_fields.xml')
         f = open("".join([name, "/", name, "/__manifest__.py"]), "w")
         f.write('{\n')
@@ -529,6 +512,7 @@ class AddendaAddenda(models.Model):
         f = open("".join([name, "/", name, "/__init__.py"]), "w")
         f.close()
         tree = etree.ElementTree(xml)
+        etree.indent(tree, '    ')
         tree.write("".join([name, "/", name, "/views/", name_view_file, ".xml"]),
                    pretty_print=True, xml_declaration=True, encoding='utf-8')
         make_archive(
