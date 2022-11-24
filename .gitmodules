@@ -1,0 +1,3 @@
+[submodule "ps-internal-edi-sps"]
+	path = ps-internal-edi-sps
+	url = git@github.com:odoo-ps/ps-internal-edi-sps.git
