@@ -33,8 +33,12 @@ class AddendaAttribute(models.Model):
             else:
                 attribute.field_type = False
 
+<<<<<<< HEAD
     #compute the field_domain to get the domain of the field base on the field of the parent tag
     @api.depends('addenda_tag_id')
+=======
+    @api.depends('addenda_tag_id', 'addenda_id')
+>>>>>>> c5b1378 ([IMP] odoo_addenda: Cleaning code)
     def _compute_field_domain(self):
         for attribute in self:
             if attribute.addenda_tag_id.is_field_domain_for_attributes:
